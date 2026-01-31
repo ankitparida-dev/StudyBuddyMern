@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyBuddy Dashboard - AI-Powered JEE & NEET Prep</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="Mediafiles/StudyBuddylogo.jpg" type="image/jpg">
+    <link rel="stylesheet" href="/CssFiles/Dashboard.css">
+</head>
+<body class="light-theme">
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content" id="mainContent">
+        
+        <!-- ===== HEADER ===== -->
+        <!-- ===== HEADER ===== -->
+<header class="main-header">
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo">
+                    <img src="/Mediafiles/StudyBuddylogo.jpg" alt="StudyBuddy Logo">
+                    <span class="brand-name">StudyBuddy</span>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="../index.html#features" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="Dashboard.html" class="nav-link active">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="StudyTools.html" class="nav-link">Study Tools</a>
+                </li>
+                <li class="nav-item">
+                    <a href="Settings.html" class="nav-link">Settings</a>
+                </li>
+            </ul>
+            
+            <div class="nav-controls">
+                <button class="notification-btn" id="notificationBtn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-dot" id="notificationDot"></span>
+                </button>
+                
+                <label class="theme-switch" for="theme-toggle" aria-label="Toggle dark mode">
+                    <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                    <span class="theme-slider">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                    </span>
+                </label>
+                
+                <div class="auth-buttons">
+                    <button class="btn btn-primary btn-animated" onclick="window.location.href='Login.html'">
+                        Login / Sign Up
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </div>
+</header>
+
+        <!-- ===== DASHBOARD CONTENT ===== -->
+        <div class="container dashboard-container">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="#study-plan" class="sidebar-link">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Study Plan</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#subjects" class="sidebar-link">
+                            <i class="fas fa-book"></i>
+                            <span>Subjects & Topics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#progress" class="sidebar-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Progress & Reports</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#syllabus" class="sidebar-link">
+                            <i class="fas fa-list-alt"></i>
+                            <span>Syllabus</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#progress-tracker" class="sidebar-link active">
+                            <i class="fas fa-tasks"></i>
+                            <span>Progress Tracker</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#streaks" class="sidebar-link">
+                            <i class="fas fa-fire"></i>
+                            <span>Study Streaks</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Exam Selection -->
+                <div class="exam-selection">
+                    <div class="exam-tab jee-tab active" data-exam="jee">JEE</div>
+                    <div class="exam-tab neet-tab" data-exam="neet">NEET</div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- JEE Content -->
+                <div class="jee-content">
+                    <!-- Progress Tracker Section -->
+                    <section id="progress-tracker" class="section visible">
+                        <div class="section-header">
+                            <h2 class="section-title">Practice Question Tracker</h2>
+                            <p class="section-subtitle">Track your daily practice performance by marking questions you answered correctly</p>
+                        </div>
+
+                        <div class="tracker-container">
+                            <!-- Quick Stats -->
+                            <div class="tracker-stats-overview">
+                                <div class="stat-card interactive">
+                                    <div class="stat-icon" style="background-color: #10b981;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="correct-count">0</div>
+                                        <div class="stat-label">Correct Today</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card interactive">
+                                    <div class="stat-icon" style="background-color: #f59e0b;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="accuracy-rate">0%</div>
+                                        <div class="stat-label">Accuracy Rate</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card interactive">
+                                    <div class="stat-icon" style="background-color: #3b82f6;">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="daily-goal">0/10</div>
+                                        <div class="stat-label">Daily Goal</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subject Selection -->
+                            <div class="subject-selection">
+                                <h3>Select Subject</h3>
+                                <div class="subject-tabs">
+                                    <button class="subject-tab active" data-subject="physics">
+                                        <i class="fas fa-atom"></i> Physics
+                                    </button>
+                                    <button class="subject-tab" data-subject="chemistry">
+                                        <i class="fas fa-flask"></i> Chemistry
+                                    </button>
+                                    <button class="subject-tab" data-subject="math">
+                                        <i class="fas fa-square-root-alt"></i> Mathematics
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Tracker Form -->
+                            <div class="tracker-form">
+                                <div class="form-header">
+                                    <h3 class="form-title">Today's Practice Questions</h3>
+                                    <div class="form-controls">
+                                        <button class="btn btn-primary" id="add-question">
+                                            <i class="fas fa-plus"></i> Add Question
+                                        </button>
+                                        <button class="btn" id="clear-all">
+                                            <i class="fas fa-trash"></i> Clear All
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="topic-name" class="form-label">Topic/Chapter Name</label>
+                                    <input type="text" id="topic-name" class="form-input" placeholder="e.g., Kinematics, Organic Chemistry, etc.">
+                                </div>
+
+                                <div class="questions-grid" id="questions-container">
+                                    <!-- Questions will be dynamically added here -->
+                                    <div class="empty-state" id="empty-state">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <p>No questions added yet. Click "Add Question" to get started!</p>
+                                    </div>
+                                </div>
+
+                                <div class="tracker-actions">
+                                    <div class="progress-summary">
+                                        <div class="summary-item">
+                                            <div class="summary-value" id="total-questions">0</div>
+                                            <div class="summary-label">Total Questions</div>
+                                        </div>
+                                        <div class="summary-item">
+                                            <div class="summary-value" id="correct-questions">0</div>
+                                            <div class="summary-label">Correct</div>
+                                        </div>
+                                        <div class="summary-item">
+                                            <div class="summary-value" id="session-accuracy">0%</div>
+                                            <div class="summary-label">Accuracy</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="save-session">
+                                        <i class="fas fa-save"></i> Save Session
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- History Section -->
+                            <div class="history-section">
+                                <h3>Recent Practice Sessions</h3>
+                                <div class="history-list" id="history-list">
+                                    <div class="empty-state">
+                                        <i class="fas fa-history"></i>
+                                        <p>No practice sessions recorded yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Study Plan Section -->
+                    <section id="study-plan" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Your JEE Study Plan</h2>
+                            <p class="section-subtitle">Track your progress and stay on schedule with your personalized study plan</p>
+                        </div>
+
+                        <div class="progress-tracker">
+                            <div class="tracker-header">
+                                <h2 class="tracker-title">Your Learning Progress</h2>
+                                <div class="tracker-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-value">45%</div>
+                                        <div class="stat-label">Overall</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value">78</div>
+                                        <div class="stat-label">Topics Done</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value">32</div>
+                                        <div class="stat-label">To Go</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="subject-progress">
+                                <div class="progress-item physics interactive" data-subject="physics">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-atom"></i>
+                                    </div>
+                                    <div class="progress-details">
+                                        <div class="progress-info">
+                                            <span>Physics</span>
+                                            <span>60%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" data-target="60"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-item chemistry interactive" data-subject="chemistry">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <div class="progress-details">
+                                        <div class="progress-info">
+                                            <span>Chemistry</span>
+                                            <span>45%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" data-target="45"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-item math interactive" data-subject="math">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-square-root-alt"></i>
+                                    </div>
+                                    <div class="progress-details">
+                                        <div class="progress-info">
+                                            <span>Mathematics</span>
+                                            <span>30%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" data-target="30"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="study-path">
+                            <div class="path-header">
+                                <h2 class="path-title">JEE Preparation Path</h2>
+                                <div class="path-controls">
+                                    <button class="path-control" id="pathPrev">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="path-control" id="pathNext">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="path-container" id="pathContainer">
+                                <div class="path-step interactive">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">Foundation Building</div>
+                                    <div class="step-desc">Master basic concepts and formulas</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">Concept Application</div>
+                                    <div class="step-desc">Solve practice problems and case studies</div>
+                                    <div class="step-status status-inprogress">In Progress</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">Advanced Topics</div>
+                                    <div class="step-desc">Tackle complex problems and derivations</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">Revision Phase</div>
+                                    <div class="step-desc">Comprehensive review and mock tests</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">5</div>
+                                    <div class="step-title">Final Preparation</div>
+                                    <div class="step-desc">Last-minute tips and strategy sessions</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Subjects Section -->
+                    <section id="subjects" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">JEE Subjects & Topics</h2>
+                            <p class="section-subtitle">Explore all topics covered in your syllabus with detailed breakdown</p>
+                        </div>
+
+                        <div class="subjects-grid">
+                            <div class="subject-card-detailed">
+                                <div class="subject-card-header physics-header">
+                                    <h2>⚡ Physics</h2>
+                                    <p>Master concepts of motion, energy, and matter</p>
+                                </div>
+                                <div class="subject-card-content">
+                                    <div class="topic-block">
+                                        <h3>Class 11 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Kinematics</li>
+                                            <li class="interactive">Laws of Motion</li>
+                                            <li class="interactive">Work, Energy, Power</li>
+                                            <li class="interactive">Rotational Motion</li>
+                                            <li class="interactive">Thermodynamics</li>
+                                        </ul>
+                                    </div>
+                                    <div class="topic-block">
+                                        <h3>Class 12 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Electrostatics</li>
+                                            <li class="interactive">Current Electricity</li>
+                                            <li class="interactive">EMI & AC</li>
+                                            <li class="interactive">Ray Optics</li>
+                                            <li class="interactive">Modern Physics</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="subject-card-detailed">
+                                <div class="subject-card-header chemistry-header">
+                                    <h2>🧪 Chemistry</h2>
+                                    <p>Explore elements, compounds, and reactions</p>
+                                </div>
+                                <div class="subject-card-content">
+                                    <div class="topic-block">
+                                        <h3>Class 11 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Mole Concept</li>
+                                            <li class="interactive">Atomic Structure</li>
+                                            <li class="interactive">Chemical Bonding</li>
+                                            <li class="interactive">Equilibrium</li>
+                                            <li class="interactive">Thermodynamics</li>
+                                        </ul>
+                                    </div>
+                                    <div class="topic-block">
+                                        <h3>Class 12 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Solutions</li>
+                                            <li class="interactive">Electrochemistry</li>
+                                            <li class="interactive">P-Block Elements</li>
+                                            <li class="interactive">Organic Reactions</li>
+                                            <li class="interactive">Coordination Compounds</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="subject-card-detailed">
+                                <div class="subject-card-header math-header">
+                                    <h2>📐 Mathematics</h2>
+                                    <p>Develop problem-solving and analytical skills</p>
+                                </div>
+                                <div class="subject-card-content">
+                                    <div class="topic-block">
+                                        <h3>Class 11 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Sets, Relations, Functions</li>
+                                            <li class="interactive">Trigonometry</li>
+                                            <li class="interactive">Conic Sections</li>
+                                            <li class="interactive">Permutations & Combinations</li>
+                                            <li class="interactive">Straight Lines</li>
+                                        </ul>
+                                    </div>
+                                    <div class="topic-block">
+                                        <h3>Class 12 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Calculus (D&I)</li>
+                                            <li class="interactive">Vectors & 3D</li>
+                                            <li class="interactive">Probability</li>
+                                            <li class="interactive">Differential Equations</li>
+                                            <li class="interactive">Matrices & Determinants</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Progress & Reports Section -->
+                    <section id="progress" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">JEE Progress & Reports</h2>
+                            <p class="section-subtitle">Your comprehensive report showing effort, consistency, and coverage</p>
+                        </div>
+
+                        <div class="metric-grid">
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #4361ee;">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="metric-value">42h</div>
+                                <div class="metric-label">Study Time This Week</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #4cc9f0;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="metric-value">78</div>
+                                <div class="metric-label">Topics Completed</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #f8961e;">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div class="metric-value">65%</div>
+                                <div class="metric-label">Average Accuracy</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #7209b7;">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="metric-value">7</div>
+                                <div class="metric-label">Current Streak</div>
+                            </div>
+                        </div>
+
+                        <div class="study-path">
+                            <div class="path-header">
+                                <h2 class="path-title">Weekly Progress Summary</h2>
+                            </div>
+                            
+                            <div class="path-container">
+                                <div class="path-step interactive">
+                                    <div class="step-number">M</div>
+                                    <div class="step-title">Monday</div>
+                                    <div class="step-desc">Physics: 3h 20m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">T</div>
+                                    <div class="step-title">Tuesday</div>
+                                    <div class="step-desc">Chemistry: 2h 45m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">W</div>
+                                    <div class="step-title">Wednesday</div>
+                                    <div class="step-desc">Math: 4h 10m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">T</div>
+                                    <div class="step-title">Thursday</div>
+                                    <div class="step-desc">Physics: 3h 30m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">F</div>
+                                    <div class="step-title">Friday</div>
+                                    <div class="step-desc">Revision: 2h 15m</div>
+                                    <div class="step-status status-inprogress">In Progress</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">S</div>
+                                    <div class="step-title">Saturday</div>
+                                    <div class="step-desc">Mock Test</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">S</div>
+                                    <div class="step-title">Sunday</div>
+                                    <div class="step-desc">Weak Areas</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Syllabus Section -->
+                    <section id="syllabus" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">JEE Main & Advanced Syllabus</h2>
+                            <p class="section-subtitle">Click on any chapter to explore detailed content, practice questions, and track your understanding</p>
+                        </div>
+                        
+                        <!-- Interactive Syllabus Grid -->
+                        <div class="syllabus-grid">
+                            <!-- Physics Card -->
+                            <div class="subject-card">
+                                <div class="subject-header">
+                                    <div class="subject-icon">
+                                        <i class="fas fa-atom"></i>
+                                    </div>
+                                    <div class="subject-title">Physics</div>
+                                </div>
+                                <div class="subject-content">
+                                    <ul class="chapter-list">
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Physics and Measurement</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Kinematics</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Laws of Motion</span>
+                                            <span class="chapter-status status-inprogress">In Progress</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Work, Energy and Power</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Rotational Motion</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Gravitation</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Chemistry Card -->
+                            <div class="subject-card">
+                                <div class="subject-header">
+                                    <div class="subject-icon">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <div class="subject-title">Chemistry</div>
+                                </div>
+                                <div class="subject-content">
+                                    <ul class="chapter-list">
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Some Basic Concepts in Chemistry</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">States of Matter</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Atomic Structure</span>
+                                            <span class="chapter-status status-inprogress">In Progress</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Chemical Bonding and Molecular Structure</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Chemical Thermodynamics</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Solutions</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Mathematics Card -->
+                            <div class="subject-card">
+                                <div class="subject-header">
+                                    <div class="subject-icon">
+                                        <i class="fas fa-square-root-alt"></i>
+                                    </div>
+                                    <div class="subject-title">Mathematics</div>
+                                </div>
+                                <div class="subject-content">
+                                    <ul class="chapter-list">
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Sets, Relations and Functions</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Complex Numbers and Quadratic Equations</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Matrices and Determinants</span>
+                                            <span class="chapter-status status-inprogress">In Progress</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Permutations and Combinations</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Mathematical Induction</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Binomial Theorem</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Study Streaks Section -->
+                    <section id="streaks" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Study Streaks & Progress</h2>
+                            <p class="section-subtitle">Maintain your study consistency and track your learning journey</p>
+                        </div>
+
+                        <div class="metric-grid">
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #f94144;">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="metric-value">7</div>
+                                <div class="metric-label">Current Streak</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #f8961e;">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="metric-value">5/7</div>
+                                <div class="metric-label">Weekly Goal</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #43aa8b;">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="metric-value">3</div>
+                                <div class="metric-label">Milestones</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #577590;">
+                                    <i class="fas fa-award"></i>
+                                </div>
+                                <div class="metric-value">350</div>
+                                <div class="metric-label">Total XP</div>
+                            </div>
+                        </div>
+
+                        <div class="streaks-container">
+                            <div class="streak-calendar">
+                                <!-- Calendar days will be populated by JavaScript -->
+                            </div>
+
+                            <div class="milestones-grid">
+                                <div class="milestone-card achieved">
+                                    <div class="milestone-icon">🔥</div>
+                                    <div class="milestone-title">7-Day Streak</div>
+                                    <div class="milestone-desc">Consistent studying for 7 days</div>
+                                    <div class="milestone-reward">+10 XP</div>
+                                </div>
+                                <div class="milestone-card achieved">
+                                    <div class="milestone-icon">📚</div>
+                                    <div class="milestone-title">Complete 5 Topics</div>
+                                    <div class="milestone-desc">Mastered 5 physics chapters</div>
+                                    <div class="milestone-reward">+25 XP</div>
+                                </div>
+                                <div class="milestone-card">
+                                    <div class="milestone-icon">🎯</div>
+                                    <div class="milestone-title">30-Day Streak</div>
+                                    <div class="milestone-desc">Keep going strong!</div>
+                                    <div class="milestone-reward">+50 XP</div>
+                                </div>
+                                <div class="milestone-card">
+                                    <div class="milestone-icon">🏆</div>
+                                    <div class="milestone-title">Master 3 Subjects</div>
+                                    <div class="milestone-desc">Almost there, keep pushing!</div>
+                                    <div class="milestone-reward">+100 XP</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- NEET Content -->
+                <div class="neet-content">
+                    <!-- Progress Tracker Section for NEET -->
+                    <section id="neet-progress-tracker" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Practice Question Tracker</h2>
+                            <p class="section-subtitle">Track your daily practice performance by marking questions you answered correctly</p>
+                        </div>
+
+                        <div class="tracker-container">
+                            <!-- Quick Stats -->
+                            <div class="tracker-stats-overview">
+                                <div class="stat-card interactive">
+                                    <div class="stat-icon" style="background-color: #10b981;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="neet-correct-count">0</div>
+                                        <div class="stat-label">Correct Today</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card interactive">
+                                    <div class="stat-icon" style="background-color: #f59e0b;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="neet-accuracy-rate">0%</div>
+                                        <div class="stat-label">Accuracy Rate</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card interactive">
+                                    <div class="stat-icon" style="background-color: #3b82f6;">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="neet-daily-goal">0/10</div>
+                                        <div class="stat-label">Daily Goal</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subject Selection -->
+                            <div class="subject-selection">
+                                <h3>Select Subject</h3>
+                                <div class="subject-tabs">
+                                    <button class="subject-tab active" data-subject="physics">
+                                        <i class="fas fa-atom"></i> Physics
+                                    </button>
+                                    <button class="subject-tab" data-subject="chemistry">
+                                        <i class="fas fa-flask"></i> Chemistry
+                                    </button>
+                                    <button class="subject-tab" data-subject="biology">
+                                        <i class="fas fa-dna"></i> Biology
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Tracker Form -->
+                            <div class="tracker-form">
+                                <div class="form-header">
+                                    <h3 class="form-title">Today's Practice Questions</h3>
+                                    <div class="form-controls">
+                                        <button class="btn btn-primary" id="neet-add-question">
+                                            <i class="fas fa-plus"></i> Add Question
+                                        </button>
+                                        <button class="btn" id="neet-clear-all">
+                                            <i class="fas fa-trash"></i> Clear All
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="neet-topic-name" class="form-label">Topic/Chapter Name</label>
+                                    <input type="text" id="neet-topic-name" class="form-input" placeholder="e.g., Human Physiology, Organic Chemistry, etc.">
+                                </div>
+
+                                <div class="questions-grid" id="neet-questions-container">
+                                    <!-- Questions will be dynamically added here -->
+                                    <div class="empty-state" id="neet-empty-state">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <p>No questions added yet. Click "Add Question" to get started!</p>
+                                    </div>
+                                </div>
+
+                                <div class="tracker-actions">
+                                    <div class="progress-summary">
+                                        <div class="summary-item">
+                                            <div class="summary-value" id="neet-total-questions">0</div>
+                                            <div class="summary-label">Total Questions</div>
+                                        </div>
+                                        <div class="summary-item">
+                                            <div class="summary-value" id="neet-correct-questions">0</div>
+                                            <div class="summary-label">Correct</div>
+                                        </div>
+                                        <div class="summary-item">
+                                            <div class="summary-value" id="neet-session-accuracy">0%</div>
+                                            <div class="summary-label">Accuracy</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="neet-save-session">
+                                        <i class="fas fa-save"></i> Save Session
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- History Section -->
+                            <div class="history-section">
+                                <h3>Recent Practice Sessions</h3>
+                                <div class="history-list" id="neet-history-list">
+                                    <div class="empty-state">
+                                        <i class="fas fa-history"></i>
+                                        <p>No practice sessions recorded yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NEET Study Plan Section -->
+                    <section id="neet-study-plan" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Your NEET Study Plan</h2>
+                            <p class="section-subtitle">Track your progress and stay on schedule with your personalized study plan</p>
+                        </div>
+
+                        <div class="progress-tracker">
+                            <div class="tracker-header">
+                                <h2 class="tracker-title">Your Learning Progress</h2>
+                                <div class="tracker-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-value">52%</div>
+                                        <div class="stat-label">Overall</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value">92</div>
+                                        <div class="stat-label">Topics Done</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value">48</div>
+                                        <div class="stat-label">To Go</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="subject-progress">
+                                <div class="progress-item physics interactive" data-subject="physics">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-atom"></i>
+                                    </div>
+                                    <div class="progress-details">
+                                        <div class="progress-info">
+                                            <span>Physics</span>
+                                            <span>45%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" data-target="45"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-item chemistry interactive" data-subject="chemistry">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <div class="progress-details">
+                                        <div class="progress-info">
+                                            <span>Chemistry</span>
+                                            <span>55%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" data-target="55"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-item biology interactive" data-subject="biology">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-dna"></i>
+                                    </div>
+                                    <div class="progress-details">
+                                        <div class="progress-info">
+                                            <span>Biology</span>
+                                            <span>65%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" data-target="65"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="study-path">
+                            <div class="path-header">
+                                <h2 class="path-title">NEET Preparation Path</h2>
+                                <div class="path-controls">
+                                    <button class="path-control" id="neet-pathPrev">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="path-control" id="neet-pathNext">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="path-container" id="neet-pathContainer">
+                                <div class="path-step interactive">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">Foundation Building</div>
+                                    <div class="step-desc">Master basic concepts and formulas</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">Concept Application</div>
+                                    <div class="step-desc">Solve practice problems and case studies</div>
+                                    <div class="step-status status-inprogress">In Progress</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">Advanced Topics</div>
+                                    <div class="step-desc">Tackle complex problems and derivations</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">Revision Phase</div>
+                                    <div class="step-desc">Comprehensive review and mock tests</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">5</div>
+                                    <div class="step-title">Final Preparation</div>
+                                    <div class="step-desc">Last-minute tips and strategy sessions</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NEET Subjects Section -->
+                    <section id="neet-subjects" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">NEET Subjects & Topics</h2>
+                            <p class="section-subtitle">Explore all topics covered in your syllabus with detailed breakdown</p>
+                        </div>
+
+                        <div class="subjects-grid">
+                            <div class="subject-card-detailed">
+                                <div class="subject-card-header physics-header">
+                                    <h2>⚡ Physics</h2>
+                                    <p>Master concepts of motion, energy, and matter</p>
+                                </div>
+                                <div class="subject-card-content">
+                                    <div class="topic-block">
+                                        <h3>Class 11 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Physical World & Measurement</li>
+                                            <li class="interactive">Kinematics</li>
+                                            <li class="interactive">Laws of Motion</li>
+                                            <li class="interactive">Work, Energy, Power</li>
+                                            <li class="interactive">Motion of System of Particles</li>
+                                        </ul>
+                                    </div>
+                                    <div class="topic-block">
+                                        <h3>Class 12 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Electrostatics</li>
+                                            <li class="interactive">Current Electricity</li>
+                                            <li class="interactive">Magnetic Effects</li>
+                                            <li class="interactive">Electromagnetic Waves</li>
+                                            <li class="interactive">Optics</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="subject-card-detailed">
+                                <div class="subject-card-header chemistry-header">
+                                    <h2>🧪 Chemistry</h2>
+                                    <p>Explore elements, compounds, and reactions</p>
+                                </div>
+                                <div class="subject-card-content">
+                                    <div class="topic-block">
+                                        <h3>Class 11 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Some Basic Concepts</li>
+                                            <li class="interactive">Structure of Atom</li>
+                                            <li class="interactive">Classification of Elements</li>
+                                            <li class="interactive">Chemical Bonding</li>
+                                            <li class="interactive">States of Matter</li>
+                                        </ul>
+                                    </div>
+                                    <div class="topic-block">
+                                        <h3>Class 12 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Solid State</li>
+                                            <li class="interactive">Solutions</li>
+                                            <li class="interactive">Electrochemistry</li>
+                                            <li class="interactive">Chemical Kinetics</li>
+                                            <li class="interactive">Surface Chemistry</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="subject-card-detailed">
+                                <div class="subject-card-header biology-header">
+                                    <h2>🧬 Biology</h2>
+                                    <p>Understand living organisms and life processes</p>
+                                </div>
+                                <div class="subject-card-content">
+                                    <div class="topic-block">
+                                        <h3>Class 11 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Diversity in Living World</li>
+                                            <li class="interactive">Structural Organization</li>
+                                            <li class="interactive">Cell Structure & Function</li>
+                                            <li class="interactive">Plant Physiology</li>
+                                            <li class="interactive">Human Physiology</li>
+                                        </ul>
+                                    </div>
+                                    <div class="topic-block">
+                                        <h3>Class 12 Topics</h3>
+                                        <ul>
+                                            <li class="interactive">Reproduction</li>
+                                            <li class="interactive">Genetics & Evolution</li>
+                                            <li class="interactive">Biology & Human Welfare</li>
+                                            <li class="interactive">Biotechnology</li>
+                                            <li class="interactive">Ecology</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NEET Progress & Reports Section -->
+                    <section id="neet-progress" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">NEET Progress & Reports</h2>
+                            <p class="section-subtitle">Your comprehensive report showing effort, consistency, and coverage</p>
+                        </div>
+
+                        <div class="metric-grid">
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #4361ee;">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="metric-value">38h</div>
+                                <div class="metric-label">Study Time This Week</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #4cc9f0;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="metric-value">85</div>
+                                <div class="metric-label">Topics Completed</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #f8961e;">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div class="metric-value">72%</div>
+                                <div class="metric-label">Average Accuracy</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #7209b7;">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="metric-value">5</div>
+                                <div class="metric-label">Current Streak</div>
+                            </div>
+                        </div>
+
+                        <div class="study-path">
+                            <div class="path-header">
+                                <h2 class="path-title">Weekly Progress Summary</h2>
+                            </div>
+                            
+                            <div class="path-container">
+                                <div class="path-step interactive">
+                                    <div class="step-number">M</div>
+                                    <div class="step-title">Monday</div>
+                                    <div class="step-desc">Biology: 4h 10m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">T</div>
+                                    <div class="step-title">Tuesday</div>
+                                    <div class="step-desc">Chemistry: 3h 20m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">W</div>
+                                    <div class="step-title">Wednesday</div>
+                                    <div class="step-desc">Physics: 2h 45m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">T</div>
+                                    <div class="step-title">Thursday</div>
+                                    <div class="step-desc">Biology: 3h 30m</div>
+                                    <div class="step-status status-completed">Completed</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">F</div>
+                                    <div class="step-title">Friday</div>
+                                    <div class="step-desc">Revision: 2h 15m</div>
+                                    <div class="step-status status-inprogress">In Progress</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">S</div>
+                                    <div class="step-title">Saturday</div>
+                                    <div class="step-desc">Mock Test</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                                
+                                <div class="path-step interactive">
+                                    <div class="step-number">S</div>
+                                    <div class="step-title">Sunday</div>
+                                    <div class="step-desc">Weak Areas</div>
+                                    <div class="step-status status-pending">Upcoming</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NEET Syllabus Section -->
+                    <section id="neet-syllabus" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">NEET UG Syllabus</h2>
+                            <p class="section-subtitle">Click on any chapter to explore detailed content, practice questions, and track your understanding</p>
+                        </div>
+                        
+                        <!-- Interactive Syllabus Grid -->
+                        <div class="syllabus-grid">
+                            <!-- Physics Card -->
+                            <div class="subject-card">
+                                <div class="subject-header">
+                                    <div class="subject-icon">
+                                        <i class="fas fa-atom"></i>
+                                    </div>
+                                    <div class="subject-title">Physics</div>
+                                </div>
+                                <div class="subject-content">
+                                    <ul class="chapter-list">
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Physical World & Measurement</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Kinematics</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Laws of Motion</span>
+                                            <span class="chapter-status status-inprogress">In Progress</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Work, Energy & Power</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Electrostatics</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Current Electricity</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Chemistry Card -->
+                            <div class="subject-card">
+                                <div class="subject-header">
+                                    <div class="subject-icon">
+                                        <i class="fas fa-flask"></i>
+                                    </div>
+                                    <div class="subject-title">Chemistry</div>
+                                </div>
+                                <div class="subject-content">
+                                    <ul class="chapter-list">
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Some Basic Concepts</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Structure of Atom</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Chemical Bonding</span>
+                                            <span class="chapter-status status-inprogress">In Progress</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Organic Chemistry Basics</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Biomolecules</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Chemistry in Everyday Life</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Biology Card -->
+                            <div class="subject-card">
+                                <div class="subject-header">
+                                    <div class="subject-icon">
+                                        <i class="fas fa-dna"></i>
+                                    </div>
+                                    <div class="subject-title">Biology</div>
+                                </div>
+                                <div class="subject-content">
+                                    <ul class="chapter-list">
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Diversity in Living World</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Structural Organization</span>
+                                            <span class="chapter-status status-completed">Completed</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Cell Structure & Function</span>
+                                            <span class="chapter-status status-inprogress">In Progress</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Plant Physiology</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Human Physiology</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                        <li class="chapter-item interactive">
+                                            <span class="chapter-name">Genetics & Evolution</span>
+                                            <span class="chapter-status status-pending">Pending</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- NEET Study Streaks Section -->
+                    <section id="neet-streaks" class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Study Streaks & Progress</h2>
+                            <p class="section-subtitle">Maintain your study consistency and track your learning journey</p>
+                        </div>
+
+                        <div class="metric-grid">
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #f94144;">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="metric-value">5</div>
+                                <div class="metric-label">Current Streak</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #f8961e;">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="metric-value">4/7</div>
+                                <div class="metric-label">Weekly Goal</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #43aa8b;">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="metric-value">2</div>
+                                <div class="metric-label">Milestones</div>
+                            </div>
+                            <div class="metric-card interactive">
+                                <div class="metric-icon" style="background-color: #577590;">
+                                    <i class="fas fa-award"></i>
+                                </div>
+                                <div class="metric-value">280</div>
+                                <div class="metric-label">Total XP</div>
+                            </div>
+                        </div>
+
+                        <div class="streaks-container">
+                            <div class="streak-calendar">
+                                <!-- Calendar days will be populated by JavaScript -->
+                            </div>
+
+                            <div class="milestones-grid">
+                                <div class="milestone-card achieved">
+                                    <div class="milestone-icon">🔥</div>
+                                    <div class="milestone-title">5-Day Streak</div>
+                                    <div class="milestone-desc">Consistent studying for 5 days</div>
+                                    <div class="milestone-reward">+10 XP</div>
+                                </div>
+                                <div class="milestone-card achieved">
+                                    <div class="milestone-icon">📚</div>
+                                    <div class="milestone-title">Complete 8 Topics</div>
+                                    <div class="milestone-desc">Mastered 8 biology chapters</div>
+                                    <div class="milestone-reward">+25 XP</div>
+                                </div>
+                                <div class="milestone-card">
+                                    <div class="milestone-icon">🎯</div>
+                                    <div class="milestone-title">15-Day Streak</div>
+                                    <div class="milestone-desc">Keep going strong!</div>
+                                    <div class="milestone-reward">+50 XP</div>
+                                </div>
+                                <div class="milestone-card">
+                                    <div class="milestone-icon">🏆</div>
+                                    <div class="milestone-title">Master 2 Subjects</div>
+                                    <div class="milestone-desc">Almost there, keep pushing!</div>
+                                    <div class="milestone-reward">+100 XP</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+
+        <!-- ===== AI CHAT ASSISTANT ===== -->
+        <div class="ai-assistant">
+            <!-- Chat Widget Toggle Button -->
+            <button class="chat-toggle-btn btn-animated" id="chatToggle" aria-label="Open chat assistant">
+                <i class="fas fa-robot"></i>
+                <span class="btn-text">Study Assistant</span>
+                <span class="notification-dot" aria-hidden="true"></span>
+            </button>
+
+            <!-- Chat Window -->
+            <div class="chat-window" id="chatWindow" aria-hidden="true">
+                <div class="chat-header">
+                    <div class="chat-title">
+                        <i class="fas fa-robot" aria-hidden="true"></i>
+                        <div class="chat-info">
+                            <h4 class="chat-name">StudyBuddy AI</h4>
+                            <span class="status">Online • Ready to help</span>
+                        </div>
+                    </div>
+                    <button class="close-chat" id="closeChat" aria-label="Close chat">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Welcome message -->
+                    <div class="message ai-message">
+                        <div class="message-avatar" aria-hidden="true">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Hello! I can help you understand any topic from the syllabus. Just ask me about:</p>
+                            <ul>
+                                <li>📚 Detailed explanations of concepts</li>
+                                <li>🎯 Important topics for exams</li>
+                                <li>📊 Weightage of different chapters</li>
+                                <li>⏰ Study strategies for specific subjects</li>
+                            </ul>
+                            <p>What syllabus topic would you like to discuss?</p>
+                            <span class="message-time">Just now</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="quick-actions">
+                    <button class="quick-btn btn-animated" data-question="Explain kinematics concepts">
+                        🤔 Explain a topic
+                    </button>
+                    <button class="quick-btn btn-animated" data-question="What's important in organic chemistry?">
+                        🎯 Important topics
+                    </button>
+                    <button class="quick-btn btn-animated" data-question="Suggest study order for physics">
+                        📅 Study sequence
+                    </button>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Ask about any syllabus topic..." 
+                               maxlength="500" aria-label="Type your message">
+                        <button id="sendMessage" class="send-btn btn-animated" aria-label="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="input-hint">
+                        <span>Press Enter to send</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       <!-- ===== FOOTER ===== -->
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 class="footer-title">StudyBuddy</h3>
+                <p class="footer-description">
+                    AI-powered learning platform to help you achieve your academic goals faster and more efficiently.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+            <h3 class="footer-title">Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="index.html#features">Features</a></li>
+                    <li><a href="../Html Files/Dashboard.html">Dashboard</a></li>
+                    <li><a href="../Html Files/StudyTools.html">Study Tools</a></li>
+                    <li><a href="../Html Files/Settings.html">Settings</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Exams</h3>
+                <ul class="footer-links">
+                    <li><a href="#">JEE Main & Advanced</a></li>
+                    <li><a href="#">NEET UG</a></li>
+                    <li><a href="#">Foundation Courses</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Contact Us</h3>
+                <ul class="footer-links contact-info">
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>123 Education St, Learn City</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span>+1 234 567 8900</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <span>info@studybuddy.com</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Gemini Branding Section -->
+            <div class="footer-section">
+                <h3 class="footer-title">Powered By</h3>
+                <div class="gemini-branding">
+                    <div class="gemini-logo">
+                        <i class="fab fa-google"></i>
+                        <span>Google Gemini AI</span>
+                    </div>
+                    <p class="gemini-description">
+                        Advanced AI technology powering your learning experience
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="copyright">
+                <p>&copy; 2025 StudyBuddy. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+    </div>
+    <script src="/JsFiles/Dashboard.js"></script>   
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyBuddy - Study Tools & Time Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/CssFiles/Style.css">
+    <link rel="stylesheet" href="/CssFiles/StudyTools.css">
+    <link rel="icon" href="/Mediafiles/StudyBuddylogo.jpg" type="icon">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <div class="logo">
+                        <img src="/Mediafiles/StudyBuddylogo.jpg" alt="StudyBuddy Logo">
+                        <span class="brand-name">StudyBuddy</span>
+                    </div>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="../index.html" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="../index.html#features" class="nav-link">Features</a></li>
+                    <li class="nav-item"><a href="Dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li class="nav-item"><a href="StudyTools.html" class="nav-link active">Study Tools</a></li>
+                    <li class="nav-item"><a href="Settings.html" class="nav-link">Settings</a></li>
+                </ul>
+                <div class="nav-controls">
+                    <label class="theme-switch" for="theme-toggle" aria-label="Toggle dark mode">
+                        <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                        <span class="theme-slider">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                        </span>
+                    </label>
+                    <div class="auth-buttons">
+                        <button class="btn btn-primary" onclick="window.location.href='Login.html'">
+                            Login / Sign Up
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Study Tools Page Content -->
+    <section class="study-tools-section">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Study Tools & Time Management</h1>
+                <p class="page-subtitle">Maximize your productivity with AI-powered study tools and smart time management features</p>
+            </div>
+
+            <div class="tools-grid">
+                <!-- Pomodoro Timer -->
+                <div class="tool-card feature-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <h2>Pomodoro Timer</h2>
+                    </div>
+                    <div class="timer-container">
+                        <div class="timer-display" id="timer-display">25:00</div>
+                        <div class="timer-controls">
+                            <button class="timer-btn btn-primary" id="start-timer">
+                                <i class="fas fa-play"></i> Start
+                            </button>
+                            <button class="timer-btn btn-outline" id="pause-timer" disabled>
+                                <i class="fas fa-pause"></i> Pause
+                            </button>
+                            <button class="timer-btn btn-outline" id="reset-timer">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                        <div class="timer-sessions">
+                            <div class="session-dot active"></div>
+                            <div class="session-dot"></div>
+                            <div class="session-dot"></div>
+                            <div class="session-dot"></div>
+                        </div>
+                        <p class="session-info">
+                            Current Session: <span id="session-type">Study</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Goal Setting -->
+                <div class="tool-card feature-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h2>Daily Goals</h2>
+                    </div>
+                    <div class="goal-form">
+                        <div class="form-group">
+                            <label for="goal-title">Goal Title</label>
+                            <input type="text" id="goal-title" class="form-control" placeholder="e.g., Revise 2 chapters of Physics">
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-subject">Subject</label>
+                            <select id="goal-subject" class="form-control">
+                                <option value="">Select Subject</option>
+                                <option value="physics">Physics</option>
+                                <option value="chemistry">Chemistry</option>
+                                <option value="maths">Mathematics</option>
+                                <option value="biology">Biology</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="add-goal" style="width: 100%;">
+                            <i class="fas fa-plus"></i> Add Goal
+                        </button>
+                    </div>
+                    <div class="goals-list" id="goals-list">
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>No goals set yet. Add your first goal above!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Focus Mode -->
+                <div class="tool-card feature-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-crosshairs"></i>
+                        </div>
+                        <h2>Focus Mode</h2>
+                    </div>
+                    <div class="focus-controls">
+                        <button class="btn btn-primary" id="enable-focus">
+                            <i class="fas fa-eye"></i> Enable Focus Mode
+                        </button>
+                        <button class="btn btn-outline" id="block-distractions">
+                            <i class="fas fa-shield-alt"></i> Block Distractions
+                        </button>
+                        
+                        <div class="focus-stats">
+                            <div class="stat-card">
+                                <div class="stat-value" id="focus-time">0h 0m</div>
+                                <div class="stat-label">Today's Focus</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="focus-streak">0</div>
+                                <div class="stat-label">Day Streak</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Study Analytics -->
+                <div class="tool-card feature-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h2>Study Analytics</h2>
+                    </div>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="analytics-value">4.2h</div>
+                            <div class="analytics-label">Daily Average</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="analytics-value">87%</div>
+                            <div class="analytics-label">Productivity</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="analytics-value">12</div>
+                            <div class="analytics-label">Day Streak</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="analytics-value">15/20</div>
+                            <div class="analytics-label">Goals Completed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Study Sessions -->
+                <div class="tool-card feature-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h2>Quick Sessions</h2>
+                    </div>
+                    <div class="session-buttons">
+                        <button class="session-btn btn-primary" data-minutes="25">
+                            <i class="fas fa-bolt"></i> 25min Focus
+                        </button>
+                        <button class="session-btn btn-primary" data-minutes="45">
+                            <i class="fas fa-gem"></i> 45min Deep Work
+                        </button>
+                        <button class="session-btn btn-outline" data-minutes="15">
+                            <i class="fas fa-running"></i> 15min Review
+                        </button>
+                        <button class="session-btn btn-outline" data-minutes="60">
+                            <i class="fas fa-mountain"></i> 1hr Marathon
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Study Breaks -->
+                <div class="tool-card feature-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-coffee"></i>
+                        </div>
+                        <h2>Smart Breaks</h2>
+                    </div>
+                    <div class="break-buttons">
+                        <button class="break-btn btn-outline">
+                            <i class="fas fa-walking"></i> 5min Walk
+                        </button>
+                        <button class="break-btn btn-outline">
+                            <i class="fas fa-eye"></i> 20-20-20 Rule
+                        </button>
+                        <button class="break-btn btn-outline" id="relaxing-music">
+                            <i class="fas fa-music"></i> Relaxing Music
+                        </button>
+                        <button class="break-btn btn-outline">
+                            <i class="fas fa-brain"></i> Mindfulness
+                        </button>
+                    </div>
+                    <div class="break-info">
+                        <p>Next break in: <strong id="next-break">25 minutes</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <iframe
+    id="lofi-player"
+    width="0"
+    height="0"
+    src="https://www.youtube.com/embed/n61ULEU7CO0?start=0&autoplay=1&loop=1&playlist=n61ULEU7CO0"
+    frameborder="0"
+    allow="autoplay"
+    allowfullscreen
+></iframe>
+
+    </section>
+
+    <!-- ===== AI CHAT ASSISTANT ===== -->
+    <div class="ai-assistant">
+        <button class="chat-toggle-btn" id="chatToggle" aria-label="Open chat assistant">
+            <i class="fas fa-robot"></i>
+            <span class="btn-text">Study Assistant</span>
+            <span class="notification-dot" aria-hidden="true"></span>
+        </button>
+
+        <div class="chat-window" id="chatWindow" aria-hidden="true">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <i class="fas fa-robot" aria-hidden="true"></i>
+                    <div class="chat-info">
+                        <h4 class="chat-name">StudyBuddy AI</h4>
+                        <span class="status">Online • Ready to help</span>
+                    </div>
+                </div>
+                <button class="close-chat" id="closeChat" aria-label="Close chat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    <div class="message-avatar" aria-hidden="true">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I can help you with study techniques, time management, and productivity tips. How can I assist you today?</p>
+                        <span class="message-time">Just now</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-btn" data-question="Best Pomodoro techniques">
+                    ⏱️ Pomodoro Tips
+                </button>
+                <button class="quick-btn" data-question="How to stay focused">
+                    🎯 Focus Strategies
+                </button>
+                <button class="quick-btn" data-question="Study break ideas">
+                    ☕ Break Suggestions
+                </button>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Ask about study techniques or time management..." 
+                           maxlength="500" aria-label="Type your message">
+                    <button id="sendMessage" class="send-btn" aria-label="Send message">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    <span>Press Enter to send</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 class="footer-title">StudyBuddy</h3>
+                <p class="footer-description">
+                    AI-powered learning platform to help you achieve your academic goals faster and more efficiently.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="/templates/index.html#deatures">Features</a></li>
+                    <li><a href="Dashboard.html">Dashboard</a></li>
+                    <li><a href="StudyTools.html">Study Tools</a></li>
+                    <li><a href="Settings.html">Settings</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Exams</h3>
+                <ul class="footer-links">
+                    <li><a href="#">JEE Main & Advanced</a></li>
+                    <li><a href="#">NEET UG</a></li>
+                    <li><a href="#">Foundation Courses</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Contact Us</h3>
+                <ul class="footer-links contact-info">
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>123 Education St, Learn City</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span>+1 234 567 8900</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <span>info@studybuddy.com</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Gemini Branding Section - Moved INSIDE the footer-content grid -->
+            <div class="footer-section">
+                <h3 class="footer-title">Powered By</h3>
+                <div class="gemini-branding">
+                    <div class="gemini-logo">
+                        <i class="fab fa-google"></i>
+                        <span>Google Gemini AI</span>
+                    </div>
+                    <p class="gemini-description">
+                        Advanced AI technology powering your learning experience
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="copyright">
+                <p>&copy; 2025 StudyBuddy. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <script src="/JsFiles/Script.js"></script>
+    <script src="/JsFiles/StudyTools.js"></script>
+</body>
+</html>

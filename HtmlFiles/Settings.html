@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyBuddy - Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="icon" href="../Media files/StudyBuddylogo.jpg">
+    <link rel="stylesheet" href="/CssFiles/Settings.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <a href="../index.html" class="logo">
+                        <img src="../Mediafiles/StudyBuddylogo.jpg" alt="StudyBuddy Logo">
+                        <span class="brand-name">StudyBuddy</span>
+                    </a>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../index.html" class="nav-link">
+                            Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../index.html#features" class="nav-link">
+                            Features
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Dashboard.html" class="nav-link">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="StudyTools.html" class="nav-link">
+                            Study Tools
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Settings.html" class="nav-link active">
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="nav-controls">
+                    <label class="theme-switch" for="theme-toggle" aria-label="Toggle dark mode">
+                        <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                        <span class="theme-slider">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                        </span>
+                    </label>
+                    
+                    <div class="auth-buttons">
+                        <button class="btn btn-primary btn-animated" onclick="window.location.href='Login.html'">
+                            Login / Sign Up
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Settings Page -->
+    <section class="settings-page">
+        <div class="container">
+            <div class="settings-container">
+                <div class="settings-header">
+                    <h1>Account Settings</h1>
+                    <p>Manage your profile, preferences, and account settings</p>
+                </div>
+                
+                <div class="profile-section interactive">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h3>Rahul Sharma</h3>
+                        <p>
+                            <i class="fas fa-graduation-cap"></i>
+                            JEE Aspirant | Class 12
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="settings-grid">
+                    <!-- Personal Information -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-user"></i> Personal Information</h2>
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" class="form-control" value="Rahul Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control" value="rahul.sharma@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" class="form-control" value="+91 98765 43210">
+                        </div>
+                        <div class="form-group">
+                            <label for="class">Class/Grade</label>
+                            <select id="class" class="select-control">
+                                <option value="11">Class 11</option>
+                                <option value="12" selected>Class 12</option>
+                                <option value="dropper">Dropper</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Exam Preferences -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-graduation-cap"></i> Exam Preferences</h2>
+                        <div class="form-group">
+                            <label for="examType">Exam Type</label>
+                            <select id="examType" class="select-control">
+                                <option value="jee" selected>JEE (Main & Advanced)</option>
+                                <option value="neet">NEET UG</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="language">Preferred Language</label>
+                            <select id="language" class="select-control">
+                                <option value="english" selected>English</option>
+                                <option value="hindi">Hindi</option>
+                                <option value="bengali">Bengali</option>
+                                <option value="tamil">Tamil</option>
+                                <option value="telugu">Telugu</option>
+                                <option value="marathi">Marathi</option>
+                            </select>
+                        </div>
+                        <div class="checkbox-group interactive">
+                            <input type="checkbox" id="notifications" checked>
+                            <label for="notifications">Enable study reminders and notifications</label>
+                        </div>
+                        <div class="checkbox-group interactive">
+                            <input type="checkbox" id="weeklyReport" checked>
+                            <label for="weeklyReport">Send weekly progress report via email</label>
+                        </div>
+                        <div class="checkbox-group interactive">
+                            <input type="checkbox" id="aiRecommendations" checked>
+                            <label for="aiRecommendations">Enable AI-based topic recommendations</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Study Preferences -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-book-open"></i> Study Preferences</h2>
+                        <div class="form-group">
+                            <label for="dailyGoal">Daily Study Goal (hours)</label>
+                            <input type="number" id="dailyGoal" class="form-control" min="1" max="12" value="4">
+                        </div>
+                        <div class="form-group">
+                            <label for="pomodoroDuration">Pomodoro Session Duration (minutes)</label>
+                            <input type="number" id="pomodoroDuration" class="form-control" min="15" max="60" value="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="breakDuration">Break Duration (minutes)</label>
+                            <input type="number" id="breakDuration" class="form-control" min="5" max="30" value="5">
+                        </div>
+                        <div class="checkbox-group interactive">
+                            <input type="checkbox" id="distractionFree" checked>
+                            <label for="distractionFree">Enable distraction-free study mode</label>
+                        </div>
+                        <div class="checkbox-group interactive">
+                            <input type="checkbox" id="autoPause" checked>
+                            <label for="autoPause">Auto-pause timer when inactive</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Security -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-shield-alt"></i> Account Security</h2>
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password">
+                        </div>
+                        <div class="settings-actions">
+                            <button class="btn btn-secondary btn-animated" id="cancelBtn">
+                                <i class="fas fa-times"></i>
+                                Cancel
+                            </button>
+                            <button class="btn btn-success btn-animated" id="saveBtn">
+                                <i class="fas fa-save"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+       <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">StudyBuddy</h3>
+                    <p class="footer-description">
+                        AI-powered learning platform to help you achieve your academic goals faster and more efficiently.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="../index.html#features">Features</a></li>
+                        <li><a href="Dashboard.html">Dashboard</a></li>
+                        <li><a href="StudyTools.html">Study Tools</a></li>
+                        <li><a href="Settings.html">Settings</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Exams</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">JEE Main & Advanced</a></li>
+                        <li><a href="#">NEET UG</a></li>
+                        <li><a href="#">Foundation Courses</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Contact Us</h3>
+                    <ul class="footer-links contact-info">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>123 Education St, Learn City</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>+1 234 567 8900</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>info@studybuddy.com</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Gemini Branding Section - Added Here -->
+                <div class="footer-section">
+                    <h3 class="footer-title">Powered By</h3>
+                    <div class="gemini-branding">
+                        <div class="gemini-logo">
+                            <i class="fab fa-google"></i>
+                            <span>Google Gemini AI</span>
+                        </div>
+                        <p class="gemini-description">
+                            Advanced AI technology powering your learning experience
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="copyright">
+                    <p>&copy; 2025 StudyBuddy. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+<script src="JsFiles/Settings.js"></script>
+</body>
+</html>

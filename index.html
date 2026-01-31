@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyBuddy - AI-Powered JEE & NEET Prep</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="../Media files/StudyBuddylogo.jpg" type="image/jpg">
+    <link rel="stylesheet" href="../CssFiles/Style.css"> 
+</head>
+<body>
+    <!-- ===== LOADING SCREEN ===== -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <img src="../Mediafiles/StudyBuddylogo.jpg" alt="StudyBuddy Logo">
+                <span class="logo-text">StudyBuddy</span>
+            </div>
+            <div class="loading-animation">
+                <div class="loading-book">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                
+                <div class="loading-text-content">
+                    <h2 class="loading-text">Preparing Your AI Learning Journey</h2>
+                    <p class="loading-subtext">Loading personalized study materials...</p>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <div class="loading-stats">
+                    <div class="stat">
+                        <div class="stat-number" id="loadedPercent">0%</div>
+                        <div class="stat-label">Loaded</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">AI</div>
+                        <div class="stat-label">Ready</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Focused</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content" id="mainContent">
+        
+        <!-- ===== HEADER ===== -->
+        <header class="main-header">
+            <div class="container">
+                <nav class="navbar">
+                    <div class="nav-brand">
+                        <div class="logo">
+                            <img src="../Mediafiles/StudyBuddylogo.jpg" alt="StudyBuddy Logo">
+                            <span class="brand-name">StudyBuddy</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="../index.html" class="nav-link active">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="index.html#features" class="nav-link">Features</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="HtmlFiles/Dashboard.html" class="nav-link">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="HtmlFiles/StudyTools.html" class="nav-link">Study Tools</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="HtmlFiles/Settings.html" class="nav-link">Settings</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="nav-controls">
+                        <div class="notification-btn" id="notificationBtn" title="Notifications">
+  <i class="fas fa-bell" id="notify-bell-icon"></i>
+  <span class="notification-dot" id="notificationDot"></span>
+</div>
+
+                        <label class="theme-switch" for="theme-toggle" aria-label="Toggle dark mode">
+                            <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                            <span class="theme-slider">
+                                <i class="fas fa-sun"></i>
+                                <i class="fas fa-moon"></i>
+                            </span>
+                        </label>
+                        
+                        <div class="auth-buttons">
+                            <button class="btn btn-primary btn-animated" onclick="window.location.href='HtmlFiles/Login.html'"">
+                                Login / Sign Up
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <!-- ===== HERO SECTION ===== -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            AI-Powered <span class="highlight">JEE & NEET</span> Prep
+                        </h1>
+                        
+                        <div class="typing-container">
+                            <span class="type-text" id="type-text"></span>
+                            <span class="cursor">|</span>
+                        </div>
+                        
+                        <p class="hero-description">
+                            Crack JEE & NEET with your AI-powered exam coach.
+                            Personalized guidance, real-time progress tracking, and smarter time management to help you stay ahead.
+                        </p>
+                        
+                        <div class="exam-selection">
+                            <button class="exam-btn jee-btn btn-animated" data-exam="jee">
+                                <i class="fas fa-calculator"></i>
+                                <span>Prepare for JEE</span>
+                            </button>
+                            <button class="exam-btn neet-btn btn-animated" data-exam="neet">
+                                <i class="fas fa-dna"></i>
+                                <span>Prepare for NEET</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-visual">
+                        <div class="hero-placeholder floating-animation">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Personal Diary Section -->
+        <section class="personal-diary" id="personal-diary">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Personal Diary</h2>
+                    <p class="section-subtitle">Track your daily study journey, moods, and progress</p>
+                </div>
+                
+                <div class="diary-container">
+                    <div class="diary-sidebar">
+                        <div class="diary-feature interactive-feature">
+                            <h3>
+                                <div class="feature-icon">🔥</div>
+                                Study Streaks
+                            </h3>
+                            <p>Maintain consistency with your study routine</p>
+                            <div class="streak-container">
+                                <div class="streak-count" id="streak-count">7</div>
+                                <div class="streak-label">days in a row!</div>
+                            </div>
+                            <button class="btn btn-primary btn-animated" id="reset-streak" style="margin-top: 10px; width: 100%;">Reset Streak</button>
+                        </div>
+                        
+                        <div class="diary-feature interactive-feature">
+                            <h3>
+                                <div class="feature-icon">🔔</div>
+                                SMS Alerts
+                            </h3>
+                            <p>Get reminders and motivational messages</p>
+                            <div class="alert-settings">
+                                <div class="alert-item">
+                                    <span>Study Reminders</span>
+                                    <span class="alert-status" id="reminder-status">Active</span>
+                                </div>
+                                <div class="alert-item">
+                                    <span>Progress Updates</span>
+                                    <span class="alert-status" id="progress-status">Active</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-animated" id="toggle-alerts" style="margin-top: 10px; width: 100%;">Toggle Alerts</button>
+                        </div>
+                        
+                        <div class="diary-feature interactive-feature">
+                            <h3>
+                                <div class="feature-icon">📊</div>
+                                Progress Graph
+                            </h3>
+                            <p>Visualize your improvement over time</p>
+                            <div class="progress-graph">
+                                <div class="graph-placeholder" id="progress-graph">
+                                    Study Hours This Week
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-animated" id="update-graph" style="margin-top: 10px; width: 100%;">Update Graph</button>
+                        </div>
+                    </div>
+                    
+                    <div class="diary-main">
+                        <div class="diary-entry interactive-feature">
+                            <div class="entry-header">
+                                <div class="entry-date">Today</div>
+                                <div class="entry-mood">
+                                    <div class="mood-option mood-happy active" data-mood="happy"></div>
+                                    <div class="mood-option mood-neutral" data-mood="neutral"></div>
+                                    <div class="mood-option mood-sad" data-mood="sad"></div>
+                                </div>
+                            </div>
+                            <textarea class="entry-content" id="today-entry" placeholder="How did your study session go today? What did you accomplish? Any challenges you faced?">Completed two chapters of Physics today. Feeling good about my progress!</textarea>
+                            <div class="entry-actions">
+                                <button class="save-btn btn-animated" id="save-entry">Save Entry</button>
+                            </div>
+                        </div>
+                        
+                        <div class="diary-entry interactive-feature">
+                            <div class="entry-header">
+                                <div class="entry-date">Yesterday</div>
+                                <div class="entry-mood">
+                                    <div class="mood-option mood-happy" data-mood="happy"></div>
+                                    <div class="mood-option mood-neutral active" data-mood="neutral"></div>
+                                    <div class="mood-option mood-sad" data-mood="sad"></div>
+                                </div>
+                            </div>
+                            <textarea class="entry-content" readonly>Focused on Mathematics revision. Solved practice problems for 2 hours.</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FEATURES SECTION ===== -->
+        <section id="features" class="features-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Why Choose StudyBuddy?</h2>
+                    <p class="section-subtitle">
+                        Our AI-powered platform adapts to your learning style and helps you achieve better results faster.
+                    </p>
+                </div>
+                
+                <div class="features-grid">
+                    <article class="feature-card interactive-feature">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon diagnosis-icon">
+                                <i class="fas fa-stethoscope"></i>
+                            </div>
+                        </div>
+                        <h3 class="feature-title">Weak Topic Diagnosis</h3>
+                        <p class="feature-description">
+                            AI identifies your weak areas in real-time and creates personalized study plans to strengthen them.
+                        </p>
+                        <button class="btn btn-primary btn-animated" style="margin-top: 15px; width: 100%;">Try Diagnosis</button>
+                    </article>
+                    
+                    <article class="feature-card interactive-feature">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon progress-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <h3 class="feature-title">Progress Tracking</h3>
+                        <p class="feature-description">
+                            Monitor your improvement with detailed analytics and performance insights tailored for JEE/NEET.
+                        </p>
+                        <button class="btn btn-primary btn-animated" style="margin-top: 15px; width: 100%;">View Progress</button>
+                    </article>
+                    
+                    <article class="feature-card interactive-feature">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon time-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <h3 class="feature-title">Time Management</h3>
+                        <p class="feature-description">
+                            Smart scheduling and Pomodoro timers to maximize your study efficiency and minimize distractions.
+                        </p>
+                        <button class="btn btn-primary btn-animated" style="margin-top: 15px; width: 100%;">Set Timer</button>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== AI CHAT ASSISTANT ===== -->
+        <div class="ai-assistant">
+            <!-- Chat Widget Toggle Button -->
+            <button class="chat-toggle-btn btn-animated" id="chatToggle" aria-label="Open chat assistant">
+                <i class="fas fa-robot"></i>
+                <span class="btn-text">Study Assistant</span>
+                <span class="notification-dot" aria-hidden="true"></span>
+            </button>
+
+            <!-- Chat Window -->
+            <div class="chat-window" id="chatWindow" aria-hidden="true">
+                <div class="chat-header">
+                    <div class="chat-title">
+                        <i class="fas fa-robot" aria-hidden="true"></i>
+                        <div class="chat-info">
+                            <h4 class="chat-name">StudyBuddy AI</h4>
+                            <span class="status">Online • Ready to help</span>
+                        </div>
+                    </div>
+                    <button class="close-chat" id="closeChat" aria-label="Close chat">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Welcome message -->
+                    <div class="message ai-message">
+                        <div class="message-avatar" aria-hidden="true">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Hello! I'm your AI study assistant. I can help you with:</p>
+                            <ul>
+                                <li>📚 Explaining difficult concepts</li>
+                                <li>🎯 Solving practice problems</li>
+                                <li>📊 Study plan suggestions</li>
+                                <li>⏰ Time management tips</li>
+                            </ul>
+                            <p>What would you like to know today?</p>
+                            <span class="message-time">Just now</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="quick-actions">
+                    <button class="quick-btn btn-animated" data-question="Explain quantum physics basics">
+                        🤔 Explain a concept
+                    </button>
+                    <button class="quick-btn btn-animated" data-question="Solve this integration problem">
+                        🧮 Solve a problem
+                    </button>
+                    <button class="quick-btn btn-animated" data-question="Suggest study schedule for JEE">
+                        📅 Study plan help
+                    </button>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Ask me anything about JEE/NEET preparation..." 
+                               maxlength="500" aria-label="Type your message">
+                        <button id="sendMessage" class="send-btn btn-animated" aria-label="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="input-hint">
+                        <span>Press Enter to send</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 class="footer-title">StudyBuddy</h3>
+                <p class="footer-description">
+                    AI-powered learning platform to help you achieve your academic goals faster and more efficiently.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+            <h3 class="footer-title">Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="index.html#features">Features</a></li>
+                    <li><a href="HtmlFiles/Dashboard.html">Dashboard</a></li>
+                    <li><a href="HtmlFiles/StudyTools.html">Study Tools</a></li>
+                    <li><a href="HtmlFiles/Settings.html">Settings</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Exams</h3>
+                <ul class="footer-links">
+                    <li><a href="#">JEE Main & Advanced</a></li>
+                    <li><a href="#">NEET UG</a></li>
+                    <li><a href="#">Foundation Courses</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Contact Us</h3>
+                <ul class="footer-links contact-info">
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>123 Education St, Learn City</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span>+1 234 567 8900</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <span>info@studybuddy.com</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Gemini Branding Section -->
+            <div class="footer-section">
+                <h3 class="footer-title">Powered By</h3>
+                <div class="gemini-branding">
+                    <div class="gemini-logo">
+                        <i class="fab fa-google"></i>
+                        <span>Google Gemini AI</span>
+                    </div>
+                    <p class="gemini-description">
+                        Advanced AI technology powering your learning experience
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="copyright">
+                <p>&copy; 2025 StudyBuddy. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="/JsFiles/Script.js"></script>
+</body>
+</html>

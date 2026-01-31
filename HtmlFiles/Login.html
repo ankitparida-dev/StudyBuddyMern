@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Sign Up</title>
+  <link rel="stylesheet" href="/CssFiles/Login.css">
+  <link rel="image" href="Mediafiles/StudyBuddylogo.jpg" type="icon">
+</head>
+<body>
+  <div class="container" id="container">
+    
+    <div class="form-container sign-in-container">
+      <form id="login-form">
+        <h1>Welcome Back!</h1>
+        <input type="email" placeholder="Email" required id="login-email">
+        
+        <input type="password" placeholder="Password" required id="login-password" minlength="8" maxlength = "16">
+        
+        <button type="submit">Sign In</button>
+        <p class="switch-text">Don't have an account yet? <span id="goSignUp">Sign Up</span></p>
+      </form>
+    </div>
+
+    <div class="form-container sign-up-container">
+      <form id="register-form">
+        <h1>Create Account</h1>
+        <input type="text" placeholder="First Name" required id="register-first-name" />
+        <input type="text" placeholder="Last Name" required id="register-last-name" />
+        <input type="email" placeholder="Email" required id="register-email" />
+        <input type="password" placeholder="Password" required id="register-password" />
+
+        <p class="status-title">Select Your Status:</p>
+        <div class="status-options">
+          <input type="radio" id="class11" name="status" value="Class 11" required>
+          <label for="class11">Class 11</label>
+          <input type="radio" id="class12" name="status" value="Class 12">
+          <label for="class12">Class 12</label>
+          <input type="radio" id="dropper" name="status" value="Dropper">
+          <label for="dropper">Dropper</label>
+        </div>
+
+        <p class="status-title">Select Your Exam:</p>
+        <div class="status-options">
+          <input type="radio" id="exam-jee" name="exam_type" value="JEE" required>
+          <label for="exam-jee">JEE</label>
+          <input type="radio" id="exam-neet" name="exam_type" value="NEET">
+          <label for="exam-neet">NEET</label>
+        </div>
+        
+        <button type="submit" class="SignUp">Sign Up</button>
+      </form>
+    </div>
+
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <h1>Hello, Friend!</h1>
+          <p>Enter your personal details and start your journey with us</p>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <h1>Welcome to StudyBuddy</h1>
+          <p>Enter your personal details and start your journey with us</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/JsFiles/Login.js"></script>
+</body>
+</html>
