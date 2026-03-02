@@ -1,0 +1,229 @@
+/* Hero Section */
+.hero-section {
+    padding: 100px 0;
+    background: var(--gradient);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="rgba(255,255,255,0.1)"></path></svg>');
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+    width: 100%;
+}
+
+.hero-text {
+    text-align: left;
+    width: 100%;
+}
+
+.hero-title {
+    font-size: 3.2rem;
+    margin-bottom: 20px;
+    font-weight: 800;
+    line-height: 1.2;
+    word-wrap: break-word;
+}
+
+.highlight {
+    color: #ffd166;
+}
+
+.typing-container {
+    min-height: 60px;
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.type-text {
+    color: #ffd166;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    word-wrap: break-word;
+}
+
+.cursor {
+    display: inline-block;
+    width: 3px;
+    background-color: #ffd166;
+    margin-left: 2px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.hero-description {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+    line-height: 1.6;
+    max-width: 600px;
+}
+
+.exam-selection {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.exam-btn {
+    padding: 15px 30px;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+.jee-btn {
+    background: var(--jee-color);
+    color: white;
+}
+
+.neet-btn {
+    background: var(--neet-color);
+    color: white;
+}
+
+.exam-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.hero-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.hero-placeholder {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.hero-placeholder i {
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .hero-title {
+        font-size: 2.8rem;
+    }
+    
+    .typing-container {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 60px 0;
+    }
+
+    .hero-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 30px;
+    }
+
+    .hero-text {
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .typing-container {
+        font-size: 2rem;
+        min-height: 50px;
+        justify-content: center;
+    }
+
+    .hero-description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .exam-selection {
+        justify-content: center;
+    }
+
+    .hero-placeholder {
+        height: 250px;
+        max-width: 350px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .typing-container {
+        font-size: 1.5rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .exam-btn {
+        width: 100%;
+        justify-content: center;
+        white-space: normal;
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+
+    .hero-placeholder {
+        height: 200px;
+        max-width: 280px;
+    }
+
+    .hero-placeholder i {
+        font-size: 4rem;
+    }
+}

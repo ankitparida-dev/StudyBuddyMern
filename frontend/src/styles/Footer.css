@@ -1,0 +1,297 @@
+/* Footer Styles */
+.main-footer {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 60px 0 30px;
+    margin-top: 80px;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+    gap: 40px;
+    margin-bottom: 40px;
+    align-items: start;
+    width: 100%;
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.footer-title {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+    color: #f8fafc;
+    font-weight: 600;
+    word-wrap: break-word;
+}
+
+.footer-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary);
+}
+
+.footer-description {
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    word-wrap: break-word;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    display: inline-block;
+    word-wrap: break-word;
+}
+
+.footer-links a:hover {
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+.contact-info {
+    list-style: none;
+    padding: 0;
+}
+
+.contact-info li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.contact-info i {
+    width: 16px;
+    color: var(--primary);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: #f8fafc;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.social-link:hover {
+    background: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+}
+
+/* Gemini Branding */
+.gemini-branding {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border-left: 4px solid #4285f4;
+    transition: all 0.3s ease;
+    height: fit-content;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gemini-branding:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(66, 133, 244, 0.2);
+}
+
+.gemini-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.gemini-logo i {
+    color: #4285f4;
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.gemini-branding:hover .gemini-logo i {
+    transform: scale(1.1);
+}
+
+.gemini-logo span {
+    font-weight: 700;
+    color: #4285f4;
+    font-size: 1.2rem;
+    word-wrap: break-word;
+    text-align: center;
+}
+
+.gemini-description {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    margin: 0;
+    line-height: 1.5;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 30px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.copyright {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    word-wrap: break-word;
+}
+
+/* Dark Mode */
+.dark-mode .main-footer {
+    background: #0f172a;
+}
+
+.dark-mode .footer-links a {
+    color: #94a3b8;
+}
+
+.dark-mode .copyright {
+    color: #64748b;
+}
+
+.dark-mode .gemini-branding {
+    background: rgba(255, 255, 255, 0.08);
+    border-left-color: #4285f4;
+}
+
+.dark-mode .gemini-branding:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .footer-content {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-footer {
+        padding: 40px 0 20px;
+        margin-top: 60px;
+    }
+
+    .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+
+    .footer-title::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .contact-info li {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .gemini-logo {
+        flex-direction: row;
+        gap: 10px;
+    }
+    
+    .gemini-branding {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .footer-section {
+        text-align: center;
+    }
+
+    .footer-links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .contact-info li {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .gemini-logo {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .footer-title::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}

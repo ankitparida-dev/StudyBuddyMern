@@ -1,0 +1,114 @@
+/* Features Section */
+.features-section {
+    padding: 80px 0;
+    background: var(--light);
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    width: 100%;
+}
+
+.feature-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 40px 30px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon-wrapper {
+    margin-bottom: 25px;
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: white;
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.diagnosis-icon {
+    background: var(--diagnosis-color);
+}
+
+.progress-icon {
+    background: var(--progress-color);
+}
+
+.time-icon {
+    background: var(--time-color);
+}
+
+.feature-title {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--dark);
+    font-weight: 600;
+    word-wrap: break-word;
+}
+
+.feature-description {
+    color: var(--secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    word-wrap: break-word;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .features-section {
+        padding: 60px 0;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .feature-card {
+        padding: 30px 20px;
+    }
+
+    .feature-title {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .features-section {
+        padding: 40px 0;
+    }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
+    }
+}

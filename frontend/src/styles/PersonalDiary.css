@@ -1,0 +1,392 @@
+/* Personal Diary Section */
+.personal-diary {
+    padding: 80px 0;
+    background: var(--sky-light);
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.diary-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.diary-sidebar,
+.diary-main {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.diary-feature {
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.diary-feature:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.diary-feature h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    color: var(--dark);
+    font-size: 1.3rem;
+    font-weight: 600;
+    flex-wrap: wrap;
+}
+
+.feature-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* Study Streaks - Using Progress Tracking color (blue) */
+.diary-feature:nth-child(1) .feature-icon {
+    background: var(--progress-color);
+}
+
+/* SMS Alerts - Using Time Management color (green) */
+.diary-feature:nth-child(2) .feature-icon {
+    background: var(--time-color);
+}
+
+/* Progress Graph - Using Weak Topic Diagnosis color (red) */
+.diary-feature:nth-child(3) .feature-icon {
+    background: var(--diagnosis-color);
+}
+
+.streak-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+    padding: 15px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 10px;
+    border-left: 4px solid var(--progress-color);
+    flex-wrap: wrap;
+}
+
+.streak-count {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--progress-color);
+}
+
+.streak-label {
+    color: var(--secondary);
+    font-weight: 500;
+}
+
+.alert-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.alert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.alert-item:last-child {
+    border-bottom: none;
+}
+
+.alert-status {
+    color: var(--time-color);
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.progress-graph {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--diagnosis-color);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.graph-placeholder {
+    height: 120px;
+    background: linear-gradient(135deg, var(--sky-light) 0%, #e6e9ff 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 10px;
+    word-wrap: break-word;
+}
+
+.diary-entry {
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.diary-entry:hover {
+    transform: translateY(-2px);
+}
+
+.diary-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.entry-date {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 1.1rem;
+}
+
+.entry-mood {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mood-option {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+}
+
+.mood-option:hover {
+    transform: scale(1.1);
+}
+
+.mood-option.active {
+    opacity: 1;
+    transform: scale(1.2);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.mood-happy {
+    background-color: var(--time-color);
+}
+
+.mood-neutral {
+    background-color: var(--warning);
+}
+
+.mood-sad {
+    background-color: var(--diagnosis-color);
+}
+
+.entry-content {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    box-sizing: border-box;
+}
+
+.entry-content:focus {
+    outline: none;
+    border-color: var(--progress-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.entry-content:read-only {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: var(--secondary);
+}
+
+.entry-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.save-btn {
+    background: var(--progress-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.save-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Dark Mode Styles */
+.dark-mode .diary-sidebar,
+.dark-mode .diary-main {
+    background: var(--card-bg);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .diary-feature {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .diary-entry {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .entry-content {
+    background: #334155;
+    border-color: #475569;
+    color: white;
+}
+
+.dark-mode .entry-content:read-only {
+    background: #1e293b;
+    color: #94a3b8;
+}
+
+.dark-mode .progress-graph {
+    background: #334155;
+    border-color: #475569;
+    border-left-color: var(--diagnosis-color);
+}
+
+.dark-mode .graph-placeholder {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #94a3b8;
+}
+
+.dark-mode .streak-container {
+    background: rgba(37, 99, 235, 0.2);
+    border-left-color: var(--progress-color);
+}
+
+.dark-mode .alert-status {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--time-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .diary-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .diary-sidebar,
+    .diary-main {
+        padding: 20px;
+    }
+    
+    .diary-feature h3 {
+        font-size: 1.1rem;
+    }
+    
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .entry-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .entry-mood {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .personal-diary {
+        padding: 40px 0;
+    }
+
+    .streak-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .alert-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .entry-mood {
+        align-self: center;
+    }
+
+    .save-btn {
+        width: 100%;
+        white-space: normal;
+    }
+
+    .alert-status {
+        white-space: normal;
+    }
+}

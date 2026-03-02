@@ -1,0 +1,36 @@
+/* Import all CSS files */
+@import './App.css';
+@import './components/Header.css';
+@import './components/Footer.css';
+@import './components/LoadingScreen.css';
+@import './components/HeroSection.css';
+@import './components/FeaturesSection.css';
+@import './components/PersonalDiary.css';
+@import './components/ChatAssistant.css';
+
+/* Additional global styles */
+html {
+    scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+::selection {
+    background: var(--primary);
+    color: white;
+}
