@@ -11,10 +11,19 @@
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    color: white;
+    color: white !important; /* Force white text */
     text-align: center;
     transition: opacity 0.5s ease;
     overflow: hidden;
+}
+
+/* Force all text inside loading screen to be white */
+.loading-screen * {
+    color: white !important;
+}
+
+.loading-screen i {
+    color: white !important;
 }
 
 .loading-screen.hidden {
@@ -53,6 +62,7 @@
     font-size: 32px;
     font-weight: bold;
     word-wrap: break-word;
+    color: white !important;
 }
 
 .loading-animation {
@@ -68,6 +78,10 @@
     animation: pulse 2s infinite;
 }
 
+.loading-book i {
+    color: white !important;
+}
+
 .loading-text-content {
     text-align: center;
     width: 100%;
@@ -78,12 +92,14 @@
     font-weight: 600;
     margin-bottom: 10px;
     word-wrap: break-word;
+    color: white !important;
 }
 
 .loading-subtext {
     font-size: 16px;
     opacity: 0.9;
     word-wrap: break-word;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .progress-container {
@@ -98,7 +114,7 @@
 
 .progress-bar {
     height: 100%;
-    background-color: white;
+    background-color: white !important;
     width: 0%;
     border-radius: 4px;
     transition: width 0.3s ease;
@@ -121,11 +137,30 @@
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 5px;
+    color: white !important;
 }
 
 .stat-label {
     font-size: 14px;
     opacity: 0.8;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* Override any dark mode styles */
+.dark-mode .loading-screen,
+.dark-mode .loading-screen * {
+    color: white !important;
+}
+
+.dark-mode .loading-screen {
+    background: linear-gradient(135deg, #4a6cf7, #6a11cb) !important;
 }
 
 /* Responsive */
