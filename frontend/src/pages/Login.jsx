@@ -4,6 +4,8 @@ import '../styles/Login.css';
 
 const Login = () => {
   const [isRightPanelActive, setIsRightPanelActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   // Login form state
@@ -30,11 +32,82 @@ const Login = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  // Validation functions
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const validatePassword = (password) => {
+    return password.length >= 8;
+  };
+
+  const validateLoginForm = () => {
+    const newErrors = {};
+    
+    if (!loginData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(loginData.email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    
+    if (!loginData.password) {
+      newErrors.password = 'Password is required';
+    } else if (!validatePassword(loginData.password)) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateRegisterForm = () => {
+    const newErrors = {};
+    
+    if (!registerData.firstName) {
+      newErrors.firstName = 'First name is required';
+    } else if (registerData.firstName.length < 2) {
+      newErrors.firstName = 'First name must be at least 2 characters';
+    }
+    
+    if (!registerData.lastName) {
+      newErrors.lastName = 'Last name is required';
+    } else if (registerData.lastName.length < 2) {
+      newErrors.lastName = 'Last name must be at least 2 characters';
+    }
+    
+    if (!registerData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(registerData.email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    
+    if (!registerData.password) {
+      newErrors.password = 'Password is required';
+    } else if (!validatePassword(registerData.password)) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    
+    if (!registerData.currentGrade) {
+      newErrors.currentGrade = 'Please select your status';
+    }
+    
+    if (!registerData.examType) {
+      newErrors.examType = 'Please select your exam type';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleLoginChange = (e) => {
     setLoginData({
       ...loginData,
       [e.target.name]: e.target.value
     });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: null });
+    }
   };
 
   const handleRegisterChange = (e) => {
@@ -42,53 +115,49 @@ const Login = () => {
       ...registerData,
       [e.target.name]: e.target.value
     });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: null });
+    }
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    if (!validateLoginForm()) return;
+    setIsLoading(true);
     
     try {
       const response = await fetch('http://127.0.0.1:5000/api/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: loginData.email,
-          password: loginData.password,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         showNotification('Login successful! Redirecting...');
-        localStorage.setItem('user_id', data.user_id);
-        localStorage.setItem('user_email', loginData.email);
-        setTimeout(() => navigate('/'), 1500);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setTimeout(() => navigate('/dashboard'), 1500);
       } else {
-        showNotification(`Login failed: ${data.error}`, 'error');
+        showNotification(data.message || 'Login failed', 'error');
       }
     } catch (error) {
       showNotification('Could not connect to the server', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate all fields
-    if (!registerData.currentGrade || !registerData.examType) {
-      showNotification('Please select both status and exam type', 'error');
-      return;
-    }
+    if (!validateRegisterForm()) return;
+    setIsLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/users', {
+      const response = await fetch('http://127.0.0.1:5000/api/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           first_name: registerData.firstName,
           last_name: registerData.lastName,
@@ -103,17 +172,17 @@ const Login = () => {
 
       if (response.ok) {
         showNotification('Registration successful! Please login.');
-        // Reset form
         setRegisterData({
           firstName: '', lastName: '', email: '', password: '', currentGrade: '', examType: ''
         });
-        // Switch to login panel after 2 seconds
         setTimeout(() => setIsRightPanelActive(false), 2000);
       } else {
-        showNotification(`Registration failed: ${data.error}`, 'error');
+        showNotification(data.message || 'Registration failed', 'error');
       }
     } catch (error) {
       showNotification('Could not connect to the server', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,17 +194,18 @@ const Login = () => {
         <div className="form-container sign-in-container">
           <form onSubmit={handleLoginSubmit}>
             <h1>Welcome Back!</h1>
+            
             <div className="input-group">
               <i className="fas fa-envelope"></i>
               <input 
                 type="email" 
                 name="email" 
                 placeholder="Email" 
-                required 
                 value={loginData.email}
                 onChange={handleLoginChange}
               />
             </div>
+            {errors.email && <span className="error-message">{errors.email}</span>}
             
             <div className="input-group">
               <i className="fas fa-lock"></i>
@@ -143,15 +213,16 @@ const Login = () => {
                 type="password" 
                 name="password" 
                 placeholder="Password" 
-                required 
-                minLength="8"
-                maxLength="16"
                 value={loginData.password}
                 onChange={handleLoginChange}
               />
             </div>
+            {errors.password && <span className="error-message">{errors.password}</span>}
             
-            <button type="submit" className="login-btn">Sign In</button>
+            <button type="submit" className="login-btn" disabled={isLoading}>
+              {isLoading ? <span className="loading-spinner"></span> : 'Sign In'}
+            </button>
+            
             <p className="switch-text">
               Don't have an account?{' '}
               <span onClick={() => setIsRightPanelActive(true)}>
@@ -173,7 +244,6 @@ const Login = () => {
                   type="text" 
                   name="firstName" 
                   placeholder="First Name" 
-                  required 
                   value={registerData.firstName}
                   onChange={handleRegisterChange}
                 />
@@ -185,12 +255,13 @@ const Login = () => {
                   type="text" 
                   name="lastName" 
                   placeholder="Last Name" 
-                  required 
                   value={registerData.lastName}
                   onChange={handleRegisterChange}
                 />
               </div>
             </div>
+            {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+            {errors.lastName && <span className="error-message">{errors.lastName}</span>}
 
             <div className="input-group">
               <i className="fas fa-envelope"></i>
@@ -198,11 +269,11 @@ const Login = () => {
                 type="email" 
                 name="email" 
                 placeholder="Email" 
-                required 
                 value={registerData.email}
                 onChange={handleRegisterChange}
               />
             </div>
+            {errors.email && <span className="error-message">{errors.email}</span>}
 
             <div className="input-group">
               <i className="fas fa-lock"></i>
@@ -210,12 +281,11 @@ const Login = () => {
                 type="password" 
                 name="password" 
                 placeholder="Password" 
-                required 
-                minLength="8"
                 value={registerData.password}
                 onChange={handleRegisterChange}
               />
             </div>
+            {errors.password && <span className="error-message">{errors.password}</span>}
 
             <div className="selection-group">
               <p className="status-title">Select Your Status:</p>
@@ -282,7 +352,9 @@ const Login = () => {
               </div>
             </div>
             
-            <button type="submit" className="signup-btn">Sign Up</button>
+            <button type="submit" className="signup-btn" disabled={isLoading}>
+              {isLoading ? <span className="loading-spinner"></span> : 'Sign Up'}
+            </button>
           </form>
         </div>
 
@@ -292,15 +364,15 @@ const Login = () => {
             <div className="overlay-panel overlay-left">
               <h1>Hello, Friend!</h1>
               <p>Enter your personal details and start your journey with us</p>
-              <button className="ghost-btn" onClick={() => setIsRightPanelActive(false)}>
-                <i className="fas fa-arrow-left"></i> Back to Login
+              <button type="button" className="ghost-btn" onClick={() => setIsRightPanelActive(false)}>
+                Back to Login
               </button>
             </div>
             <div className="overlay-panel overlay-right">
               <h1>Welcome to StudyBuddy</h1>
               <p>Join thousands of students preparing for JEE & NEET</p>
-              <button className="ghost-btn" onClick={() => setIsRightPanelActive(true)}>
-                Create Account <i className="fas fa-arrow-right"></i>
+              <button type="button" className="ghost-btn" onClick={() => setIsRightPanelActive(true)}>
+                Create Account
               </button>
             </div>
           </div>

@@ -1,10 +1,12 @@
 /* Features Page Styles */
 .features-page {
   width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
 }
 
-/* Hero Section */
+/* ===== HERO SECTION ===== */
 .features-hero {
   background: linear-gradient(135deg, #2563eb, #1e40af);
   color: white;
@@ -25,6 +27,12 @@
   background-size: cover;
   background-position: center;
   opacity: 0.3;
+  animation: slowDrift 20s infinite alternate;
+}
+
+@keyframes slowDrift {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
 }
 
 .features-hero .container {
@@ -37,6 +45,7 @@
   font-weight: 800;
   margin-bottom: 20px;
   line-height: 1.2;
+  animation: fadeInUp 0.8s ease;
 }
 
 .gradient-text {
@@ -44,6 +53,12 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
 }
 
 .features-hero-subtitle {
@@ -51,14 +66,40 @@
   opacity: 0.9;
   max-width: 600px;
   margin: 0 auto;
+  animation: fadeInUp 0.8s ease 0.2s both;
 }
 
-/* Section Titles */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== SECTION TITLES ===== */
 .section-title {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 15px;
   color: var(--dark);
+  position: relative;
+  display: inline-block;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--jee-color));
+  border-radius: 2px;
 }
 
 .section-subtitle {
@@ -72,7 +113,7 @@
   text-align: center;
 }
 
-/* Main Features Section */
+/* ===== MAIN FEATURES SECTION ===== */
 .main-features-section {
   padding: 80px 0;
   background: white;
@@ -90,12 +131,14 @@
   border-radius: 20px;
   padding: 40px 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .feature-card-large.animated {
@@ -103,9 +146,29 @@
   transform: translateY(0);
 }
 
+.feature-card-large::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--jee-color));
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.feature-card-large:hover::before {
+  transform: translateX(0);
+}
+
 .feature-card-large:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-15px) scale(1.02);
+  box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2);
+}
+
+.feature-card-large:active {
+  transform: scale(0.98);
 }
 
 .feature-icon-large {
@@ -118,12 +181,22 @@
   margin-bottom: 25px;
   color: white;
   font-size: 2rem;
+  transition: all 0.3s ease;
+}
+
+.feature-card-large:hover .feature-icon-large {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .feature-card-large h3 {
   font-size: 1.8rem;
   margin-bottom: 15px;
   color: var(--dark);
+  transition: color 0.3s ease;
+}
+
+.feature-card-large:hover h3 {
+  color: var(--primary);
 }
 
 .feature-card-large p {
@@ -143,16 +216,24 @@
   gap: 10px;
   margin-bottom: 12px;
   color: var(--dark);
+  transition: all 0.3s ease;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.feature-details-list li:hover {
+  background: rgba(37, 99, 235, 0.05);
+  transform: translateX(5px);
 }
 
 .feature-details-list i {
   font-size: 1.2rem;
 }
 
-/* All Features Section */
+/* ===== ALL FEATURES SECTION ===== */
 .all-features-section {
   padding: 80px 0;
-  background: var(--sky-light);
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
 }
 
 .features-grid-compact {
@@ -170,6 +251,9 @@
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
 .feature-card-compact.animated {
@@ -177,9 +261,29 @@
   transform: translateY(0);
 }
 
+.feature-card-compact::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent, rgba(37, 99, 235, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
 .feature-card-compact:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card-compact:hover::before {
+  opacity: 1;
+}
+
+.feature-card-compact:active {
+  transform: scale(0.95);
 }
 
 .feature-icon-compact {
@@ -193,12 +297,22 @@
   margin-bottom: 20px;
   color: white;
   font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.feature-card-compact:hover .feature-icon-compact {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .feature-card-compact h3 {
   font-size: 1.3rem;
   margin-bottom: 10px;
   color: var(--dark);
+  transition: color 0.3s ease;
+}
+
+.feature-card-compact:hover h3 {
+  color: var(--primary);
 }
 
 .feature-card-compact p {
@@ -207,7 +321,7 @@
   font-size: 0.95rem;
 }
 
-/* Exam Features Section */
+/* ===== EXAM FEATURES SECTION ===== */
 .exam-features-section {
   padding: 80px 0;
   background: white;
@@ -225,10 +339,11 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease;
+  cursor: pointer;
 }
 
 .exam-card.animated {
@@ -237,19 +352,34 @@
 }
 
 .exam-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-15px);
+  box-shadow: 0 30px 50px rgba(0, 0, 0, 0.2);
+}
+
+.exam-card:active {
+  transform: scale(0.98);
 }
 
 .exam-header {
   padding: 30px;
   color: white;
   text-align: center;
+  transition: all 0.3s ease;
+}
+
+.exam-card:hover .exam-header {
+  transform: scale(1.05);
 }
 
 .exam-header i {
   font-size: 3rem;
   margin-bottom: 15px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .exam-header h3 {
@@ -273,34 +403,64 @@
   margin-bottom: 15px;
   color: var(--dark);
   font-size: 1rem;
+  transition: all 0.3s ease;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.exam-body li:hover {
+  background: rgba(37, 99, 235, 0.05);
+  transform: translateX(5px);
 }
 
 .exam-body i {
   font-size: 1.2rem;
 }
 
-/* CTA Section */
+/* ===== CTA SECTION ===== */
 .features-cta {
   padding: 100px 0;
   background: linear-gradient(135deg, #2563eb, #1e40af);
   color: white;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.features-cta::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .cta-content {
   max-width: 600px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .cta-content h2 {
   font-size: 2.5rem;
   margin-bottom: 15px;
+  animation: fadeInUp 0.8s ease;
 }
 
 .cta-content p {
   font-size: 1.2rem;
   opacity: 0.9;
   margin-bottom: 30px;
+  animation: fadeInUp 0.8s ease 0.2s both;
 }
 
 .cta-buttons {
@@ -308,11 +468,42 @@
   gap: 20px;
   justify-content: center;
   flex-wrap: wrap;
+  animation: fadeInUp 0.8s ease 0.4s both;
 }
 
 .btn-large {
   padding: 15px 40px;
   font-size: 1.1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-large:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(176, 166, 166, 0.684);
+}
+
+.btn-large:active {
+  transform: translateY(-1px);
+}
+
+.btn-large::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-large:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-outline {
@@ -326,7 +517,22 @@
   color: #2563eb;
 }
 
-/* Responsive Design */
+/* ===== ANIMATION DELAYS ===== */
+.feature-card-large:nth-child(1) { transition-delay: 0.1s; }
+.feature-card-large:nth-child(2) { transition-delay: 0.2s; }
+.feature-card-large:nth-child(3) { transition-delay: 0.3s; }
+
+.feature-card-compact:nth-child(1) { transition-delay: 0.1s; }
+.feature-card-compact:nth-child(2) { transition-delay: 0.15s; }
+.feature-card-compact:nth-child(3) { transition-delay: 0.2s; }
+.feature-card-compact:nth-child(4) { transition-delay: 0.25s; }
+.feature-card-compact:nth-child(5) { transition-delay: 0.3s; }
+.feature-card-compact:nth-child(6) { transition-delay: 0.35s; }
+
+.exam-card:nth-child(1) { transition-delay: 0.1s; }
+.exam-card:nth-child(2) { transition-delay: 0.2s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .features-hero-title {
     font-size: 2.5rem;
@@ -393,17 +599,19 @@
   }
 }
 
-/* Animation delays */
-.feature-card-large:nth-child(1) { transition-delay: 0.1s; }
-.feature-card-large:nth-child(2) { transition-delay: 0.2s; }
-.feature-card-large:nth-child(3) { transition-delay: 0.3s; }
+/* ===== HOVER EFFECTS FOR TOUCH DEVICES ===== */
+@media (hover: hover) {
+  .feature-card-large:hover,
+  .feature-card-compact:hover,
+  .exam-card:hover {
+    transform: translateY(-10px);
+  }
+}
 
-.feature-card-compact:nth-child(1) { transition-delay: 0.1s; }
-.feature-card-compact:nth-child(2) { transition-delay: 0.15s; }
-.feature-card-compact:nth-child(3) { transition-delay: 0.2s; }
-.feature-card-compact:nth-child(4) { transition-delay: 0.25s; }
-.feature-card-compact:nth-child(5) { transition-delay: 0.3s; }
-.feature-card-compact:nth-child(6) { transition-delay: 0.35s; }
-
-.exam-card:nth-child(1) { transition-delay: 0.1s; }
-.exam-card:nth-child(2) { transition-delay: 0.2s; }
+@media (hover: none) {
+  .feature-card-large:active,
+  .feature-card-compact:active,
+  .exam-card:active {
+    transform: scale(0.98);
+  }
+}
