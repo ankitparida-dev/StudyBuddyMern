@@ -22,6 +22,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/users', require('./routes/userRoutes')); // ✅ ADD THIS LINE
 
 // Home route
 app.get('/', (req, res) => {
@@ -29,6 +30,8 @@ app.get('/', (req, res) => {
     message: '🚀 StudyBuddy API',
     status: 'running',
     endpoints: {
+      auth: '/api/auth',
+      users: '/api/users', // Added this
       register: 'POST /api/auth/register',
       login: 'POST /api/auth/login',
       profile: 'GET /api/auth/profile'
@@ -44,7 +47,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ✅ FIXED: 404 handler - use a function, not a wildcard string
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ 
     message: 'Route not found',
