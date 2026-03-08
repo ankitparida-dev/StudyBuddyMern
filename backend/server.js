@@ -20,9 +20,12 @@ mongoose.connect(process.env.MONGODB_URI)
     process.exit(1);
   });
 
-// Routes
+// ============================================
+// ROUTES
+// ============================================
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/users', require('./routes/userRoutes')); // ✅ ADD THIS LINE
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes')); // ✅ ADD THIS LINE for Day 5
 
 // Home route
 app.get('/', (req, res) => {
@@ -31,7 +34,8 @@ app.get('/', (req, res) => {
     status: 'running',
     endpoints: {
       auth: '/api/auth',
-      users: '/api/users', // Added this
+      users: '/api/users',
+      dashboard: '/api/dashboard', // Added this
       register: 'POST /api/auth/register',
       login: 'POST /api/auth/login',
       profile: 'GET /api/auth/profile'
