@@ -27,7 +27,8 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
-app.use('/api/study', require('./routes/studyRoutes')); // ✅ ADD THIS LINE for Day 6
+app.use('/api/study', require('./routes/studyRoutes'));
+app.use('/api/chat', require('./routes/chatRoutes')); // ✅ ADD THIS LINE for Day 7
 
 // Home route
 app.get('/', (req, res) => {
@@ -38,7 +39,8 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       users: '/api/users',
       dashboard: '/api/dashboard',
-      study: '/api/study', // Added this
+      study: '/api/study',
+      chat: '/api/chat', // Added this
       register: 'POST /api/auth/register',
       login: 'POST /api/auth/login',
       profile: 'GET /api/auth/profile'
@@ -79,5 +81,6 @@ app.listen(PORT, () => {
   console.log(`   - Auth: /api/auth`);
   console.log(`   - Users: /api/users`);
   console.log(`   - Dashboard: /api/dashboard`);
-  console.log(`   - Study: /api/study`); // Added this
+  console.log(`   - Study: /api/study`);
+  console.log(`   - Chat: /api/chat`); // Added this
 });

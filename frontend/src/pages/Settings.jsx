@@ -10,14 +10,13 @@ const Settings = () => {
   const [notification, setNotification] = useState(null);
   const [autoSaveTimeout, setAutoSaveTimeout] = useState(null);
   
-  // Mock data
+  // Mock data - language removed
   const [formData, setFormData] = useState({
     fullName: 'Rahul Sharma',
     email: 'rahul.sharma@example.com',
     phone: '+91 98765 43210',
     class: '12',
     examType: 'jee',
-    language: 'english',
     dailyGoal: 4,
     pomodoroDuration: 25,
     breakDuration: 5,
@@ -57,7 +56,6 @@ const Settings = () => {
             phone: profile?.phone || formData.phone,
             class: profile?.currentGrade || formData.class,
             examType: profile?.examType || formData.examType,
-            language: settings?.language || formData.language,
             dailyGoal: settings?.dailyGoal || formData.dailyGoal,
             pomodoroDuration: settings?.pomodoroDuration || formData.pomodoroDuration,
             breakDuration: settings?.breakDuration || formData.breakDuration,
@@ -136,8 +134,8 @@ const Settings = () => {
         examType: formData.examType
       }).catch(() => null);
 
+      // Language removed from updateSettings call
       await userAPI.updateSettings({
-        language: formData.language,
         dailyGoal: formData.dailyGoal,
         pomodoroDuration: formData.pomodoroDuration,
         breakDuration: formData.breakDuration,
@@ -308,24 +306,7 @@ const Settings = () => {
                 </select>
               </div>
               
-              <div className="form-group">
-                <label htmlFor="language">Preferred Language</label>
-                <select 
-                  id="language" 
-                  className="select-control"
-                  value={formData.language}
-                  onChange={handleInputChange}
-                  onFocus={handleInputFocus}
-                  disabled={saving}
-                >
-                  <option value="english">English</option>
-                  <option value="hindi">Hindi</option>
-                  <option value="bengali">Bengali</option>
-                  <option value="tamil">Tamil</option>
-                  <option value="telugu">Telugu</option>
-                  <option value="marathi">Marathi</option>
-                </select>
-              </div>
+              {/* Language dropdown REMOVED */}
               
               <div 
                 className="checkbox-group interactive"
