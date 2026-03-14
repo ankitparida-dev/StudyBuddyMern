@@ -30,7 +30,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// Login
+// Login - FIXED VERSION
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -38,6 +38,11 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (user && (await user.comparePassword(password))) {
+      
+      // Update last login - SKIP VALIDATION
+      user.lastLogin = new Date();
+      await user.save({ validateBeforeSave: false });
+      
       res.json({
         _id: user._id,
         firstName: user.firstName,
@@ -52,6 +57,7 @@ const loginUser = async (req, res) => {
     }
 
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ message: error.message });
   }
 };

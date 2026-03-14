@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { dashboardAPI, userAPI } from '../services/api';
+import { useDashboard } from '../hooks/useDashboard';
 import ProgressTracker from '../components/dashboard/ProgressTracker';
 import StudyPath from '../components/dashboard/StudyPath';
 import SyllabusSection from '../components/dashboard/SyllabusSection';
@@ -10,73 +10,20 @@ import Loader from '../components/common/Loader';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
-  const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState(false);
+  const { 
+    user,
+    stats,
+    progress,
+    streaks,
+    recentSessions,
+    combinedStats,
+    loading,
+    usingMockData
+  } = useDashboard();
+  
   const [activeExam, setActiveExam] = useState('jee');
   const [activeSection, setActiveSection] = useState('progress-tracker');
-  
-  // Mock data for when API fails
-  const [dashboardData, setDashboardData] = useState({
-    user: { firstName: 'Rahul', lastName: 'Sharma' },
-    stats: {
-      totalHours: 124,
-      topicsCompleted: 45,
-      streak: 7,
-      accuracy: 78
-    },
-    progress: {
-      physics: 60,
-      chemistry: 45,
-      math: 30,
-      biology: 65
-    },
-    streaks: {
-      current: 7,
-      longest: 15,
-      weekly: [true, true, true, true, false, false, false]
-    }
-  });
-  
   const sectionRefs = useRef({});
-
-  // Try to fetch real data, but use mock data if it fails
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        
-        // Try to fetch from API
-        const [userData, statsData, progressData, streaksData] = await Promise.all([
-          userAPI.getProfile().catch(() => null),
-          dashboardAPI.getStats().catch(() => null),
-          dashboardAPI.getProgress().catch(() => null),
-          dashboardAPI.getStreaks().catch(() => null)
-        ]);
-        
-        // If API succeeds, use real data
-        if (userData || statsData || progressData || streaksData) {
-          setDashboardData({
-            user: userData || dashboardData.user,
-            stats: statsData || dashboardData.stats,
-            progress: progressData || dashboardData.progress,
-            streaks: streaksData || dashboardData.streaks
-          });
-          setApiError(false);
-        } else {
-          // Keep using mock data
-          setApiError(true);
-          console.log('Using mock data - backend not connected');
-        }
-      } catch (error) {
-        console.log('API not available, using mock data');
-        setApiError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -97,7 +44,7 @@ const Dashboard = () => {
 
       return () => observer.disconnect();
     }
-  }, [loading, activeExam]);
+  }, [loading]);
 
   const handleExamChange = (exam) => {
     setActiveExam(exam);
@@ -110,11 +57,11 @@ const Dashboard = () => {
   };
 
   const sidebarItems = [
+    { id: 'progress-tracker', icon: 'fa-tasks', label: 'Progress Tracker' },
     { id: 'study-plan', icon: 'fa-calendar-alt', label: 'Study Plan' },
     { id: 'subjects', icon: 'fa-book', label: 'Subjects & Topics' },
     { id: 'progress', icon: 'fa-chart-line', label: 'Progress & Reports' },
     { id: 'syllabus', icon: 'fa-list-alt', label: 'Syllabus' },
-    { id: 'progress-tracker', icon: 'fa-tasks', label: 'Progress Tracker' },
     { id: 'streaks', icon: 'fa-fire', label: 'Study Streaks' },
   ];
 
@@ -128,8 +75,8 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      {/* Optional: Show a small indicator that you're using mock data */}
-      {apiError && (
+      {/* Mock Data Indicator */}
+      {usingMockData && (
         <div style={{
           position: 'fixed',
           bottom: '20px',
@@ -143,6 +90,17 @@ const Dashboard = () => {
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
           ⚡ Using Demo Data (Backend not connected)
+        </div>
+      )}
+
+      {/* Welcome Message */}
+      {user && (
+        <div className="welcome-message" style={{
+          padding: '20px 40px 0',
+          fontSize: '1.5rem',
+          fontWeight: '600'
+        }}>
+          Welcome back, {user.firstName || 'Student'}! 👋
         </div>
       )}
 
@@ -190,7 +148,15 @@ const Dashboard = () => {
             className="section"
             ref={el => sectionRefs.current['progress-tracker'] = el}
           >
-            <ProgressTracker examType={activeExam} stats={dashboardData.stats} />
+            <ProgressTracker 
+              examType={activeExam} 
+              stats={combinedStats}
+              recentSessions={recentSessions}
+              onSaveSession={(sessionData) => {
+                // This will be implemented in Day 10
+                console.log('Save session:', sessionData);
+              }}
+            />
           </section>
 
           <section 
@@ -198,7 +164,10 @@ const Dashboard = () => {
             className="section"
             ref={el => sectionRefs.current['study-plan'] = el}
           >
-            <StudyPath examType={activeExam} progress={dashboardData.progress} />
+            <StudyPath 
+              examType={activeExam} 
+              progress={progress} 
+            />
           </section>
 
           <section 
@@ -206,7 +175,15 @@ const Dashboard = () => {
             className="section"
             ref={el => sectionRefs.current['subjects'] = el}
           >
-            <SubjectsSection examType={activeExam} />
+            <SubjectsSection 
+              examType={activeExam} 
+              subjectStats={{
+                physics: combinedStats.physics,
+                chemistry: combinedStats.chemistry,
+                math: combinedStats.math,
+                biology: combinedStats.biology
+              }}
+            />
           </section>
 
           <section 
@@ -214,7 +191,10 @@ const Dashboard = () => {
             className="section"
             ref={el => sectionRefs.current['progress'] = el}
           >
-            <MetricsSection examType={activeExam} stats={dashboardData.stats} />
+            <MetricsSection 
+              examType={activeExam} 
+              stats={combinedStats}
+            />
           </section>
 
           <section 
@@ -230,7 +210,15 @@ const Dashboard = () => {
             className="section"
             ref={el => sectionRefs.current['streaks'] = el}
           >
-            <StreaksSection examType={activeExam} streaks={dashboardData.streaks} />
+            <StreaksSection 
+              examType={activeExam} 
+              streaks={{
+                current: combinedStats.streak,
+                longest: combinedStats.longestStreak,
+                weekly: Array(7).fill(false).map((_, i) => i < combinedStats.weeklyGoal)
+              }}
+              recentSessions={recentSessions}
+            />
           </section>
         </main>
       </div>

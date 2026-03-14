@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api'; // ✅ Added API import
+import { authAPI } from '../services/api';
 import logo from '../assets/StudyBuddyLogo.jpg';
 import '../styles/Login.css';
 
@@ -45,52 +45,128 @@ const Login = () => {
     });
   };
 
+  // Login handler
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      const response = await authAPI.login(loginData.email, loginData.password); // ✅ Real API call
+      const response = await authAPI.login(loginData.email, loginData.password);
       
-      // Save token and user data
+      // Save token
       localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      
+      // Save user data directly from response
+      const userData = {
+        _id: response._id,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        email: response.email,
+        currentGrade: response.currentGrade,
+        examType: response.examType
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      console.log('✅ Login successful!');
+      console.log('User saved:', userData);
       
       showNotification('Login successful! Redirecting...');
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (error) {
+      console.error('Login error:', error);
       showNotification(error.message || 'Login failed', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ✅ FIXED: Signup handler with correct field names
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     
-    if (!signupData.status || !signupData.examType) {
-      showNotification('Please select all options', 'error');
+    // Log form data for debugging
+    console.log('📝 Form Data:', {
+      firstName: signupData.firstName,
+      lastName: signupData.lastName,
+      email: signupData.email,
+      password: signupData.password,
+      status: signupData.status,
+      examType: signupData.examType
+    });
+
+    // Validation
+    if (!signupData.firstName.trim()) {
+      showNotification('First name is required', 'error');
+      return;
+    }
+    if (!signupData.lastName.trim()) {
+      showNotification('Last name is required', 'error');
+      return;
+    }
+    if (!signupData.email.includes('@')) {
+      showNotification('Please enter a valid email', 'error');
+      return;
+    }
+    if (signupData.password.length < 8) {
+      showNotification('Password must be at least 8 characters', 'error');
+      return;
+    }
+    if (!signupData.status) {
+      showNotification('Please select your status', 'error');
+      return;
+    }
+    if (!signupData.examType) {
+      showNotification('Please select your exam type', 'error');
       return;
     }
     
     setIsLoading(true);
 
     try {
+      // ✅ FIXED: Use EXACT field names that match the User model
       const userData = {
-        first_name: signupData.firstName,
-        last_name: signupData.lastName,
+        firstName: signupData.firstName,     // Changed from first_name
+        lastName: signupData.lastName,       // Changed from last_name
         email: signupData.email,
         password: signupData.password,
-        current_grade: signupData.status,
-        exam_type: signupData.examType
+        currentGrade: signupData.status,     // Changed from current_grade
+        examType: signupData.examType        // Changed from exam_type
       };
       
-      await authAPI.register(userData); // ✅ Real API call
+      console.log('📤 Sending to backend:', userData);
       
-      showNotification('Account created! Please login');
-      setTimeout(() => setIsLogin(true), 1500);
+      const response = await authAPI.register(userData);
+      
+      console.log('📥 Backend response:', response);
+      
+      // Auto-login after registration
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify({
+          _id: response._id,
+          firstName: response.firstName,
+          lastName: response.lastName,
+          email: response.email,
+          currentGrade: response.currentGrade,
+          examType: response.examType
+        }));
+        showNotification('Account created! Redirecting...');
+        setTimeout(() => navigate('/dashboard'), 1500);
+      } else {
+        showNotification('Account created! Please login');
+        setTimeout(() => setIsLogin(true), 1500);
+      }
+      
     } catch (error) {
-      showNotification(error.message || 'Registration failed', 'error');
+      console.error('❌ Registration error:', error);
+      
+      if (error.message.includes('duplicate') || error.message.includes('already exists')) {
+        showNotification('Email already exists. Please login.', 'error');
+        setTimeout(() => setIsLogin(true), 2000);
+      } else {
+        showNotification(error.message || 'Registration failed', 'error');
+      }
     } finally {
       setIsLoading(false);
     }

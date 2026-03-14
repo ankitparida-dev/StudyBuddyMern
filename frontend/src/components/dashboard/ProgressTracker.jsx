@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { practiceAPI } from '../../services/api';
 
-const ProgressTracker = ({ examType }) => {
+const ProgressTracker = ({ examType, stats, recentSessions, onSaveSession }) => {
   const [currentSubject, setCurrentSubject] = useState(examType === 'jee' ? 'physics' : 'biology');
   const [topicName, setTopicName] = useState('');
   const [questions, setQuestions] = useState([]);
   const [history, setHistory] = useState([]);
   const [notification, setNotification] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  // Use real stats from backend
+  const todayMinutes = stats?.totalMinutes || 0;
+  const todaySessions = stats?.totalSessions || 0;
+  const overallAccuracy = stats?.accuracy || 0;
 
   useEffect(() => {
+    // Load saved history from localStorage (temporary until backend)
     const savedHistory = localStorage.getItem(`${examType}PracticeHistory`);
     if (savedHistory) {
       setHistory(JSON.parse(savedHistory));
@@ -58,7 +66,7 @@ const ProgressTracker = ({ examType }) => {
     }
   };
 
-  const handleSaveSession = () => {
+  const handleSaveSession = async () => {
     if (questions.length === 0) {
       showNotification('Please add at least one question before saving.', 'error');
       return;
@@ -66,28 +74,59 @@ const ProgressTracker = ({ examType }) => {
 
     const { totalQuestions, correctQuestions, accuracy } = getSubjectStats();
 
-    const session = {
-      id: Date.now(),
-      date: new Date().toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      timestamp: new Date().toISOString(),
+    const sessionData = {
       subject: currentSubject,
+      topic: topicName || 'General Practice',
       totalQuestions,
-      correctQuestions,
-      accuracy,
-      questions: [...questions]
+      correctAnswers: correctQuestions,
+      timeSpent: Math.ceil(questions.length * 2), // Estimate 2 minutes per question
+      difficulty: 'medium',
+      notes: `Practiced ${topicName || 'various topics'}`
     };
 
-    const updatedHistory = [session, ...history];
-    setHistory(updatedHistory);
-    localStorage.setItem(`${examType}PracticeHistory`, JSON.stringify(updatedHistory));
-    
-    setQuestions([]);
-    showNotification('Practice session saved successfully!');
+    try {
+      setSaving(true);
+      
+      // Try to save to backend
+      const token = localStorage.getItem('token');
+      if (token) {
+        await practiceAPI.saveSession(sessionData);
+      }
+      
+      // Save to localStorage as backup
+      const session = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        timestamp: new Date().toISOString(),
+        subject: currentSubject,
+        totalQuestions,
+        correctQuestions,
+        accuracy,
+        questions: [...questions]
+      };
+
+      const updatedHistory = [session, ...history];
+      setHistory(updatedHistory);
+      localStorage.setItem(`${examType}PracticeHistory`, JSON.stringify(updatedHistory));
+      
+      setQuestions([]);
+      showNotification('Practice session saved successfully!');
+      
+      // Call parent callback
+      if (onSaveSession) {
+        onSaveSession(sessionData);
+      }
+      
+    } catch (error) {
+      showNotification('Failed to save session: ' + error.message, 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const { totalQuestions, correctQuestions, accuracy } = getSubjectStats();
@@ -111,24 +150,24 @@ const ProgressTracker = ({ examType }) => {
         <p className="section-subtitle">Track your daily practice performance by marking questions you answered correctly</p>
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick Stats - Using real data */}
       <div className="tracker-stats-overview">
         <div className="stat-card interactive">
           <div className="stat-icon" style={{ backgroundColor: '#10b981' }}>
-            <i className="fas fa-check-circle"></i>
+            <i className="fas fa-clock"></i>
           </div>
           <div className="stat-content">
-            <div className="stat-value">{correctQuestions}</div>
-            <div className="stat-label">Correct Today</div>
+            <div className="stat-value">{Math.round(todayMinutes / 60)}h {todayMinutes % 60}m</div>
+            <div className="stat-label">Study Time Today</div>
           </div>
         </div>
         <div className="stat-card interactive">
           <div className="stat-icon" style={{ backgroundColor: '#f59e0b' }}>
-            <i className="fas fa-clock"></i>
+            <i className="fas fa-chart-line"></i>
           </div>
           <div className="stat-content">
-            <div className="stat-value">{accuracy}%</div>
-            <div className="stat-label">Accuracy Rate</div>
+            <div className="stat-value">{overallAccuracy}%</div>
+            <div className="stat-label">Overall Accuracy</div>
           </div>
         </div>
         <div className="stat-card interactive">
@@ -136,11 +175,31 @@ const ProgressTracker = ({ examType }) => {
             <i className="fas fa-bullseye"></i>
           </div>
           <div className="stat-content">
-            <div className="stat-value">{correctQuestions}/10</div>
-            <div className="stat-label">Daily Goal</div>
+            <div className="stat-value">{todaySessions}</div>
+            <div className="stat-label">Sessions Today</div>
           </div>
         </div>
       </div>
+
+      {/* Recent Sessions from Backend */}
+      {recentSessions && recentSessions.length > 0 && (
+        <div className="recent-sessions" style={{ marginBottom: '20px', padding: '15px', background: 'var(--light)', borderRadius: '12px' }}>
+          <h3 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>Recent Practice</h3>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {recentSessions.slice(0, 3).map((session, idx) => (
+              <div key={idx} style={{
+                background: 'white',
+                padding: '8px 15px',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+              }}>
+                <strong>{session.subject}</strong>: {session.accuracy}% ({session.timeSpent}min)
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Subject Selection */}
       <div className="subject-selection">
@@ -163,10 +222,10 @@ const ProgressTracker = ({ examType }) => {
         <div className="form-header">
           <h3 className="form-title">Today's Practice Questions</h3>
           <div className="form-controls">
-            <button className="btn btn-primary" onClick={handleAddQuestion}>
+            <button className="btn btn-primary" onClick={handleAddQuestion} disabled={saving}>
               <i className="fas fa-plus"></i> Add Question
             </button>
-            <button className="btn" onClick={handleClearAll}>
+            <button className="btn" onClick={handleClearAll} disabled={saving}>
               <i className="fas fa-trash"></i> Clear All
             </button>
           </div>
@@ -181,6 +240,7 @@ const ProgressTracker = ({ examType }) => {
             placeholder="e.g., Kinematics, Organic Chemistry, etc."
             value={topicName}
             onChange={(e) => setTopicName(e.target.value)}
+            disabled={saving}
           />
         </div>
 
@@ -195,15 +255,16 @@ const ProgressTracker = ({ examType }) => {
               <div key={question.id} className={`question-item ${question.checked ? 'checked' : ''}`}>
                 <div 
                   className={`question-checkbox ${question.checked ? 'checked' : ''}`}
-                  onClick={() => handleToggleQuestion(question.id)}
+                  onClick={() => !saving && handleToggleQuestion(question.id)}
                 >
                   {question.checked && '✓'}
                 </div>
                 <div className="question-text">{question.text}</div>
                 <button 
                   className="btn-icon" 
-                  onClick={() => handleDeleteQuestion(question.id)}
+                  onClick={() => !saving && handleDeleteQuestion(question.id)}
                   aria-label="Delete question"
+                  disabled={saving}
                 >
                   <i className="fas fa-times"></i>
                 </button>
@@ -227,8 +288,20 @@ const ProgressTracker = ({ examType }) => {
               <div className="summary-label">Accuracy</div>
             </div>
           </div>
-          <button className="btn btn-primary" onClick={handleSaveSession}>
-            <i className="fas fa-save"></i> Save Session
+          <button 
+            className="btn btn-primary" 
+            onClick={handleSaveSession}
+            disabled={saving || questions.length === 0}
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i> Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i> Save Session
+              </>
+            )}
           </button>
         </div>
       </div>
