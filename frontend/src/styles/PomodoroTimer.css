@@ -107,3 +107,84 @@
     color: var(--primary);
     font-weight: 600;
 }
+/* Add these to your existing PomodoroTimer.css */
+
+/* Subject Selector Modal */
+.subject-selector-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.subject-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 15px;
+  border: 2px solid var(--primary-light);
+  border-radius: 12px;
+  background: var(--light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.subject-option:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.subject-option i {
+  font-size: 24px;
+  color: var(--primary);
+}
+
+.current-subject {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 8px 15px;
+  background: var(--primary-light);
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.current-subject button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.today-total {
+  margin-top: 15px;
+  padding: 10px;
+  background: var(--light);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--secondary);
+}

@@ -103,12 +103,12 @@ export const practiceAPI = {
     })
 };
 
-// ===== STUDY PLAN API (Fixed to use goals endpoints) =====
+// ===== STUDY PLAN API (Using goals endpoints) =====
 export const planAPI = {
   // Get all study plans/goals
   getPlans: (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
-    return fetchAPI(`/study/goals?${queryParams}`); // Changed from /plan to /goals
+    return fetchAPI(`/study/goals?${queryParams}`);
   },
   
   // Get plan statistics (combine goals + practice data)
@@ -250,7 +250,45 @@ export const planAPI = {
     })
 };
 
-// ===== CHAT SERVICES (NEW - ADDED) =====
+// ===== GOALS API (Clean version for Daily Goals) =====
+export const goalsAPI = {
+  // Get all goals
+  getGoals: () => fetchAPI('/study/goals'),
+  
+  // Create new goal
+  createGoal: (goalData) => 
+    fetchAPI('/study/goals', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: goalData.title,
+        subject: goalData.subject,
+        description: goalData.description || '',
+        completed: false,
+        priority: goalData.priority || 'medium'
+      })
+    }),
+  
+  // Update goal
+  updateGoal: (id, goalData) => 
+    fetchAPI(`/study/goals/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(goalData)
+    }),
+  
+  // Mark goal as complete
+  completeGoal: (id) => 
+    fetchAPI(`/study/goals/${id}/complete`, {
+      method: 'PATCH'
+    }),
+  
+  // Delete goal
+  deleteGoal: (id) => 
+    fetchAPI(`/study/goals/${id}`, {
+      method: 'DELETE'
+    })
+};
+
+// ===== CHAT SERVICES =====
 export const sendChatMessage = async (prompt) => {
   try {
     const token = localStorage.getItem('token');
@@ -276,6 +314,11 @@ export const sendChatMessage = async (prompt) => {
   }
 };
 
+// ===== HEALTH CHECK (Optional) =====
+export const healthAPI = {
+  check: () => fetchAPI('/health').catch(() => ({ status: 'offline' }))
+};
+
 // ===== DEFAULT EXPORT =====
 const api = {
   auth: authAPI,
@@ -283,7 +326,9 @@ const api = {
   dashboard: dashboardAPI,
   practice: practiceAPI,
   plan: planAPI,
-  chat: sendChatMessage
+  goals: goalsAPI,
+  chat: sendChatMessage,
+  health: healthAPI
 };
 
 export default api;
