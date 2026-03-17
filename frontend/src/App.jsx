@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import loadable from '@loadable/component';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
+import ChatAssistant from './components/chat/ChatAssistant'; // ✅ IMPORT CHAT
 import ErrorBoundary from './components/common/ErrorBoundary';
-import Loader from './components/common/Loader'; // For fallback
+import Loader from './components/common/Loader';
 import { ThemeProvider } from './hooks/useTheme';
 import { LoadingProvider } from './hooks/useLoading';
 import { NotificationProvider } from './hooks/useNotifications';
@@ -52,6 +53,8 @@ function Layout({ children }) {
         </ErrorBoundary>
       </main>
       {!isLoginPage && <Footer />}
+      {/* ✅ CHAT ASSISTANT - Shows on all pages except login */}
+      {!isLoginPage && <ChatAssistant />}
     </div>
   );
 }

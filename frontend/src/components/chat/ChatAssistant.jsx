@@ -24,6 +24,12 @@ const ChatAssistant = () => {
     clearAllChats
   } = useChat();
 
+  // Debug logs for input value changes
+  useEffect(() => {
+    console.log('📝 Input value changed:', inputValue);
+    console.log('🔘 Send button should be:', !inputValue.trim() || sending ? 'disabled' : 'enabled');
+  }, [inputValue, sending]);
+
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,6 +48,7 @@ const ChatAssistant = () => {
     if (!inputValue.trim() || sending) return;
     
     const message = inputValue;
+    console.log('📤 Sending message:', message);
     setInputValue('');
     await sendMessage(message);
   };
@@ -87,6 +94,109 @@ const ChatAssistant = () => {
     return suggestions.slice(0, 4);
   };
 
+  // Function to format mathematical expressions
+  const formatMathematicalContent = (content) => {
+    // Handle integration formulas
+    let formatted = content
+      .replace(/∫/g, '∫') // Integral symbol
+      .replace(/∑/g, '∑') // Summation symbol
+      .replace(/∏/g, '∏') // Product symbol
+      .replace(/√/g, '√') // Square root symbol
+      .replace(/π/g, 'π') // Pi symbol
+      .replace(/θ/g, 'θ') // Theta symbol
+      .replace(/α/g, 'α') // Alpha symbol
+      .replace(/β/g, 'β') // Beta symbol
+      .replace(/γ/g, 'γ') // Gamma symbol
+      .replace(/Δ/g, 'Δ') // Delta symbol
+      .replace(/∞/g, '∞'); // Infinity symbol
+
+    return formatted;
+  };
+
+  // Function to render formatted message content
+  const renderFormattedContent = (content) => {
+    if (!content) return null;
+    
+    // First, format mathematical symbols
+    const formattedContent = formatMathematicalContent(content);
+    
+    // Split by lines and process each line
+    return formattedContent.split('\n').map((line, i) => {
+      const trimmedLine = line.trim();
+      
+      // Skip empty lines but add spacing
+      if (!trimmedLine) {
+        return <br key={i} />;
+      }
+      
+      // Check if line contains a formula (has =, ∫, ∑, etc.)
+      if (trimmedLine.includes('=') || 
+          trimmedLine.includes('∫') || 
+          trimmedLine.includes('∑') ||
+          trimmedLine.includes('lim') ||
+          trimmedLine.includes('→') ||
+          trimmedLine.includes('dx') ||
+          trimmedLine.includes('dt')) {
+        return (
+          <div key={i} className="formula-block">
+            {trimmedLine}
+          </div>
+        );
+      }
+      
+      // Check for bullet points
+      if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
+        return (
+          <li key={i} className="bullet-item">
+            {trimmedLine.substring(1).trim()}
+          </li>
+        );
+      }
+      
+      // Check for numbered lists
+      if (/^\d+\./.test(trimmedLine)) {
+        return (
+          <li key={i} className="numbered-item">
+            {trimmedLine}
+          </li>
+        );
+      }
+      
+      // Check for bold text (surrounded by **)
+      if (trimmedLine.includes('**')) {
+        const parts = trimmedLine.split(/(\*\*.*?\*\*)/g);
+        return (
+          <p key={i} className="text-line">
+            {parts.map((part, j) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={j}>{part.slice(2, -2)}</strong>;
+              }
+              return part;
+            })}
+          </p>
+        );
+      }
+      
+      // Check for italic text (surrounded by *)
+      if (trimmedLine.includes('*') && !trimmedLine.includes('**')) {
+        const parts = trimmedLine.split(/(\*.*?\*)/g);
+        return (
+          <p key={i} className="text-line">
+            {parts.map((part, j) => {
+              if (part.startsWith('*') && part.endsWith('*')) {
+                return <em key={j}>{part.slice(1, -1)}</em>;
+              }
+              return part;
+            })}
+          </p>
+        );
+      }
+      
+      // Regular text
+      return <p key={i} className="text-line">{trimmedLine}</p>;
+    });
+  };
+
   return (
     <div className="ai-assistant">
       {/* Chat Toggle Button */}
@@ -100,7 +210,7 @@ const ChatAssistant = () => {
         {!isOpen && messages.length > 1 && <span className="notification-dot"></span>}
       </button>
 
-      {/* Chat Window - FIXED: Added active class based on isOpen */}
+      {/* Chat Window */}
       <div className={`chat-window ${isOpen ? 'active' : ''} ${showSessions ? 'sessions-open' : ''}`}>
         <div className="chat-header">
           <div className="chat-title">
@@ -218,15 +328,12 @@ const ChatAssistant = () => {
                       <i className={`fas fa-${msg.role === 'user' ? 'user' : 'robot'}`}></i>
                     </div>
                     <div className="message-content">
-                      {typeof msg.content === 'string' ? (
-                        <p dangerouslySetInnerHTML={{ 
-                          __html: msg.content
-                            .replace(/\n/g, '<br>')
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                        }} />
+                      {msg.role === 'assistant' ? (
+                        <div className="formatted-response">
+                          {renderFormattedContent(msg.content)}
+                        </div>
                       ) : (
-                        msg.content
+                        <p>{msg.content}</p>
                       )}
                       <span className="message-time">{formatTime(msg.timestamp)}</span>
                     </div>
@@ -275,13 +382,17 @@ const ChatAssistant = () => {
               </div>
             )}
 
-            {/* Input Area */}
+            {/* Input Area - FIXED with better event handling */}
             <form className="chat-input-container" onSubmit={handleSendMessage}>
               <div className="chat-input">
                 <input
                   type="text"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setInputValue(newValue);
+                    console.log('✏️ Input changed to:', newValue);
+                  }}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about your studies..."
                   disabled={sending}
@@ -291,6 +402,10 @@ const ChatAssistant = () => {
                   type="submit" 
                   className="send-btn"
                   disabled={!inputValue.trim() || sending}
+                  style={{
+                    opacity: (!inputValue.trim() || sending) ? 0.5 : 1,
+                    cursor: (!inputValue.trim() || sending) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {sending ? (
                     <i className="fas fa-spinner fa-spin"></i>
