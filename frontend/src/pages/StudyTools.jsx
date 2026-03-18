@@ -21,10 +21,13 @@ const StudyTools = () => {
         const token = localStorage.getItem('token');
         if (!token) {
           setApiError(true);
+          setLoading(false);
           return;
         }
         
-        const res = await fetch('http://127.0.0.1:5000/api/study/goals', {
+        // ✅ FIX: Use environment variable
+        const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000/api';
+        const res = await fetch(`${API_URL}/study/goals`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
