@@ -1,29 +1,46 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useDashboard } from '../hooks/useDashboard';
-import ProgressTracker from '../components/dashboard/ProgressTracker';
-import StudyPath from '../components/dashboard/StudyPath';
-import SyllabusSection from '../components/dashboard/SyllabusSection';
-import SubjectsSection from '../components/dashboard/SubjectsSection';
-import StreaksSection from '../components/dashboard/StreaksSection';
-import MetricsSection from '../components/dashboard/MetricsSection';
+import React, { useEffect, useRef, useState } from 'react';
+import PomodoroTimer from '../components/studytools/PomodoroTimer';
+import DailyGoals from '../components/studytools/DailyGoals';
+import FocusMode from '../components/studytools/FocusMode';
+import StudyAnalytics from '../components/studytools/StudyAnalytics';
+import QuickSessions from '../components/studytools/QuickSessions';
+import SmartBreaks from '../components/studytools/SmartBreaks';
+import ChatAssistant from '../components/chat/ChatAssistant';
 import Loader from '../components/common/Loader';
-import '../styles/Dashboard.css';
+import '../styles/StudyTools.css';
 
-const Dashboard = () => {
-  const { 
-    user,
-    stats,
-    progress,
-    streaks,
-    recentSessions,
-    combinedStats,
-    loading,
-    usingMockData
-  } = useDashboard();
-  
-  const [activeExam, setActiveExam] = useState('jee');
-  const [activeSection, setActiveSection] = useState('progress-tracker');
-  const sectionRefs = useRef({});
+const StudyTools = () => {
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    // Check API connection
+    const checkApi = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setApiError(true);
+          setLoading(false);
+          return;
+        }
+        
+        // ✅ FIX: Use environment variable
+        const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000/api';
+        const res = await fetch(`${API_URL}/study/goals`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) setApiError(true);
+      } catch {
+        setApiError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkApi();
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -31,199 +48,79 @@ const Dashboard = () => {
         (entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
+              entry.target.classList.add('animated');
             }
           });
         },
-        { threshold: 0.1 }
+        { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
       );
 
-      document.querySelectorAll('.section').forEach(section => {
-        observer.observe(section);
+      document.querySelectorAll('.tools-grid, .tool-card').forEach(el => {
+        observer.observe(el);
       });
 
       return () => observer.disconnect();
     }
   }, [loading]);
 
-  const handleExamChange = (exam) => {
-    setActiveExam(exam);
-    setActiveSection('progress-tracker');
-  };
-
-  const handleSectionChange = (sectionId) => {
-    setActiveSection(sectionId);
-    sectionRefs.current[sectionId]?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const sidebarItems = [
-    { id: 'progress-tracker', icon: 'fa-tasks', label: 'Progress Tracker' },
-    { id: 'study-plan', icon: 'fa-calendar-alt', label: 'Study Plan' },
-    { id: 'subjects', icon: 'fa-book', label: 'Subjects & Topics' },
-    { id: 'progress', icon: 'fa-chart-line', label: 'Progress & Reports' },
-    { id: 'syllabus', icon: 'fa-list-alt', label: 'Syllabus' },
-    { id: 'streaks', icon: 'fa-fire', label: 'Study Streaks' },
-  ];
-
   if (loading) {
     return (
       <div className="page-loader">
-        <Loader size="large" text="Loading your dashboard..." />
+        <Loader size="large" text="Loading study tools..." />
       </div>
     );
   }
 
   return (
-    <div className="dashboard-page">
-      {/* Mock Data Indicator */}
-      {usingMockData && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          background: '#ffd166',
-          color: '#1e293b',
-          padding: '8px 16px',
-          borderRadius: '20px',
-          fontSize: '14px',
-          zIndex: 1000,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
+    <div className="studytools-page">
+      {apiError && (
+        <div className="demo-data-badge">
           ⚡ Using Demo Data (Backend not connected)
         </div>
       )}
 
-      {/* Welcome Message */}
-      {user && (
-        <div className="welcome-message" style={{
-          padding: '20px 40px 0',
-          fontSize: '1.5rem',
-          fontWeight: '600'
-        }}>
-          Welcome back, {user.firstName || 'Student'}! 👋
-        </div>
-      )}
-
-      <div className="container dashboard-container">
-        {/* Sidebar */}
-        <aside className="sidebar">
-          <ul className="sidebar-menu">
-            {sidebarItems.map(item => (
-              <li key={item.id} className="sidebar-item">
-                <a 
-                  href={`#${item.id}`} 
-                  className={`sidebar-link ${activeSection === item.id ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSectionChange(item.id);
-                  }}
-                >
-                  <i className={`fas ${item.icon}`}></i>
-                  <span>{item.label}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-          
-          <div className="exam-selection">
-            <div 
-              className={`exam-tab jee-tab ${activeExam === 'jee' ? 'active' : ''}`}
-              onClick={() => handleExamChange('jee')}
-            >
-              JEE
-            </div>
-            <div 
-              className={`exam-tab neet-tab ${activeExam === 'neet' ? 'active' : ''}`}
-              onClick={() => handleExamChange('neet')}
-            >
-              NEET
-            </div>
+      <section className="study-tools-section">
+        <div className="container">
+          <div className="page-header">
+            <h1 className="page-title">Study Tools & Time Management</h1>
+            <p className="page-subtitle">
+              Maximize your productivity with AI-powered study tools and smart time management features
+            </p>
           </div>
-        </aside>
 
-        {/* Main Content */}
-        <main className="main-content">
-          <section 
-            id="progress-tracker" 
-            className="section"
-            ref={el => sectionRefs.current['progress-tracker'] = el}
-          >
-            <ProgressTracker 
-              examType={activeExam} 
-              stats={combinedStats}
-              recentSessions={recentSessions}
-              onSaveSession={(sessionData) => {
-                // This will be implemented in Day 10
-                console.log('Save session:', sessionData);
-              }}
-            />
-          </section>
+          <div className="tools-grid">
+            <PomodoroTimer ref={timerRef} />
+            <DailyGoals />
+            <FocusMode />
+            <StudyAnalytics />
+            <QuickSessions />
+            <SmartBreaks />
+          </div>
+        </div>
 
-          <section 
-            id="study-plan" 
-            className="section"
-            ref={el => sectionRefs.current['study-plan'] = el}
-          >
-            <StudyPath 
-              examType={activeExam} 
-              progress={progress} 
-            />
-          </section>
+        <iframe
+          id="lofi-player"
+          width="0"
+          height="0"
+          src="https://www.youtube.com/embed/n61ULEU7CO0?start=0&loop=1&playlist=n61ULEU7CO0"
+          frameBorder="0"
+          allow="autoplay"
+          allowFullScreen
+          title="lofi music"
+          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+        />
+      </section>
 
-          <section 
-            id="subjects" 
-            className="section"
-            ref={el => sectionRefs.current['subjects'] = el}
-          >
-            <SubjectsSection 
-              examType={activeExam} 
-              subjectStats={{
-                physics: combinedStats.physics,
-                chemistry: combinedStats.chemistry,
-                math: combinedStats.math,
-                biology: combinedStats.biology
-              }}
-            />
-          </section>
+      <ChatAssistant />
 
-          <section 
-            id="progress" 
-            className="section"
-            ref={el => sectionRefs.current['progress'] = el}
-          >
-            <MetricsSection 
-              examType={activeExam} 
-              stats={combinedStats}
-            />
-          </section>
-
-          <section 
-            id="syllabus" 
-            className="section"
-            ref={el => sectionRefs.current['syllabus'] = el}
-          >
-            <SyllabusSection examType={activeExam} />
-          </section>
-
-          <section 
-            id="streaks" 
-            className="section"
-            ref={el => sectionRefs.current['streaks'] = el}
-          >
-            <StreaksSection 
-              examType={activeExam} 
-              streaks={{
-                current: combinedStats.streak,
-                longest: combinedStats.longestStreak,
-                weekly: Array(7).fill(false).map((_, i) => i < combinedStats.weeklyGoal)
-              }}
-              recentSessions={recentSessions}
-            />
-          </section>
-        </main>
-      </div>
+      {/* Scroll Spacer - Ensures scrolling works */}
+      <div style={{ 
+        height: '50px', 
+        width: '100%', 
+        opacity: 0 
+      }}></div>
     </div>
   );
 };
 
-export default Dashboard;
+export default StudyTools;

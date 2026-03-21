@@ -29,6 +29,13 @@ const Home = () => {
       <PersonalDiary />
       <FeaturesSection />
       <ChatAssistant />
+      
+      {/* Scroll Spacer - Ensures scrolling works */}
+      <div style={{ 
+        height: '50px', 
+        width: '100%', 
+        opacity: 0 
+      }}></div>
     </div>
   );
 };

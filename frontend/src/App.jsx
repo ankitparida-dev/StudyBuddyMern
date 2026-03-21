@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import loadable from '@loadable/component';
 import Header from './components/common/Header';
@@ -44,6 +44,33 @@ const NotFound = loadable(() => import('./pages/404page'), {
 function Layout({ children }) {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
+  
+  // Force scrollbar on every page load and reload
+  useEffect(() => {
+    const forceScrollbar = () => {
+      // Set body overflow
+      document.body.style.overflowY = 'scroll';
+      document.documentElement.style.overflowY = 'scroll';
+      
+      // Ensure minimum height
+      document.body.style.minHeight = '100vh';
+      
+      // Add a tiny delay to ensure it applies after render
+      setTimeout(() => {
+        document.body.style.overflowY = 'scroll';
+        document.documentElement.style.overflowY = 'scroll';
+      }, 0);
+    };
+    
+    forceScrollbar();
+    
+    // Also run after any route changes
+    window.addEventListener('popstate', forceScrollbar);
+    
+    return () => {
+      window.removeEventListener('popstate', forceScrollbar);
+    };
+  }, []);
   
   return (
     <div className="app">

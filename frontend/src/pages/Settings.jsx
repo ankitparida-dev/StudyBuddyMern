@@ -498,6 +498,13 @@ const Settings = () => {
         </div>
       </div>
 
+      {/* Scroll Spacer - Ensures scrolling works */}
+      <div style={{ 
+        height: '50px', 
+        width: '100%', 
+        opacity: 0 
+      }}></div>
+
       {/* Notification */}
       {notification && (
         <div className={`notification ${notification.type === 'error' ? 'error' : ''}`}>

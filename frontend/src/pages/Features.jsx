@@ -337,6 +337,14 @@ const Features = () => {
           </div>
         </div>
       </section>
+
+      {/* Scroll Spacer - Ensures scrolling works */}
+      <div className="scroll-spacer" style={{ 
+        height: '100px', 
+        width: '100%', 
+        opacity: 0,
+        pointerEvents: 'none'
+      }}></div>
     </div>
   );
 };

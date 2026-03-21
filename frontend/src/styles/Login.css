@@ -6,14 +6,24 @@
   box-sizing: border-box;
 }
 
+/* Force full background on body when login page is present */
+body:has(.login-page) {
+  background: linear-gradient(135deg, #dbeafe, #eff6ff) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 .login-page {
   font-family: 'Poppins', sans-serif;
   min-height: 100vh;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  background: linear-gradient(135deg, #dbeafe, #eff6ff) !important;
   padding: 20px;
+  margin: 0;
+  position: relative;
 }
 
 .login-container {
@@ -25,6 +35,7 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
 }
 
 /* Left Side - Forms */
@@ -362,48 +373,5 @@
   .notification {
     left: 20px;
     right: 20px;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .login-page {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-  }
-  
-  .login-container {
-    background: #1e293b;
-  }
-  
-  .login-form-container {
-    background: #1e293b;
-  }
-  
-  .login-form h2 {
-    color: #f8fafc;
-  }
-  
-  .input-group input {
-    background: #334155;
-    border-color: #475569;
-    color: #f8fafc;
-  }
-  
-  .input-group input::placeholder {
-    color: #94a3b8;
-  }
-  
-  .option-btn {
-    background: #334155;
-    border-color: #475569;
-    color: #e2e8f0;
-  }
-  
-  .selection-label {
-    color: #cbd5e1;
-  }
-  
-  .switch-text {
-    color: #94a3b8;
   }
 }
