@@ -44,7 +44,7 @@
     --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* ===== LAYOUT - Remove Actual White Space Only ===== */
+/* ===== RESET & BASE STYLES ===== */
 * {
     margin: 0;
     padding: 0;
@@ -56,6 +56,7 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
+    max-width: 100%;
     overflow-x: hidden;
 }
 
@@ -64,12 +65,29 @@ body {
     color: var(--dark);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ===== LOADING STATE - Remove scrollbar & white space ===== */
+body.loading-active {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+body.loading-active #root {
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 #root {
     min-height: 100vh;
     width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .app {
@@ -79,56 +97,55 @@ body {
     flex-direction: column;
 }
 
-/* Header - original styles preserved */
+/* ===== HEADER ===== */
 .main-header {
     width: 100%;
     background: var(--gradient);
     color: white;
     padding: 15px 0;
     box-shadow: var(--shadow);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 100;
 }
 
-/* Main Content - original styles */
+/* ===== MAIN CONTENT - FIXED WHITE SPACE ===== */
 .main-content {
     width: 100%;
     flex: 1;
+    margin: 0;
+    padding: 0;
 }
 
-/* Content wrapper - preserve original spacing */
 .content-wrapper {
     width: 100%;
-    padding: 20px;
+    padding: 0; /* REMOVED: was 20px - this was causing white space */
     box-sizing: border-box;
 }
 
-/* Footer - original styles */
-.main-footer {
-    width: 100%;
-    background: #1e293b;
-    color: #f8fafc;
-    padding: 60px 0 30px;
-    margin-top: auto;
+/* Let individual pages control their own spacing */
+.home-page .content-wrapper,
+.dashboard-page .content-wrapper,
+.settings-page .content-wrapper,
+.features-page .content-wrapper,
+.studytools-page .content-wrapper {
+    padding: 0;
 }
 
-/* Container - preserve original centering */
-.container {
-    width: 100%;
+/* Add consistent container padding for content */
+.home-page .container,
+.settings-page .container,
+.features-page .container,
+.studytools-page .container {
+    padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
-    box-sizing: border-box;
 }
 
-/* Page containers - full width */
-.dashboard-page,
-.features-page,
-.studytools-page,
-.settings-page,
-.home-page {
-    width: 100%;
+/* Dashboard has its own container structure */
+.dashboard-page .dashboard-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Login page special */
@@ -147,7 +164,36 @@ body {
     background: transparent;
 }
 
-/* Login page background */
+/* ===== FOOTER ===== */
+.main-footer {
+    width: 100%;
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 60px 0 30px;
+    margin-top: auto;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* ===== PAGE CONTAINERS ===== */
+.dashboard-page,
+.features-page,
+.studytools-page,
+.settings-page,
+.home-page {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== LOGIN PAGE ===== */
 .login-page {
     background: linear-gradient(135deg, #dbeafe, #eff6ff);
     min-height: 100vh;
@@ -157,7 +203,7 @@ body {
     padding: 20px;
 }
 
-/* Custom scrollbar - visible and styled */
+/* ===== CUSTOM SCROLLBAR ===== */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -177,159 +223,133 @@ body {
     background: var(--primary-dark);
 }
 
-/* Force scrollbar visibility */
-html {
-    overflow-y: scroll;
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) #e2e8f0;
 }
 
-body {
-    min-height: 101vh;
-}
-
-/* ===== INTENDED SPACING - KEEP FOR DESIGN ===== */
-/* These are the margins that create proper spacing between elements */
-/* DO NOT REMOVE - they are part of the design */
-
-/* Hero section spacing */
+/* ===== REDUCED SPACING - NO EXCESS WHITE SPACE ===== */
+/* Hero section spacing - REDUCED */
 .hero-title {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    margin-top: 0;
 }
 
 .typing-container {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .hero-description {
-    margin-bottom: 30px;
+    margin-bottom: 20px; /* Was 30px */
 }
 
 .exam-selection {
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
-/* Section spacing */
+/* Section spacing - REDUCED */
 .section-header {
-    margin-bottom: 24px;
+    margin-bottom: 20px; /* Was 24px */
 }
 
 .section-title {
-    margin-bottom: 15px;
-}
-
-.section-subtitle {
-    margin-bottom: 50px;
-}
-
-/* Diary section spacing */
-.diary-feature {
-    margin-bottom: 30px;
-}
-
-.diary-feature h3 {
-    margin-bottom: 15px;
-}
-
-.streak-container {
-    margin-top: 10px;
-}
-
-.progress-graph {
-    margin-top: 15px;
-}
-
-.entry-header {
-    margin-bottom: 15px;
-}
-
-.entry-actions {
-    margin-top: 15px;
-}
-
-/* Features section spacing */
-.feature-icon-wrapper {
-    margin-bottom: 25px;
-}
-
-.feature-title {
-    margin-bottom: 15px;
-}
-
-.feature-description {
-    margin-bottom: 20px;
-}
-
-/* Button spacing */
-.btn {
-    margin-top: 10px;
-}
-
-/* Chat spacing */
-.welcome-message i {
-    margin-bottom: 20px;
-}
-
-.welcome-message h3 {
     margin-bottom: 10px;
 }
 
-.welcome-message ul {
-    margin: 20px auto;
+.section-subtitle {
+    margin-bottom: 25px; /* Was 50px - BIG REDUCTION */
 }
 
-.welcome-message li {
-    margin: 10px 0;
+/* Diary section spacing - REDUCED */
+.diary-feature {
+    margin-bottom: 20px;
 }
 
-.input-hint {
+.diary-feature h3 {
+    margin-bottom: 10px;
+}
+
+.streak-container {
     margin-top: 8px;
 }
 
-/* Footer spacing */
+.progress-graph {
+    margin-top: 10px;
+}
+
+.entry-header {
+    margin-bottom: 10px;
+}
+
+.entry-actions {
+    margin-top: 10px;
+}
+
+/* Features section spacing - REDUCED */
+.feature-icon-wrapper {
+    margin-bottom: 15px;
+}
+
+.feature-title {
+    margin-bottom: 10px;
+}
+
+.feature-description {
+    margin-bottom: 15px;
+}
+
+/* Button spacing - REDUCED */
+.btn {
+    margin-top: 8px;
+}
+
+/* Chat spacing - REDUCED */
+.welcome-message i {
+    margin-bottom: 15px;
+}
+
+.welcome-message h3 {
+    margin-bottom: 8px;
+}
+
+.welcome-message ul {
+    margin: 15px auto;
+}
+
+.welcome-message li {
+    margin: 8px 0;
+}
+
+.input-hint {
+    margin-top: 6px;
+}
+
+/* Footer spacing - REDUCED */
 .footer-content {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .footer-title {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .footer-description {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .social-links {
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .footer-bottom {
-    margin-top: 20px;
-    padding-top: 30px;
+    margin-top: 15px;
+    padding-top: 20px;
 }
 
+/* ===== RESPONSIVE ===== */
 /* Reduce spacing for mobile */
 @media (max-width: 768px) {
-    .hero-title {
-        margin-bottom: 15px;
-    }
-    
-    .hero-description {
-        margin-bottom: 20px;
-    }
-    
-    .section-subtitle {
-        margin-bottom: 30px;
-    }
-    
-    .footer-content {
-        margin-bottom: 30px;
-    }
-    
-    .welcome-message {
-        padding: 20px;
-    }
-}
-
-@media (max-width: 480px) {
     .hero-title {
         margin-bottom: 10px;
     }
@@ -339,14 +359,58 @@ body {
     }
     
     .section-subtitle {
-        margin-bottom: 20px;
-    }
-    
-    .diary-feature {
-        margin-bottom: 20px;
+        margin-bottom: 20px; /* Was 30px */
     }
     
     .footer-content {
-        margin-bottom: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .welcome-message {
+        padding: 15px;
+    }
+    
+    .home-page .container,
+    .settings-page .container,
+    .features-page .container,
+    .studytools-page .container {
+        padding: 15px;
+    }
+    
+    .dashboard-page .dashboard-container {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        margin-bottom: 8px;
+    }
+    
+    .hero-description {
+        margin-bottom: 12px;
+    }
+    
+    .section-subtitle {
+        margin-bottom: 15px; /* Was 20px */
+    }
+    
+    .diary-feature {
+        margin-bottom: 15px;
+    }
+    
+    .footer-content {
+        margin-bottom: 15px;
+    }
+    
+    .home-page .container,
+    .settings-page .container,
+    .features-page .container,
+    .studytools-page .container {
+        padding: 10px;
+    }
+    
+    .dashboard-page .dashboard-container {
+        padding: 10px;
     }
 }

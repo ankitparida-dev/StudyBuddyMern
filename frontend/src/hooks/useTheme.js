@@ -28,9 +28,9 @@ export const ThemeProvider = ({ children }) => {
 
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
-  return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  return React.createElement(
+    ThemeContext.Provider,
+    { value: { isDarkMode, toggleTheme } },
+    children
   );
 };

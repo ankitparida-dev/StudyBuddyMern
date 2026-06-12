@@ -3,27 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <title>StudyBuddy - AI-Powered JEE & NEET Prep</title>
     
-    <!-- CRITICAL CSS - Forces scrollbar before anything loads -->
     <style>
-      /* Force scrollbar - DO NOT REMOVE */
+      /* Base styles - NO forced scrollbar */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
       html, body {
-        overflow-y: scroll !important;
         margin: 0 !important;
         padding: 0 !important;
+        width: 100% !important;
+        overflow-x: hidden !important;
+        /* REMOVED: overflow-y: scroll !important; */
       }
       
       body {
-        min-height: 100vh !important;
+        min-height: 100vh;
       }
       
-      /* Visible scrollbar styling */
+      /* Scrollbar styling - only applies when scroll is needed */
       ::-webkit-scrollbar {
         width: 10px;
         height: 10px;
@@ -45,12 +52,12 @@
       
       /* Firefox scrollbar */
       * {
-        scrollbar-width: auto;
+        scrollbar-width: thin;
         scrollbar-color: #2563eb #e2e8f0;
       }
     </style>
   </head>
-  <body>
+  <body style="margin:0; padding:0; overflow-x:hidden;">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

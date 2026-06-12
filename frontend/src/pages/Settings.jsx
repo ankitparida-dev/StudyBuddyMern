@@ -8,9 +8,8 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [apiError, setApiError] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [autoSaveTimeout, setAutoSaveTimeout] = useState(null);
+  const [forceShow, setForceShow] = useState(false);
   
-  // Mock data - language removed
   const [formData, setFormData] = useState({
     fullName: 'Rahul Sharma',
     email: 'rahul.sharma@example.com',
@@ -33,38 +32,55 @@ const Settings = () => {
     confirmPassword: ''
   });
 
-  const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
+  // Force show after timeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.log('Settings force showing after timeout');
+        setForceShow(true);
+        setLoading(false);
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   useEffect(() => {
     const loadUserData = async () => {
       try {
         setLoading(true);
         
-        // Try to fetch from API
-        const [profile, settings] = await Promise.all([
-          userAPI.getProfile().catch(() => null),
-          userAPI.getSettings().catch(() => null)
-        ]);
+        // Try to fetch from API with timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 2000)
+        );
+        
+        const profilePromise = userAPI.getProfile().catch(() => null);
+        const settingsPromise = userAPI.getSettings().catch(() => null);
+        
+        const results = await Promise.race([
+          Promise.all([profilePromise, settingsPromise]),
+          timeoutPromise.then(() => [null, null])
+        ]).catch(() => [null, null]);
+        
+        const [profile, settings] = results;
         
         if (profile || settings) {
-          setFormData({
-            fullName: profile ? `${profile.firstName} ${profile.lastName}` : formData.fullName,
-            email: profile?.email || formData.email,
-            phone: profile?.phone || formData.phone,
-            class: profile?.currentGrade || formData.class,
-            examType: profile?.examType || formData.examType,
-            dailyGoal: settings?.dailyGoal || formData.dailyGoal,
-            pomodoroDuration: settings?.pomodoroDuration || formData.pomodoroDuration,
-            breakDuration: settings?.breakDuration || formData.breakDuration,
-            notifications: settings?.notifications ?? formData.notifications,
-            weeklyReport: settings?.weeklyReport ?? formData.weeklyReport,
-            aiRecommendations: settings?.aiRecommendations ?? formData.aiRecommendations,
-            distractionFree: settings?.distractionFree ?? formData.distractionFree,
-            autoPause: settings?.autoPause ?? formData.autoPause
-          });
+          setFormData(prev => ({
+            ...prev,
+            fullName: profile ? `${profile.firstName} ${profile.lastName}` : prev.fullName,
+            email: profile?.email || prev.email,
+            phone: profile?.phone || prev.phone,
+            class: profile?.currentGrade || prev.class,
+            examType: profile?.examType || prev.examType,
+            dailyGoal: settings?.dailyGoal || prev.dailyGoal,
+            pomodoroDuration: settings?.pomodoroDuration || prev.pomodoroDuration,
+            breakDuration: settings?.breakDuration || prev.breakDuration,
+            notifications: settings?.notifications ?? prev.notifications,
+            weeklyReport: settings?.weeklyReport ?? prev.weeklyReport,
+            aiRecommendations: settings?.aiRecommendations ?? prev.aiRecommendations,
+            distractionFree: settings?.distractionFree ?? prev.distractionFree,
+            autoPause: settings?.autoPause ?? prev.autoPause
+          }));
           setApiError(false);
         } else {
           setApiError(true);
@@ -81,20 +97,17 @@ const Settings = () => {
     loadUserData();
   }, []);
 
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
   const handleInputChange = (e) => {
     const { id, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [id]: type === 'checkbox' ? checked : value
     }));
-
-    if (id !== 'currentPassword' && id !== 'newPassword' && id !== 'confirmPassword') {
-      if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-      const timeout = setTimeout(() => {
-        showNotification('Changes auto-saved');
-      }, 2000);
-      setAutoSaveTimeout(timeout);
-    }
   };
 
   const handlePasswordChange = (e) => {
@@ -103,16 +116,6 @@ const Settings = () => {
       ...prev,
       [id]: value
     }));
-  };
-
-  const handleCheckboxClick = (e) => {
-    const checkbox = e.target.closest('.checkbox-group');
-    if (checkbox) {
-      checkbox.classList.add('success-animation');
-      setTimeout(() => {
-        checkbox.classList.remove('success-animation');
-      }, 600);
-    }
   };
 
   const handleSaveChanges = async () => {
@@ -124,7 +127,6 @@ const Settings = () => {
     setSaving(true);
     
     try {
-      // Try API, but don't fail if it doesn't work
       await userAPI.updateProfile({
         firstName: formData.fullName.split(' ')[0],
         lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
@@ -134,7 +136,6 @@ const Settings = () => {
         examType: formData.examType
       }).catch(() => null);
 
-      // Language removed from updateSettings call
       await userAPI.updateSettings({
         dailyGoal: formData.dailyGoal,
         pomodoroDuration: formData.pomodoroDuration,
@@ -161,21 +162,8 @@ const Settings = () => {
     }
   };
 
-  const handleProfileClick = () => {
-    showNotification('Profile picture feature coming soon!');
-  };
-
-  const handleInputFocus = (e) => {
-    const parent = e.target.parentElement;
-    if (parent) {
-      parent.classList.add('success-animation');
-      setTimeout(() => {
-        parent.classList.remove('success-animation');
-      }, 600);
-    }
-  };
-
-  if (loading) {
+  // Show loader while loading
+  if (loading && !forceShow) {
     return (
       <div className="page-loader">
         <Loader size="large" text="Loading your settings..." />
@@ -185,6 +173,19 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
+      {/* Unique Settings Page Header */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+        padding: '40px 20px',
+        textAlign: 'center',
+        color: 'white'
+      }}>
+        <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>
+          ⚙️ Settings
+        </h1>
+        <p>Manage your account preferences and study settings</p>
+      </div>
+
       {apiError && (
         <div style={{
           position: 'fixed',
@@ -204,16 +205,8 @@ const Settings = () => {
 
       <div className="container">
         <div className="settings-container">
-          <div className="settings-header">
-            <h1>Account Settings</h1>
-            <p>Manage your profile, preferences, and account settings</p>
-          </div>
-          
           {/* Profile Section */}
-          <div 
-            className="profile-section interactive"
-            onClick={handleProfileClick}
-          >
+          <div className="profile-section interactive">
             <div className="profile-avatar">
               <i className="fas fa-user-graduate"></i>
             </div>
@@ -239,7 +232,6 @@ const Settings = () => {
                   className="form-control" 
                   value={formData.fullName}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -252,7 +244,6 @@ const Settings = () => {
                   className="form-control" 
                   value={formData.email}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -265,7 +256,6 @@ const Settings = () => {
                   className="form-control" 
                   value={formData.phone}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -277,7 +267,6 @@ const Settings = () => {
                   className="select-control"
                   value={formData.class}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 >
                   <option value="11">Class 11</option>
@@ -298,7 +287,6 @@ const Settings = () => {
                   className="select-control"
                   value={formData.examType}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 >
                   <option value="jee">JEE (Main & Advanced)</option>
@@ -306,12 +294,7 @@ const Settings = () => {
                 </select>
               </div>
               
-              {/* Language dropdown REMOVED */}
-              
-              <div 
-                className="checkbox-group interactive"
-                onClick={handleCheckboxClick}
-              >
+              <div className="checkbox-group interactive">
                 <input 
                   type="checkbox" 
                   id="notifications" 
@@ -322,10 +305,7 @@ const Settings = () => {
                 <label htmlFor="notifications">Enable study reminders and notifications</label>
               </div>
               
-              <div 
-                className="checkbox-group interactive"
-                onClick={handleCheckboxClick}
-              >
+              <div className="checkbox-group interactive">
                 <input 
                   type="checkbox" 
                   id="weeklyReport" 
@@ -336,10 +316,7 @@ const Settings = () => {
                 <label htmlFor="weeklyReport">Send weekly progress report via email</label>
               </div>
               
-              <div 
-                className="checkbox-group interactive"
-                onClick={handleCheckboxClick}
-              >
+              <div className="checkbox-group interactive">
                 <input 
                   type="checkbox" 
                   id="aiRecommendations" 
@@ -365,7 +342,6 @@ const Settings = () => {
                   max="12" 
                   value={formData.dailyGoal}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -380,7 +356,6 @@ const Settings = () => {
                   max="60" 
                   value={formData.pomodoroDuration}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -395,15 +370,11 @@ const Settings = () => {
                   max="30" 
                   value={formData.breakDuration}
                   onChange={handleInputChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
               
-              <div 
-                className="checkbox-group interactive"
-                onClick={handleCheckboxClick}
-              >
+              <div className="checkbox-group interactive">
                 <input 
                   type="checkbox" 
                   id="distractionFree" 
@@ -414,10 +385,7 @@ const Settings = () => {
                 <label htmlFor="distractionFree">Enable distraction-free study mode</label>
               </div>
               
-              <div 
-                className="checkbox-group interactive"
-                onClick={handleCheckboxClick}
-              >
+              <div className="checkbox-group interactive">
                 <input 
                   type="checkbox" 
                   id="autoPause" 
@@ -442,7 +410,6 @@ const Settings = () => {
                   placeholder="Enter current password"
                   value={passwords.currentPassword}
                   onChange={handlePasswordChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -456,7 +423,6 @@ const Settings = () => {
                   placeholder="Enter new password (min. 8 characters)"
                   value={passwords.newPassword}
                   onChange={handlePasswordChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -470,7 +436,6 @@ const Settings = () => {
                   placeholder="Confirm new password"
                   value={passwords.confirmPassword}
                   onChange={handlePasswordChange}
-                  onFocus={handleInputFocus}
                   disabled={saving}
                 />
               </div>
@@ -478,7 +443,6 @@ const Settings = () => {
               <div className="settings-actions">
                 <button 
                   className="btn btn-secondary btn-animated" 
-                  id="cancelBtn"
                   onClick={handleCancelChanges}
                   disabled={saving}
                 >
@@ -486,7 +450,6 @@ const Settings = () => {
                 </button>
                 <button 
                   className="btn btn-success btn-animated" 
-                  id="saveBtn"
                   onClick={handleSaveChanges}
                   disabled={saving}
                 >
@@ -497,13 +460,6 @@ const Settings = () => {
           </div>
         </div>
       </div>
-
-      {/* Scroll Spacer - Ensures scrolling works */}
-      <div style={{ 
-        height: '50px', 
-        width: '100%', 
-        opacity: 0 
-      }}></div>
 
       {/* Notification */}
       {notification && (

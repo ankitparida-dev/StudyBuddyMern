@@ -19,7 +19,7 @@ const practiceSessionSchema = new mongoose.Schema({
   totalQuestions: {
     type: Number,
     required: true,
-    min: 1
+    min: 0
   },
   correctAnswers: {
     type: Number,

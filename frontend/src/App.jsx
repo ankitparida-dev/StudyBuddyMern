@@ -8,8 +8,9 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
 import { ThemeProvider } from './hooks/useTheme';
-import { LoadingProvider } from './hooks/useLoading';
+import { LoadingProvider, useLoading } from './hooks/useLoading';
 import { NotificationProvider } from './hooks/useNotifications';
+import LoadingScreen from './components/common/LoadingScreen';
 import './styles/App.css';
 
 // Lazy load pages
@@ -45,32 +46,7 @@ function Layout({ children }) {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
   
-  // Force scrollbar on every page load and reload
-  useEffect(() => {
-    const forceScrollbar = () => {
-      // Set body overflow
-      document.body.style.overflowY = 'scroll';
-      document.documentElement.style.overflowY = 'scroll';
-      
-      // Ensure minimum height
-      document.body.style.minHeight = '100vh';
-      
-      // Add a tiny delay to ensure it applies after render
-      setTimeout(() => {
-        document.body.style.overflowY = 'scroll';
-        document.documentElement.style.overflowY = 'scroll';
-      }, 0);
-    };
-    
-    forceScrollbar();
-    
-    // Also run after any route changes
-    window.addEventListener('popstate', forceScrollbar);
-    
-    return () => {
-      window.removeEventListener('popstate', forceScrollbar);
-    };
-  }, []);
+  // REMOVED the forceScrollbar function entirely
   
   return (
     <div className="app">
@@ -89,23 +65,36 @@ function Layout({ children }) {
   );
 }
 
+// AppContent handles loading state
+function AppContent() {
+  const { isLoading } = useLoading();
+  
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+  
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/study-tools" element={<StudyTools />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
       <LoadingProvider>
         <NotificationProvider>
           <Router>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/study-tools" element={<StudyTools />} />
-                <Route path="/features" element={<Features />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Layout>
+            <AppContent />
           </Router>
         </NotificationProvider>
       </LoadingProvider>

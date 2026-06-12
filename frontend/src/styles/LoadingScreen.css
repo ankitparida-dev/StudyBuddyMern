@@ -233,3 +233,17 @@
         gap: 10px;
     }
 }
+/* Add these 3 lines at the VERY END of your LoadingScreen.css */
+
+/* Hide scrollbar for all browsers on loading screen */
+.loading-screen::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Firefox - remove scrollbar */
+.loading-screen {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}

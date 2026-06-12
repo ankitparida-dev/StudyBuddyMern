@@ -222,7 +222,7 @@ const savePracticeSession = async (req, res) => {
     const { subject, topic, totalQuestions, correctAnswers, timeSpent, difficulty, notes, questions } = req.body;
 
     // Validation
-    if (!subject || !topic || !totalQuestions || correctAnswers === undefined) {
+    if (!subject || !topic || totalQuestions === undefined || correctAnswers === undefined) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
@@ -231,7 +231,7 @@ const savePracticeSession = async (req, res) => {
     }
 
     // Calculate accuracy
-    const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
     const session = await PracticeSession.create({
       userId: req.user._id,

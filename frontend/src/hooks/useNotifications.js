@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useCallback } from 'react';
+import NotificationContainer from '../components/common/NotificationContainer';
 
 const NotificationContext = createContext();
 
@@ -47,30 +48,10 @@ export const NotificationProvider = ({ children }) => {
     }, 400);
   }, []);
 
-  return (
-    <NotificationContext.Provider value={{ notifications, showNotification, hideNotification }}>
-      {children}
-      <NotificationContainer />
-    </NotificationContext.Provider>
-  );
-};
-
-const NotificationContainer = () => {
-  const { notifications } = useNotifications();
-
-  return (
-    <div className="notification-container">
-      {notifications.map(notification => (
-        <div
-          key={notification.id}
-          className={`notification ${notification.type} ${notification.visible ? 'visible' : 'hiding'}`}
-        >
-          <div className="notification-content">
-            <i className={`fas fa-${notification.type === 'error' ? 'exclamation' : 'check'}`}></i>
-            <span>{notification.message}</span>
-          </div>
-        </div>
-      ))}
-    </div>
+  return React.createElement(
+    NotificationContext.Provider,
+    { value: { notifications, showNotification, hideNotification } },
+    children,
+    React.createElement(NotificationContainer)
   );
 };
