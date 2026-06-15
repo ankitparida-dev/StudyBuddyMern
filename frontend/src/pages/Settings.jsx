@@ -173,19 +173,8 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
-      {/* Unique Settings Page Header */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-        padding: '40px 20px',
-        textAlign: 'center',
-        color: 'white'
-      }}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>
-          ⚙️ Settings
-        </h1>
-        <p>Manage your account preferences and study settings</p>
-      </div>
-
+      {/* REMOVED - Purple Settings Header */}
+      
       {apiError && (
         <div style={{
           position: 'fixed',

@@ -50,6 +50,12 @@
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
 }
 
 .btn-outline {
@@ -59,8 +65,10 @@
 }
 
 .btn-outline:hover {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.2);
 }
 
 .timer-sessions {
@@ -107,84 +115,118 @@
     color: var(--primary);
     font-weight: 600;
 }
-/* Add these to your existing PomodoroTimer.css */
 
 /* Subject Selector Modal */
 .subject-selector-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  background: var(--card-bg);
-  padding: 30px;
-  border-radius: 20px;
-  max-width: 400px;
-  width: 90%;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.modal-content h3 {
+    color: var(--dark);
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+.modal-content p {
+    color: var(--secondary);
+    margin-bottom: 20px;
 }
 
 .subject-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin: 20px 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
 }
 
 .subject-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 15px;
-  border: 2px solid var(--primary-light);
-  border-radius: 12px;
-  background: var(--light);
-  cursor: pointer;
-  transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 15px;
+    border: 2px solid rgba(37, 99, 235, 0.2);
+    border-radius: 12px;
+    background: var(--light);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .subject-option:hover {
-  background: var(--primary-light);
-  transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.1));
+    border-color: var(--primary);
+    transform: translateY(-3px);
 }
 
 .subject-option i {
-  font-size: 24px;
-  color: var(--primary);
+    font-size: 28px;
+    color: var(--primary);
+}
+
+.subject-option span {
+    font-weight: 600;
+    color: var(--dark);
 }
 
 .current-subject {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin: 10px 0;
-  padding: 8px 15px;
-  background: var(--primary-light);
-  border-radius: 20px;
-  font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 8px 15px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--dark);
 }
 
 .current-subject button {
-  background: none;
-  border: none;
-  color: var(--primary);
-  cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.current-subject button:hover {
+    transform: scale(1.1);
+    color: var(--primary-dark);
 }
 
 .today-total {
-  margin-top: 15px;
-  padding: 10px;
-  background: var(--light);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: var(--secondary);
+    margin-top: 15px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(59, 130, 246, 0.05));
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--primary);
+    text-align: center;
+    font-weight: 600;
+}
+
+.today-total span {
+    font-size: 1.2rem;
+    font-weight: 800;
 }

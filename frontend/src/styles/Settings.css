@@ -1,7 +1,7 @@
-/* ===== SETTINGS PAGE SPECIFIC STYLES ===== */
+/* ===== SETTINGS PAGE SPECIFIC STYLES - Website Blue Theme ===== */
 .settings-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
 }
 
 .settings-page-content {
@@ -20,23 +20,24 @@
   text-align: center;
   margin-bottom: 40px;
   padding: 30px 20px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(37, 99, 235, 0.1);
 }
 
 .settings-header h1 {
   font-size: 2.5rem;
-  color: #1e293b;
+  color: var(--dark);
   margin-bottom: 10px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .settings-header p {
-  color: #64748b;
+  color: var(--secondary);
   font-size: 1.1rem;
 }
 
@@ -49,12 +50,12 @@
 
 /* Settings Cards */
 .settings-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   border-radius: 20px;
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.1);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -67,7 +68,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
 }
 
 .settings-card:hover {
@@ -78,19 +79,19 @@
 .settings-card h2 {
   font-size: 1.5rem;
   margin-bottom: 20px;
-  color: #1e293b;
+  color: var(--dark);
   display: flex;
   align-items: center;
   gap: 12px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 2px solid var(--primary);
 }
 
 .settings-card h2 i {
-  color: #667eea;
+  color: var(--primary);
   width: 35px;
   height: 35px;
-  background: linear-gradient(135deg, #667eea20, #764ba220);
+  background: rgba(37, 99, 235, 0.1);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -106,7 +107,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--dark);
 }
 
 .form-control,
@@ -116,7 +117,7 @@
   border-radius: 10px;
   border: 2px solid #e2e8f0;
   background: white;
-  color: #1e293b;
+  color: var(--dark);
   font-size: 1rem;
   transition: all 0.3s ease;
 }
@@ -124,8 +125,8 @@
 .form-control:focus,
 .select-control:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* Checkbox Styles */
@@ -138,19 +139,19 @@
   border-radius: 10px;
   transition: all 0.3s ease;
   cursor: pointer;
-  background: rgba(102, 126, 234, 0.05);
-  border: 1px solid rgba(102, 126, 234, 0.1);
+  background: rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.1);
 }
 
 .checkbox-group:hover {
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(37, 99, 235, 0.1);
   transform: translateX(5px);
 }
 
 .checkbox-group input {
   width: 20px;
   height: 20px;
-  accent-color: #667eea;
+  accent-color: var(--primary);
   cursor: pointer;
 }
 
@@ -159,7 +160,7 @@
   cursor: pointer;
   flex: 1;
   font-weight: 500;
-  color: #1e293b;
+  color: var(--dark);
 }
 
 /* Profile Section */
@@ -169,14 +170,15 @@
   gap: 25px;
   margin-bottom: 30px;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(37, 99, 235, 0.1);
 }
 
 .profile-section::before {
@@ -186,7 +188,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
 }
 
 .profile-section:hover {
@@ -198,7 +200,7 @@
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,18 +218,18 @@
 .profile-info h3 {
   font-size: 1.5rem;
   margin-bottom: 8px;
-  color: #1e293b;
+  color: var(--dark);
 }
 
 .profile-info p {
-  color: #64748b;
+  color: var(--secondary);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .profile-info p i {
-  color: #667eea;
+  color: var(--primary);
 }
 
 /* Settings Actions */
@@ -256,7 +258,7 @@
 
 .settings-actions .btn-secondary {
   background: #e2e8f0;
-  color: #1e293b;
+  color: var(--dark);
 }
 
 .settings-actions .btn-secondary:hover {
@@ -265,13 +267,13 @@
 }
 
 .settings-actions .btn-success {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
 }
 
 .settings-actions .btn-success:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
 }
 
 /* Loading Spinner */
@@ -290,12 +292,17 @@
 }
 
 /* Dark Mode Adjustments */
+.dark-mode .settings-page {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
 .dark-mode .settings-header {
-  background: rgba(30, 41, 59, 0.95);
+  background: var(--card-bg);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 .dark-mode .settings-header h1 {
-  background: linear-gradient(135deg, #a78bfa, #c084fc);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -305,53 +312,64 @@
 }
 
 .dark-mode .settings-card {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--card-bg);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 .dark-mode .settings-card h2 {
-  color: #f8fafc;
-  border-bottom-color: #a78bfa;
+  color: var(--dark);
+  border-bottom-color: var(--primary);
 }
 
 .dark-mode .settings-card h2 i {
-  background: rgba(167, 139, 250, 0.2);
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--primary);
 }
 
 .dark-mode .form-group label {
-  color: #f8fafc;
+  color: var(--dark);
 }
 
 .dark-mode .form-control,
 .dark-mode .select-control {
   background: #1e293b;
   border-color: #334155;
-  color: #f8fafc;
+  color: var(--dark);
 }
 
 .dark-mode .checkbox-group {
-  background: rgba(167, 139, 250, 0.1);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 .dark-mode .checkbox-group label {
-  color: #f8fafc;
+  color: var(--dark);
 }
 
 .dark-mode .profile-section {
-  background: rgba(30, 41, 59, 0.95);
+  background: var(--card-bg);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 .dark-mode .profile-info h3 {
-  color: #f8fafc;
+  color: var(--dark);
+}
+
+.dark-mode .profile-info p {
+  color: #94a3b8;
 }
 
 .dark-mode .settings-actions .btn-secondary {
   background: #334155;
-  color: #f8fafc;
+  color: var(--dark);
 }
 
 .dark-mode .settings-actions .btn-secondary:hover {
   background: #475569;
+}
+
+.dark-mode .settings-actions .btn-success {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
 }
 
 /* Responsive */

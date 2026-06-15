@@ -1,0 +1,168 @@
+/* Notification Container */
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 380px;
+}
+
+/* Notification Base Styles - REMOVED BLUR */
+.notification {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transform: translateX(0);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  cursor: pointer;
+  border-left: 4px solid;
+  /* REMOVED: backdrop-filter, blur, gradients */
+}
+
+.notification.visible {
+  animation: slideIn 0.3s ease forwards;
+}
+
+.notification.hiding {
+  animation: slideOut 0.3s ease forwards;
+}
+
+/* Success Notification - Clean Green */
+.notification.success {
+  border-left-color: #10b981;
+  background: #ffffff; /* Solid color, no gradient */
+}
+
+.notification.success .notification-content i {
+  color: #10b981;
+}
+
+/* Error Notification - Clean Red */
+.notification.error {
+  border-left-color: #ef4444;
+  background: #ffffff; /* Solid color */
+}
+
+.notification.error .notification-content i {
+  color: #ef4444;
+}
+
+/* Warning Notification - Clean Orange */
+.notification.warning {
+  border-left-color: #f59e0b;
+  background: #ffffff; /* Solid color */
+}
+
+.notification.warning .notification-content i {
+  color: #f59e0b;
+}
+
+/* Info Notification - Clean Blue */
+.notification.info {
+  border-left-color: #3b82f6;
+  background: #ffffff; /* Solid color */
+}
+
+.notification.info .notification-content i {
+  color: #3b82f6;
+}
+
+/* Notification Content */
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+}
+
+.notification-content i {
+  font-size: 1.2rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-content span {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Dark Mode Styles - Clean solid colors */
+.dark-mode .notification.success {
+  background: #1e293b;
+  border-left-color: #10b981;
+}
+
+.dark-mode .notification.error {
+  background: #1e293b;
+  border-left-color: #ef4444;
+}
+
+.dark-mode .notification.warning {
+  background: #1e293b;
+  border-left-color: #f59e0b;
+}
+
+.dark-mode .notification.info {
+  background: #1e293b;
+  border-left-color: #3b82f6;
+}
+
+.dark-mode .notification-content span {
+  color: #f8fafc;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Hover Effect - Clean */
+.notification:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .notification-container {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+  
+  .notification-content {
+    padding: 12px 16px;
+  }
+  
+  .notification-content span {
+    font-size: 0.85rem;
+  }
+}

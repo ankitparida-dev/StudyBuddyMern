@@ -11,6 +11,7 @@ const Header = () => {
   const { showNotification } = useNotifications();
   const location = useLocation();
   const [notificationDot, setNotificationDot] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
     { path: '/', label: 'Home' },
@@ -40,23 +41,40 @@ const Header = () => {
     }
   };
 
+  const handleThemeToggle = () => {
+    console.log('Theme toggled - Current:', isDarkMode ? 'dark' : 'light');
+    toggleTheme();
+  };
+
   return (
     <header className="main-header">
       <div className="container">
         <nav className="navbar">
+          {/* Logo */}
           <div className="nav-brand">
-            <Link to="/" className="logo">
+            <Link to="/" className="logo" onClick={() => setIsMobileMenuOpen(false)}>
               <img src={logo} alt="StudyBuddy Logo" />
               <span className="brand-name">StudyBuddy</span>
             </Link>
           </div>
 
-          <ul className="nav-menu">
+          {/* Mobile Menu Toggle Button */}
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <i className="fas fa-bars"></i>
+          </button>
+
+          {/* Navigation Menu */}
+          <ul className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`}>
             {navItems.map(item => (
               <li key={item.path} className="nav-item">
                 <Link
                   to={item.path}
                   className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
@@ -64,27 +82,37 @@ const Header = () => {
             ))}
           </ul>
 
+          {/* Right Side Controls */}
           <div className="nav-controls">
+            {/* Notification Bell Button */}
             <button 
               className="notification-btn" 
               onClick={handleNotificationClick}
-              title="Notifications"
+              title="Get Study Reminders"
+              aria-label="Notifications"
             >
               <i className="fas fa-bell"></i>
               {notificationDot && <span className="notification-dot"></span>}
             </button>
 
+            {/* Theme Toggle Button */}
             <button 
               className="theme-toggle" 
-              onClick={toggleTheme}
+              onClick={handleThemeToggle}
               aria-label="Toggle dark mode"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              {isDarkMode ? <i className="fas fa-sun"></i> : <i className="fas fa-moon"></i>}
+              {isDarkMode ? (
+                <i className="fas fa-sun"></i>
+              ) : (
+                <i className="fas fa-moon"></i>
+              )}
             </button>
 
+            {/* Login Button */}
             <div className="auth-buttons">
-              <Link to="/login" className="btn btn-primary btn-animated">
-                Login / Sign Up
+              <Link to="/login" className="btn btn-primary">
+                <i className="fas fa-sign-in-alt"></i> Login / Sign Up
               </Link>
             </div>
           </div>
