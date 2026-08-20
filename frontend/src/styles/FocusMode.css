@@ -5,84 +5,6 @@
     gap: 15px;
 }
 
-.btn-success {
-    background: var(--success);
-    color: white;
-}
-
-.btn-success:hover {
-    background: #0da271;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.focus-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.stat-card {
-    background: var(--light);
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--primary);
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    font-size: 0.85rem;
-    color: var(--secondary);
-    font-weight: 600;
-}
-
-/* Focus mode overlay effect */
-.focus-active {
-    filter: blur(2px);
-    pointer-events: none;
-}
-
-.focus-active::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
-}
-/* Focus Mode Styles */
-.focus-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.btn-success {
-    background: var(--success);
-    color: white;
-}
-
-.btn-success:hover {
-    background: #0da271;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
 .focus-actions-grid {
     margin: 10px 0;
 }
@@ -120,24 +42,7 @@
     font-weight: 600;
 }
 
-/* Focus mode overlay effect */
-.focus-active {
-    filter: blur(2px);
-    pointer-events: none;
-}
-
-.focus-active::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
-}
-
-/* Focus overlay */
+/* Focus overlay effect */
 .focus-overlay-active .tool-card {
     filter: blur(2px);
     transition: filter 0.3s ease;
@@ -176,11 +81,6 @@
     50% { opacity: 0.7; }
 }
 
-/* Distraction blocking */
-img, video, iframe:not(#lofi-player) {
-    transition: filter 0.3s ease;
-}
-
 /* Loading spinner */
 .loading-state {
     display: flex;
@@ -194,7 +94,7 @@ img, video, iframe:not(#lofi-player) {
 .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid var(--primary-light);
+    border: 3px solid var(--sky-light);
     border-top-color: var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -203,4 +103,20 @@ img, video, iframe:not(#lofi-player) {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* Dark Mode */
+.dark-mode .stat-card {
+    background: #1e293b;
+}
+
+.dark-mode .stat-value {
+    color: #60a5fa;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .focus-stats {
+        grid-template-columns: 1fr;
+    }
 }

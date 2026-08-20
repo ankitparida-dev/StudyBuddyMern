@@ -107,7 +107,6 @@
   20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .error-content h2 {
     font-size: 2rem;

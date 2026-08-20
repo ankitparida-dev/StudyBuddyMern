@@ -6,7 +6,6 @@
   box-sizing: border-box;
 }
 
-/* Force full background on body when login page is present */
 body:has(.login-page) {
   background: linear-gradient(135deg, #dbeafe, #eff6ff) !important;
   margin: 0 !important;
@@ -38,7 +37,6 @@ body:has(.login-page) {
   margin: 0 auto;
 }
 
-/* Left Side - Forms */
 .login-form-container {
   flex: 1;
   padding: 40px;
@@ -182,25 +180,50 @@ body:has(.login-page) {
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
+.login-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .switch-text {
   text-align: center;
   color: #64748b;
   font-size: 0.9rem;
 }
 
-.switch-text span {
+.switch-link {
   color: #2563eb;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
+  background: none;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
 }
 
-.switch-text span:hover {
+.switch-link:hover {
   color: #1d4ed8;
   text-decoration: underline;
 }
 
-/* Right Side - Branding with Logo */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Right Side - Branding */
 .login-branding {
   flex: 1;
   background: linear-gradient(135deg, #2563eb, #1e40af);
@@ -216,7 +239,6 @@ body:has(.login-page) {
   max-width: 300px;
 }
 
-/* Logo Styles */
 .branding-logo {
   margin-bottom: 30px;
 }

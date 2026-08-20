@@ -11,7 +11,6 @@ const Home = () => {
   const { isLoading, completeLoading } = useLoading();
 
   useEffect(() => {
-    // Simulate loading completion
     const timer = setTimeout(() => {
       completeLoading();
     }, 2000);
@@ -30,12 +29,8 @@ const Home = () => {
       <FeaturesSection />
       <ChatAssistant />
       
-      {/* Scroll Spacer - Ensures scrolling works */}
-      <div style={{ 
-        height: '50px', 
-        width: '100%', 
-        opacity: 0 
-      }}></div>
+      {/* Scroll Spacer */}
+      <div className="scroll-spacer"></div>
     </div>
   );
 };

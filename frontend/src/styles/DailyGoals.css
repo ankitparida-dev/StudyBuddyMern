@@ -3,35 +3,6 @@
     margin-bottom: 25px;
 }
 
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--dark);
-    font-size: 0.9rem;
-}
-
-.form-control {
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 10px;
-    border: 2px solid #e1e5e9;
-    background: var(--light);
-    color: var(--dark);
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
 .goals-list {
     max-height: 300px;
     overflow-y: auto;
@@ -122,4 +93,17 @@
     font-size: 3rem;
     margin-bottom: 15px;
     opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .goal-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .goal-actions {
+        width: 100%;
+        justify-content: center;
+    }
 }

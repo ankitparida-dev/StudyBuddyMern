@@ -10,7 +10,6 @@
   max-width: 380px;
 }
 
-/* Notification Base Styles - REMOVED BLUR */
 .notification {
   background: white;
   border-radius: 12px;
@@ -20,7 +19,6 @@
   transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   cursor: pointer;
   border-left: 4px solid;
-  /* REMOVED: backdrop-filter, blur, gradients */
 }
 
 .notification.visible {
@@ -31,47 +29,42 @@
   animation: slideOut 0.3s ease forwards;
 }
 
-/* Success Notification - Clean Green */
 .notification.success {
   border-left-color: #10b981;
-  background: #ffffff; /* Solid color, no gradient */
+  background: #ffffff;
 }
 
 .notification.success .notification-content i {
   color: #10b981;
 }
 
-/* Error Notification - Clean Red */
 .notification.error {
   border-left-color: #ef4444;
-  background: #ffffff; /* Solid color */
+  background: #ffffff;
 }
 
 .notification.error .notification-content i {
   color: #ef4444;
 }
 
-/* Warning Notification - Clean Orange */
 .notification.warning {
   border-left-color: #f59e0b;
-  background: #ffffff; /* Solid color */
+  background: #ffffff;
 }
 
 .notification.warning .notification-content i {
   color: #f59e0b;
 }
 
-/* Info Notification - Clean Blue */
 .notification.info {
   border-left-color: #3b82f6;
-  background: #ffffff; /* Solid color */
+  background: #ffffff;
 }
 
 .notification.info .notification-content i {
   color: #3b82f6;
 }
 
-/* Notification Content */
 .notification-content {
   display: flex;
   align-items: center;
@@ -96,32 +89,11 @@
   font-weight: 500;
 }
 
-/* Dark Mode Styles - Clean solid colors */
-.dark-mode .notification.success {
-  background: #1e293b;
-  border-left-color: #10b981;
+.notification:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
-.dark-mode .notification.error {
-  background: #1e293b;
-  border-left-color: #ef4444;
-}
-
-.dark-mode .notification.warning {
-  background: #1e293b;
-  border-left-color: #f59e0b;
-}
-
-.dark-mode .notification.info {
-  background: #1e293b;
-  border-left-color: #3b82f6;
-}
-
-.dark-mode .notification-content span {
-  color: #f8fafc;
-}
-
-/* Animations */
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -144,10 +116,29 @@
   }
 }
 
-/* Hover Effect - Clean */
-.notification:hover {
-  transform: translateX(-5px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+/* Dark Mode */
+.dark-mode .notification.success {
+  background: #1e293b;
+  border-left-color: #10b981;
+}
+
+.dark-mode .notification.error {
+  background: #1e293b;
+  border-left-color: #ef4444;
+}
+
+.dark-mode .notification.warning {
+  background: #1e293b;
+  border-left-color: #f59e0b;
+}
+
+.dark-mode .notification.info {
+  background: #1e293b;
+  border-left-color: #3b82f6;
+}
+
+.dark-mode .notification-content span {
+  color: #f8fafc;
 }
 
 /* Responsive */

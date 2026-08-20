@@ -15,7 +15,6 @@ const StudyTools = () => {
   const timerRef = useRef(null);
 
   useEffect(() => {
-    // Check API connection
     const checkApi = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -25,7 +24,6 @@ const StudyTools = () => {
           return;
         }
         
-        // ✅ FIX: Use environment variable
         const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000/api';
         const res = await fetch(`${API_URL}/study/goals`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -74,7 +72,7 @@ const StudyTools = () => {
   return (
     <div className="studytools-page">
       {apiError && (
-        <div className="demo-data-badge">
+        <div className="demo-badge">
           ⚡ Using Demo Data (Backend not connected)
         </div>
       )}

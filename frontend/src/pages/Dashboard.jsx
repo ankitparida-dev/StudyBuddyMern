@@ -26,18 +26,19 @@ const Dashboard = () => {
   const [timeoutReached, setTimeoutReached] = useState(false);
   const sectionRefs = useRef({});
 
-  // ✅ Add timeout to prevent infinite loading
+  // Timeout to prevent infinite loading
   useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
         console.log('Dashboard loading timeout - forcing display');
         setTimeoutReached(true);
       }
-    }, 5000); // 5 second timeout
+    }, 5000);
     
     return () => clearTimeout(timer);
   }, [loading]);
 
+  // Intersection observer for animations
   useEffect(() => {
     if (!loading && !timeoutReached) {
       const observer = new IntersectionObserver(
@@ -78,7 +79,7 @@ const Dashboard = () => {
     { id: 'streaks', icon: 'fa-fire', label: 'Study Streaks' },
   ];
 
-  // ✅ Show loader only if loading and timeout not reached
+  // Show loader only if loading and timeout not reached
   if (loading && !timeoutReached) {
     return (
       <div className="page-loader">
@@ -91,29 +92,14 @@ const Dashboard = () => {
     <div className="dashboard-page">
       {/* Mock Data Indicator */}
       {(usingMockData || timeoutReached) && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          background: '#ffd166',
-          color: '#1e293b',
-          padding: '8px 16px',
-          borderRadius: '20px',
-          fontSize: '14px',
-          zIndex: 1000,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
+        <div className="demo-badge">
           ⚡ Using Demo Data (Backend not connected)
         </div>
       )}
 
       {/* Welcome Message */}
       {user && (
-        <div className="welcome-message" style={{
-          padding: '20px 40px 0',
-          fontSize: '1.5rem',
-          fontWeight: '600'
-        }}>
+        <div className="welcome-message">
           Welcome back, {user.firstName || 'Student'}! 👋
         </div>
       )}
@@ -124,34 +110,30 @@ const Dashboard = () => {
           <ul className="sidebar-menu">
             {sidebarItems.map(item => (
               <li key={item.id} className="sidebar-item">
-                <a 
-                  href={`#${item.id}`} 
+                <button
                   className={`sidebar-link ${activeSection === item.id ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSectionChange(item.id);
-                  }}
+                  onClick={() => handleSectionChange(item.id)}
                 >
                   <i className={`fas ${item.icon}`}></i>
                   <span>{item.label}</span>
-                </a>
+                </button>
               </li>
             ))}
           </ul>
           
           <div className="exam-selection">
-            <div 
+            <button
               className={`exam-tab jee-tab ${activeExam === 'jee' ? 'active' : ''}`}
               onClick={() => handleExamChange('jee')}
             >
               JEE
-            </div>
-            <div 
+            </button>
+            <button
               className={`exam-tab neet-tab ${activeExam === 'neet' ? 'active' : ''}`}
               onClick={() => handleExamChange('neet')}
             >
               NEET
-            </div>
+            </button>
           </div>
         </aside>
 

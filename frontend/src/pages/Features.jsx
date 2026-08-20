@@ -7,14 +7,12 @@ const Features = () => {
   const [hoveredExam, setHoveredExam] = useState(null);
 
   useEffect(() => {
-    // Scroll animations with staggered delay
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('animated');
             
-            // Add staggered animation to children
             const children = entry.target.querySelectorAll('.stagger-item');
             children.forEach((child, index) => {
               child.style.transitionDelay = `${index * 0.1}s`;
@@ -142,7 +140,7 @@ const Features = () => {
 
   return (
     <div className="features-page">
-      {/* Hero Section with Particles Effect */}
+      {/* Hero Section */}
       <section className="features-hero">
         <div className="hero-particles">
           <div className="particle"></div>
@@ -175,7 +173,7 @@ const Features = () => {
         </div>
       </section>
 
-      {/* Main Features with Interactive Cards */}
+      {/* Main Features */}
       <section className="main-features-section">
         <div className="container">
           <h2 className="section-title text-center">Core Features</h2>
@@ -198,7 +196,6 @@ const Features = () => {
                   <h3>{feature.title}</h3>
                   <p>{feature.description}</p>
                   
-                  {/* Stats Row */}
                   <div className="feature-stats">
                     {Object.entries(feature.stats).map(([key, value]) => (
                       <div key={key} className="feature-stat">
@@ -208,7 +205,6 @@ const Features = () => {
                     ))}
                   </div>
 
-                  {/* Details List with Animation */}
                   <ul className="feature-details-list">
                     {feature.details.map((detail, idx) => (
                       <li key={idx} className="stagger-item">
@@ -228,7 +224,7 @@ const Features = () => {
         </div>
       </section>
 
-      {/* All Features Grid with Hover Effects */}
+      {/* All Features Grid */}
       <section className="all-features-section">
         <div className="container">
           <h2 className="section-title text-center">Everything You Need</h2>
@@ -251,7 +247,7 @@ const Features = () => {
         </div>
       </section>
 
-      {/* Exam-Specific Features with 3D Effect */}
+      {/* Exam-Specific Features */}
       <section className="exam-features-section">
         <div className="container">
           <h2 className="section-title text-center">Exam-Specific Preparation</h2>
@@ -273,7 +269,6 @@ const Features = () => {
                     <h3>{exam.exam}</h3>
                   </div>
                   <div className="exam-body">
-                    {/* Stats */}
                     <div className="exam-stats">
                       {Object.entries(exam.stats).map(([key, value]) => (
                         <div key={key} className="exam-stat">
@@ -283,7 +278,6 @@ const Features = () => {
                       ))}
                     </div>
 
-                    {/* Features List */}
                     <ul>
                       {exam.features.map((feature, idx) => (
                         <li key={idx} className="stagger-item">
@@ -304,7 +298,7 @@ const Features = () => {
         </div>
       </section>
 
-      {/* Interactive Call to Action */}
+      {/* Call to Action */}
       <section className="features-cta">
         <div className="container">
           <div className="cta-content">
@@ -319,7 +313,6 @@ const Features = () => {
               </Link>
             </div>
             
-            {/* Trust Badges */}
             <div className="trust-badges">
               <div className="trust-badge">
                 <i className="fas fa-shield-alt"></i>
@@ -338,13 +331,8 @@ const Features = () => {
         </div>
       </section>
 
-      {/* Scroll Spacer - Ensures scrolling works */}
-      <div className="scroll-spacer" style={{ 
-        height: '100px', 
-        width: '100%', 
-        opacity: 0,
-        pointerEvents: 'none'
-      }}></div>
+      {/* Scroll Spacer */}
+      <div className="scroll-spacer"></div>
     </div>
   );
 };

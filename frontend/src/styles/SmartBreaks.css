@@ -1,82 +1,736 @@
-/* Break Buttons */
+/* ===== BREAK BUTTONS ===== */
+
 .break-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 14px;
+    margin-bottom: 24px;
 }
 
+/* ===== BASE BREAK BUTTON ===== */
 .break-btn {
-    padding: 15px 10px;
-    border-radius: 12px;
+    padding: 18px 14px;
+    border-radius: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: 2px solid var(--primary);
     font-size: 0.9rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    min-height: 80px;
+    min-height: 90px;
     background: transparent;
     color: var(--primary);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Button Icon */
+.break-btn i {
+    font-size: 1.6rem;
+    transition: all 0.4s ease;
+    line-height: 1;
+}
+
+/* Button Label */
+.break-btn .btn-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Button Subtitle */
+.break-btn .btn-subtitle {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    font-weight: 400;
+    margin-top: -4px;
+}
+
+/* ===== HOVER EFFECT ===== */
+.break-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    background: var(--gradient);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.break-btn:hover::before {
+    opacity: 1;
 }
 
 .break-btn:hover {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.25);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+    border-color: transparent;
 }
 
+.break-btn:hover i {
+    transform: scale(1.15) rotate(-5deg);
+}
+
+.break-btn:hover .btn-label {
+    transform: scale(1.05);
+}
+
+.break-btn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+/* ===== CONTENT POSITIONING ===== */
+.break-btn > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== VARIANT: SHORT BREAK ===== */
+.break-btn.short-break {
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.break-btn.short-break::before {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.break-btn.short-break:hover {
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+/* ===== VARIANT: LONG BREAK ===== */
+.break-btn.long-break {
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+.break-btn.long-break::before {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.break-btn.long-break:hover {
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+}
+
+/* ===== VARIANT: CUSTOM BREAK ===== */
+.break-btn.custom-break {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.break-btn.custom-break::before {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.break-btn.custom-break:hover {
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+}
+
+/* ===== DISABLED STATE ===== */
+.break-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    pointer-events: none;
+}
+
+/* ===== ACTIVE/SELECTED STATE ===== */
+.break-btn.active {
+    background: var(--gradient);
+    color: white;
+    border-color: transparent;
+    transform: scale(1.04);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35);
+}
+
+.break-btn.active::before {
+    opacity: 1;
+}
+
+.break-btn.active i {
+    animation: pulseIcon 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseIcon {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+.break-btn.active.short-break {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
+}
+
+.break-btn.active.long-break {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.35);
+}
+
+.break-btn.active.custom-break {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.35);
+}
+
+/* ===== RIPPLE EFFECT ===== */
+.break-btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: rippleAnim 0.6s ease-out;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes rippleAnim {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ===== TOOLTIP ===== */
+.break-btn .tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: var(--dark);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.break-btn .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--dark);
+}
+
+.break-btn:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+}
+
+/* ===== BREAK INFO ===== */
 .break-info {
     text-align: center;
-    padding: 15px;
+    padding: 18px 20px;
     background: var(--light);
-    border-radius: 12px;
+    border-radius: 14px;
     color: var(--secondary);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    margin-top: 4px;
+}
+
+.break-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.break-info .info-icon {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 8px;
 }
 
 .break-info strong {
     color: var(--primary);
-}
-
-/* Active Break Styles */
-.active-break {
-    text-align: center;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(59, 130, 246, 0.05));
-    border-radius: 12px;
-    border: 1px solid rgba(37, 99, 235, 0.1);
-}
-
-.active-break h3 {
-    margin-bottom: 15px;
-    color: var(--primary);
     font-weight: 700;
 }
 
-.break-timer {
+.break-info .info-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* ===== ACTIVE BREAK ===== */
+.active-break {
+    text-align: center;
+    padding: 28px 24px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(59, 130, 246, 0.04));
+    border-radius: 16px;
+    border: 2px solid rgba(37, 99, 235, 0.12);
+    animation: fadeInBreak 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.active-break::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(37, 99, 235, 0.03), transparent 70%);
+    animation: rotateGlow 20s linear infinite;
+}
+
+@keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInBreak {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.active-break > * {
+    position: relative;
+    z-index: 1;
+}
+
+.active-break .break-icon {
     font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+    animation: floatBreakIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatBreakIcon {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-8px) scale(1.05);
+    }
+}
+
+.active-break h3 {
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.active-break .break-type {
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: rgba(37, 99, 235, 0.1);
+    padding: 4px 14px;
+    border-radius: 20px;
+    color: var(--primary);
+}
+
+/* ===== BREAK TIMER ===== */
+.break-timer {
+    font-size: 3.5rem;
     font-weight: 800;
     color: var(--primary);
     margin: 20px 0;
     font-family: 'Courier New', monospace;
-    text-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
+    text-shadow: 0 2px 15px rgba(37, 99, 235, 0.15);
+    letter-spacing: 3px;
+    position: relative;
+    display: inline-block;
 }
 
+.break-timer::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--gradient);
+    opacity: 0.2;
+}
+
+/* ===== BREAK PROGRESS ===== */
 .break-progress {
     height: 8px;
     background: #e2e8f0;
     border-radius: 4px;
-    margin: 20px 0;
+    margin: 20px 0 10px;
     overflow: hidden;
+    position: relative;
 }
 
-.progress-bar {
+.break-progress .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    background: var(--gradient);
     border-radius: 4px;
-    transition: width 0.3s ease;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.break-progress .progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmerProgress 1.5s infinite;
+}
+
+@keyframes shimmerProgress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Progress Text */
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--secondary);
+    margin-top: 6px;
+}
+
+.progress-text .time-remaining {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* ===== BREAK CONTROLS ===== */
+.break-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.break-control-btn {
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.break-control-btn.btn-pause {
+    background: var(--warning);
+    color: white;
+}
+
+.break-control-btn.btn-pause:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.break-control-btn.btn-resume {
+    background: var(--success);
+    color: white;
+}
+
+.break-control-btn.btn-resume:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.break-control-btn.btn-stop {
+    background: var(--danger);
+    color: white;
+}
+
+.break-control-btn.btn-stop:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.break-control-btn.btn-skip {
+    background: transparent;
+    border-color: var(--secondary);
+    color: var(--secondary);
+}
+
+.break-control-btn.btn-skip:hover {
+    background: var(--secondary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ===== DARK MODE ===== */
+.dark-mode .break-btn {
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+.dark-mode .break-btn:hover {
+    color: white;
+}
+
+.dark-mode .break-btn.short-break {
+    border-color: #34d399;
+    color: #34d399;
+}
+
+.dark-mode .break-btn.long-break {
+    border-color: #a78bfa;
+    color: #a78bfa;
+}
+
+.dark-mode .break-btn.custom-break {
+    border-color: #fbbf24;
+    color: #fbbf24;
+}
+
+.dark-mode .break-info {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .break-progress {
+    background: #334155;
+}
+
+.dark-mode .active-break {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(37, 99, 235, 0.04));
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.dark-mode .break-timer {
+    color: #60a5fa;
+    text-shadow: 0 2px 15px rgba(59, 130, 246, 0.2);
+}
+
+.dark-mode .break-btn .tooltip {
+    background: #1e293b;
+}
+
+.dark-mode .break-btn .tooltip::after {
+    border-top-color: #1e293b;
+}
+
+.dark-mode .break-control-btn.btn-skip {
+    border-color: #64748b;
+    color: #94a3b8;
+}
+
+.dark-mode .break-control-btn.btn-skip:hover {
+    background: #64748b;
+    color: white;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .break-buttons {
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .break-btn {
+        padding: 14px 10px;
+        min-height: 75px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+    }
+
+    .break-btn i {
+        font-size: 1.4rem;
+    }
+
+    .break-btn .btn-label {
+        font-size: 0.8rem;
+    }
+
+    .break-btn .btn-subtitle {
+        font-size: 0.65rem;
+    }
+
+    .break-timer {
+        font-size: 2.8rem;
+    }
+
+    .active-break {
+        padding: 20px 16px;
+    }
+
+    .active-break .break-icon {
+        font-size: 2.5rem;
+    }
+
+    .active-break h3 {
+        font-size: 1.1rem;
+    }
+
+    .break-controls {
+        gap: 8px;
+    }
+
+    .break-control-btn {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .break-buttons {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .break-btn {
+        padding: 12px 10px;
+        min-height: 60px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        flex-direction: row;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .break-btn i {
+        font-size: 1.2rem;
+    }
+
+    .break-btn .btn-label {
+        font-size: 0.8rem;
+    }
+
+    .break-btn .btn-subtitle {
+        display: none;
+    }
+
+    .break-timer {
+        font-size: 2.2rem;
+        letter-spacing: 1px;
+    }
+
+    .active-break {
+        padding: 16px 12px;
+        border-radius: 12px;
+    }
+
+    .active-break .break-icon {
+        font-size: 2rem;
+    }
+
+    .active-break h3 {
+        font-size: 1rem;
+    }
+
+    .active-break .break-type {
+        font-size: 0.75rem;
+        padding: 2px 10px;
+    }
+
+    .break-progress {
+        height: 6px;
+    }
+
+    .progress-text {
+        font-size: 0.7rem;
+    }
+
+    .break-controls {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .break-control-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+
+    .break-btn .tooltip {
+        display: none;
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    .break-btn,
+    .break-btn i,
+    .break-btn .btn-label,
+    .active-break,
+    .break-timer,
+    .break-progress .progress-bar,
+    .break-control-btn {
+        transition: none;
+        animation: none;
+    }
+
+    .break-btn::before {
+        transition: none;
+    }
+
+    .break-btn .ripple {
+        display: none;
+    }
+
+    .break-progress .progress-bar::after {
+        display: none;
+    }
+
+    .active-break::before {
+        animation: none;
+    }
+
+    .active-break .break-icon {
+        animation: none;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.break-btn:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.break-btn.short-break:focus-visible {
+    outline-color: #10b981;
+}
+
+.break-btn.long-break:focus-visible {
+    outline-color: #8b5cf6;
+}
+
+.break-btn.custom-break:focus-visible {
+    outline-color: #f59e0b;
+}
+
+.break-control-btn:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
 }

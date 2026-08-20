@@ -53,10 +53,8 @@ const Login = () => {
     try {
       const response = await authAPI.login(loginData.email, loginData.password);
       
-      // Save token
       localStorage.setItem('token', response.token);
       
-      // Save user data directly from response
       const userData = {
         _id: response._id,
         firstName: response.firstName,
@@ -68,9 +66,6 @@ const Login = () => {
       
       localStorage.setItem('user', JSON.stringify(userData));
       
-      console.log('✅ Login successful!');
-      console.log('User saved:', userData);
-      
       showNotification('Login successful! Redirecting...');
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (error) {
@@ -81,20 +76,10 @@ const Login = () => {
     }
   };
 
-  // ✅ FIXED: Signup handler with correct field names
+  // Signup handler
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     
-    // Log form data for debugging
-    console.log('📝 Form Data:', {
-      firstName: signupData.firstName,
-      lastName: signupData.lastName,
-      email: signupData.email,
-      password: signupData.password,
-      status: signupData.status,
-      examType: signupData.examType
-    });
-
     // Validation
     if (!signupData.firstName.trim()) {
       showNotification('First name is required', 'error');
@@ -124,23 +109,17 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // ✅ FIXED: Use EXACT field names that match the User model
       const userData = {
-        firstName: signupData.firstName,     // Changed from first_name
-        lastName: signupData.lastName,       // Changed from last_name
+        firstName: signupData.firstName,
+        lastName: signupData.lastName,
         email: signupData.email,
         password: signupData.password,
-        currentGrade: signupData.status,     // Changed from current_grade
-        examType: signupData.examType        // Changed from exam_type
+        currentGrade: signupData.status,
+        examType: signupData.examType
       };
-      
-      console.log('📤 Sending to backend:', userData);
       
       const response = await authAPI.register(userData);
       
-      console.log('📥 Backend response:', response);
-      
-      // Auto-login after registration
       if (response.token) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify({
@@ -159,7 +138,7 @@ const Login = () => {
       }
       
     } catch (error) {
-      console.error('❌ Registration error:', error);
+      console.error('Registration error:', error);
       
       if (error.message.includes('duplicate') || error.message.includes('already exists')) {
         showNotification('Email already exists. Please login.', 'error');
@@ -178,7 +157,6 @@ const Login = () => {
         {/* Left Side - Form */}
         <div className="login-form-container">
           {isLogin ? (
-            /* Login Form */
             <form onSubmit={handleLoginSubmit} className="login-form">
               <h2>Welcome Back!</h2>
               <p className="form-subtitle">Sign in to continue your journey</p>
@@ -215,11 +193,12 @@ const Login = () => {
 
               <p className="switch-text">
                 Don't have an account?{' '}
-                <span onClick={() => !isLoading && setIsLogin(false)}>Create one</span>
+                <button type="button" onClick={() => !isLoading && setIsLogin(false)} className="switch-link">
+                  Create one
+                </button>
               </p>
             </form>
           ) : (
-            /* Signup Form */
             <form onSubmit={handleSignupSubmit} className="login-form">
               <h2>Create Account</h2>
               <p className="form-subtitle">Join StudyBuddy today</p>
@@ -270,7 +249,7 @@ const Login = () => {
                 <input
                   type="password"
                   name="password"
-                  placeholder="Password"
+                  placeholder="Password (min. 8 characters)"
                   value={signupData.password}
                   onChange={handleSignupChange}
                   required
@@ -336,13 +315,15 @@ const Login = () => {
 
               <p className="switch-text">
                 Already have an account?{' '}
-                <span onClick={() => !isLoading && setIsLogin(true)}>Sign in</span>
+                <button type="button" onClick={() => !isLoading && setIsLogin(true)} className="switch-link">
+                  Sign in
+                </button>
               </p>
             </form>
           )}
         </div>
 
-        {/* Right Side - Branding with Logo */}
+        {/* Right Side - Branding */}
         <div className="login-branding">
           <div className="branding-content">
             <div className="branding-logo">

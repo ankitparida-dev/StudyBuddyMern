@@ -49,7 +49,6 @@ const Settings = () => {
       try {
         setLoading(true);
         
-        // Try to fetch from API with timeout
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Timeout')), 2000)
         );
@@ -162,7 +161,6 @@ const Settings = () => {
     }
   };
 
-  // Show loader while loading
   if (loading && !forceShow) {
     return (
       <div className="page-loader">
@@ -173,21 +171,8 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
-      {/* REMOVED - Purple Settings Header */}
-      
       {apiError && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          background: '#ffd166',
-          color: '#1e293b',
-          padding: '8px 16px',
-          borderRadius: '20px',
-          fontSize: '14px',
-          zIndex: 1000,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
+        <div className="demo-badge">
           ⚡ Using Demo Data (Backend not connected)
         </div>
       )}
@@ -209,7 +194,7 @@ const Settings = () => {
           </div>
           
           <div className="settings-grid">
-            {/* Personal Information Card */}
+            {/* Personal Information */}
             <div className="settings-card">
               <h2><i className="fas fa-user"></i> Personal Information</h2>
               
@@ -265,7 +250,7 @@ const Settings = () => {
               </div>
             </div>
             
-            {/* Exam Preferences Card */}
+            {/* Exam Preferences */}
             <div className="settings-card">
               <h2><i className="fas fa-graduation-cap"></i> Exam Preferences</h2>
               
@@ -317,7 +302,7 @@ const Settings = () => {
               </div>
             </div>
             
-            {/* Study Preferences Card */}
+            {/* Study Preferences */}
             <div className="settings-card">
               <h2><i className="fas fa-book-open"></i> Study Preferences</h2>
               
@@ -386,7 +371,7 @@ const Settings = () => {
               </div>
             </div>
             
-            {/* Account Security Card */}
+            {/* Account Security */}
             <div className="settings-card">
               <h2><i className="fas fa-shield-alt"></i> Account Security</h2>
               

@@ -1,240 +1,107 @@
-/* Study Tools Page Styles */
-.study-tools-section {
-    padding: 40px 0;
-    min-height: calc(100vh - 80px);
-    background: linear-gradient(135deg, var(--sky-light) 0%, #ffffff 100%);
+/* ===== STUDY TOOLS PAGE ===== */
+.studytools-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--sky-light) 0%, #ffffff 100%);
+  padding: 2rem 0;
 }
 
+/* ===== PAGE HEADER ===== */
 .page-header {
-    text-align: center;
-    margin-bottom: 50px;
-    padding: 0 20px;
-}
-
-#lofi-player {
-    position: absolute;
-    width: 0;
-    height: 0;
-    opacity: 0;
-    pointer-events: none;
+  text-align: center;
+  margin-bottom: 3rem;
 }
 
 .page-title {
-    font-size: 3rem;
-    color: var(--dark);
-    margin-bottom: 15px;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--jee-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .page-subtitle {
-    color: var(--secondary);
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.6;
+  font-size: 1.1rem;
+  color: var(--secondary);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
+/* ===== TOOLS GRID ===== */
 .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-    gap: 30px;
-    margin-bottom: 50px;
-    opacity: 0;
-    transform: translateY(50px);
-    transition: all 0.8s cubic-bezier(0.215, 0.61, 0.355, 1);
-}
-
-.tools-grid.animated {
-    opacity: 1;
-    transform: translateY(0);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
 }
 
 .tool-card {
-    background: var(--card-bg);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease;
-    border: 1px solid rgba(37, 99, 235, 0.1);
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .tool-card.animated {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.tool-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .tool-card:hover {
-    transform: translateY(-10px) rotateX(2deg) rotateY(2deg) scale(1.02);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
-.tool-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
+.tool-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
 }
 
-.tool-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.3rem;
+.tool-card p {
+  color: var(--secondary);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
 }
 
-.tool-card h2 {
-    font-size: 1.5rem;
-    color: var(--dark);
-    margin: 0;
-    font-weight: 700;
-}
-
-/* Staggered animation delays */
-.tool-card:nth-child(1) { transition-delay: 0.1s; }
-.tool-card:nth-child(2) { transition-delay: 0.2s; }
-.tool-card:nth-child(3) { transition-delay: 0.3s; }
-.tool-card:nth-child(4) { transition-delay: 0.4s; }
-.tool-card:nth-child(5) { transition-delay: 0.5s; }
-.tool-card:nth-child(6) { transition-delay: 0.6s; }
-
-/* Responsive */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-    .tools-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .page-title {
-        font-size: 2.2rem;
-    }
+  .studytools-page {
+    padding: 1rem 0;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+  
+  .tools-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
 }
 
 @media (max-width: 480px) {
-    .tool-card {
-        padding: 20px;
-    }
-    
-    .page-title {
-        font-size: 1.8rem;
-    }
-    
-    .tool-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
-}
-
-/* ===== ADD THESE AT THE END OF StudyTools.css ===== */
-
-/* Notification System */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #10b981;
-  color: white;
-  padding: 15px 20px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  z-index: 10000;
-  animation: slideIn 0.3s ease;
-  max-width: 350px;
-}
-
-.notification.error {
-  background: #ef4444;
-}
-
-.notification-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+  .page-title {
+    font-size: 1.8rem;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  
+  .tools-grid {
+    gap: 1rem;
+    padding: 0 0.5rem;
   }
-}
-
-/* Loading Spinner */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: var(--secondary);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--primary-light);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Demo Data Badge */
-.demo-data-badge {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: #ffd166;
-  color: #1e293b;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-/* ===== SCROLLING FIXES ===== */
-.studytools-page {
-    min-height: 100%;
-    width: 100%;
-}
-
-/* Scroll spacer */
-.scroll-spacer {
-    height: 50px;
-    width: 100%;
-    opacity: 0;
-    pointer-events: none;
+  
+  .tool-card {
+    padding: 1rem;
+  }
 }

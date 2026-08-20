@@ -1,50 +1,545 @@
-/* Session Buttons */
+/* ===== SESSION BUTTONS ===== */
+
 .session-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 14px;
+    margin-bottom: 24px;
 }
 
+/* ===== BASE SESSION BUTTON ===== */
 .session-btn {
-    padding: 15px 10px;
-    border-radius: 12px;
+    padding: 18px 14px;
+    border-radius: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: 2px solid transparent;
     font-size: 0.9rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    min-height: 80px;
+    min-height: 90px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
+/* Button Icon */
+.session-btn i {
+    font-size: 1.6rem;
+    transition: all 0.3s ease;
+    line-height: 1;
+}
+
+/* Button Label */
+.session-btn .btn-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Button Subtitle */
+.session-btn .btn-subtitle {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    font-weight: 400;
+    margin-top: -4px;
+}
+
+/* ===== PRIMARY VARIANT ===== */
 .session-btn.btn-primary {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: var(--gradient);
     color: white;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);
+    border-color: transparent;
+}
+
+.session-btn.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.6s ease;
+}
+
+.session-btn.btn-primary:hover::before {
+    left: 100%;
 }
 
 .session-btn.btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35);
 }
 
+.session-btn.btn-primary:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+/* ===== OUTLINE VARIANT ===== */
 .session-btn.btn-outline {
     background: transparent;
     border: 2px solid var(--primary);
     color: var(--primary);
 }
 
-.session-btn.btn-outline:hover {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.2);
+.session-btn.btn-outline::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    background: var(--gradient);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
 }
 
-.session-btn:active {
-    transform: translateY(0);
+.session-btn.btn-outline:hover {
+    color: white;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+    border-color: transparent;
+}
+
+.session-btn.btn-outline:hover::after {
+    opacity: 1;
+}
+
+.session-btn.btn-outline:hover i {
+    color: white;
+}
+
+.session-btn.btn-outline:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+/* ===== SUCCESS VARIANT ===== */
+.session-btn.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+}
+
+.session-btn.btn-success:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35);
+}
+
+.session-btn.btn-success:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+/* ===== DANGER VARIANT ===== */
+.session-btn.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+}
+
+.session-btn.btn-danger:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.35);
+}
+
+.session-btn.btn-danger:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+/* ===== WITH ICON ONLY ===== */
+.session-btn.icon-only {
+    min-height: 60px;
+    padding: 12px;
+}
+
+.session-btn.icon-only i {
+    font-size: 2rem;
+}
+
+.session-btn.icon-only .btn-label {
+    font-size: 0.75rem;
+}
+
+/* ===== WITH BADGE ===== */
+.session-btn .btn-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ===== DISABLED STATE ===== */
+.session-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    pointer-events: none;
+}
+
+/* ===== LOADING STATE ===== */
+.session-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.session-btn.loading .btn-loader {
+    display: flex;
+}
+
+.session-btn .btn-loader {
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
+.session-btn .btn-loader .loader-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: bounceDot 1.4s ease-in-out infinite both;
+}
+
+.session-btn .btn-loader .loader-dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.session-btn .btn-loader .loader-dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.session-btn .btn-loader .loader-dot:nth-child(3) {
+    animation-delay: 0s;
+}
+
+@keyframes bounceDot {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ===== RIPPLE EFFECT ===== */
+.session-btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: rippleAnim 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes rippleAnim {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ===== TOOLTIP ===== */
+.session-btn .tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: var(--dark);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.session-btn .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--dark);
+}
+
+.session-btn:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+}
+
+/* ===== DARK MODE ===== */
+.dark-mode .session-btn.btn-outline {
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+.dark-mode .session-btn.btn-outline:hover {
+    color: white;
+}
+
+.dark-mode .session-btn .tooltip {
+    background: #1e293b;
+}
+
+.dark-mode .session-btn .tooltip::after {
+    border-top-color: #1e293b;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .session-buttons {
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .session-btn {
+        padding: 14px 10px;
+        min-height: 75px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+    }
+
+    .session-btn i {
+        font-size: 1.4rem;
+    }
+
+    .session-btn .btn-label {
+        font-size: 0.8rem;
+    }
+
+    .session-btn .btn-subtitle {
+        font-size: 0.65rem;
+    }
+
+    .session-btn.icon-only {
+        min-height: 50px;
+    }
+
+    .session-btn.icon-only i {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .session-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .session-btn {
+        padding: 12px 8px;
+        min-height: 65px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+
+    .session-btn i {
+        font-size: 1.2rem;
+    }
+
+    .session-btn .btn-label {
+        font-size: 0.75rem;
+    }
+
+    .session-btn .btn-subtitle {
+        font-size: 0.6rem;
+        margin-top: -2px;
+    }
+
+    .session-btn.icon-only {
+        min-height: 45px;
+        padding: 8px;
+    }
+
+    .session-btn.icon-only i {
+        font-size: 1.4rem;
+    }
+
+    .session-btn .btn-badge {
+        font-size: 0.55rem;
+        padding: 1px 6px;
+        min-width: 16px;
+        top: -6px;
+        right: -6px;
+    }
+
+    .session-btn .tooltip {
+        display: none;
+    }
+}
+
+/* ===== SINGLE BUTTON LAYOUT ===== */
+.session-buttons.single {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.session-buttons.single .session-btn {
+    min-height: 70px;
+    flex-direction: row;
+    gap: 14px;
+    padding: 14px 20px;
+}
+
+.session-buttons.single .session-btn i {
+    font-size: 1.6rem;
+}
+
+/* ===== THREE BUTTONS LAYOUT ===== */
+.session-buttons.three {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 480px) {
+    .session-buttons.three {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .session-buttons.three .session-btn:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ===== FOUR BUTTONS LAYOUT ===== */
+.session-buttons.four {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 768px) {
+    .session-buttons.four {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .session-buttons.four {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.session-btn.animate {
+    animation: fadeInUp 0.4s ease forwards;
+    opacity: 0;
+}
+
+.session-btn.animate:nth-child(1) {
+    animation-delay: 0.05s;
+}
+.session-btn.animate:nth-child(2) {
+    animation-delay: 0.1s;
+}
+.session-btn.animate:nth-child(3) {
+    animation-delay: 0.15s;
+}
+.session-btn.animate:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+/* ===== HOVER GLOW EFFECT ===== */
+.session-btn.glow:hover {
+    animation: glowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(37, 99, 235, 0.4);
+    }
+}
+
+/* ===== SELECTED/ACTIVE STATE ===== */
+.session-btn.selected {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 3px var(--primary), 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+.session-btn.selected.btn-outline {
+    background: var(--gradient);
+    color: white;
+    border-color: transparent;
+}
+
+.session-btn.selected.btn-outline::after {
+    opacity: 1;
+}
+
+/* ===== ACCESSIBILITY ===== */
+.session-btn:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.session-btn.btn-primary:focus-visible {
+    outline-color: #60a5fa;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    .session-btn {
+        transition: none;
+    }
+    
+    .session-btn::before,
+    .session-btn::after {
+        display: none;
+    }
+    
+    .session-btn .ripple {
+        display: none;
+    }
+    
+    .session-btn .btn-loader .loader-dot {
+        animation: none;
+    }
 }

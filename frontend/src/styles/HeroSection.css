@@ -1,4 +1,4 @@
-/* Hero Section */
+/* ===== HERO SECTION ===== */
 .hero-section {
     padding: 100px 0;
     background: var(--gradient);
@@ -6,16 +6,41 @@
     position: relative;
     overflow: hidden;
     width: 100%;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
 }
 
+/* Animated Background */
 .hero-section::before {
     content: '';
     position: absolute;
-    top: 0;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.05) 0%, transparent 60%),
+                radial-gradient(circle at 70% 80%, rgba(255,255,255,0.03) 0%, transparent 50%);
+    animation: floatBackground 20s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes floatBackground {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(-5%, -5%) scale(1.05); }
+    50% { transform: translate(5%, 5%) scale(0.95); }
+    75% { transform: translate(-3%, 3%) scale(1.02); }
+}
+
+/* Wave Shape Overlay */
+.hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
     left: 0;
-    width: 120%;
-    height: 100%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="rgba(255,255,255,0.1)"></path></svg>');
+    right: 0;
+    height: 120px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0 C300,100 800,100 1200,0 L1200,120 L0,120 Z" fill="rgba(255,255,255,0.08)"/></svg>');
     background-size: cover;
     background-position: center;
     pointer-events: none;
@@ -26,50 +51,72 @@
     z-index: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 50px;
+    gap: 60px;
     align-items: center;
     width: 100%;
 }
 
+/* ===== HERO TEXT ===== */
 .hero-text {
     text-align: left;
     width: 100%;
 }
 
 .hero-title {
-    font-size: 3.2rem;
-    margin-bottom: 20px;
+    font-size: 3.5rem;
+    margin-bottom: 15px;
     font-weight: 800;
-    line-height: 1.2;
+    line-height: 1.15;
     word-wrap: break-word;
+    animation: fadeInUp 0.8s ease;
 }
 
 .highlight {
     color: #ffd166;
+    position: relative;
+    display: inline-block;
+}
+
+.highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: #ffd166;
+    opacity: 0.3;
+    border-radius: 2px;
 }
 
 .typing-container {
-    min-height: 60px;
-    margin-bottom: 20px;
+    min-height: 65px;
+    margin-bottom: 15px;
     font-size: 2.5rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease 0.2s both;
 }
 
 .type-text {
     color: #ffd166;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    text-shadow: 0 2px 15px rgba(255, 209, 102, 0.3);
     word-wrap: break-word;
+    background: rgba(255, 209, 102, 0.08);
+    padding: 0 8px;
+    border-radius: 6px;
 }
 
 .cursor {
     display: inline-block;
     width: 3px;
+    height: 1.2em;
     background-color: #ffd166;
     margin-left: 2px;
-    animation: blink 1s infinite;
+    animation: blink 0.8s infinite;
+    border-radius: 2px;
 }
 
 @keyframes blink {
@@ -78,93 +125,223 @@
 }
 
 .hero-description {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     margin-bottom: 30px;
-    opacity: 0.9;
-    line-height: 1.6;
-    max-width: 600px;
+    opacity: 0.92;
+    line-height: 1.7;
+    max-width: 550px;
+    animation: fadeInUp 0.8s ease 0.4s both;
 }
 
+/* ===== EXAM SELECTION BUTTONS ===== */
 .exam-selection {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease 0.6s both;
 }
 
 .exam-btn {
-    padding: 15px 30px;
-    border-radius: 15px;
+    padding: 16px 35px;
+    border-radius: 16px;
     font-size: 1.1rem;
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    gap: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.exam-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.exam-btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .jee-btn {
-    background: var(--jee-color);
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
     color: white;
 }
 
 .neet-btn {
-    background: var(--neet-color);
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
 }
 
 .exam-btn:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
+.exam-btn:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+.exam-btn i {
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
+}
+
+.exam-btn:hover i {
+    transform: rotate(-10deg) scale(1.1);
+}
+
+/* ===== HERO VISUAL ===== */
 .hero-visual {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
+    animation: fadeInUp 0.8s ease 0.3s both;
 }
 
 .hero-placeholder {
     width: 100%;
-    max-width: 400px;
-    height: 300px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
+    max-width: 450px;
+    height: 320px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.hero-placeholder:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
 .hero-placeholder i {
-    font-size: 5rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 5.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    animation: floatIcon 3s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
 }
 
-/* Responsive */
+@keyframes floatIcon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* Floating Elements */
+.floating-element {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    animation: floatElement 8s ease-in-out infinite;
+}
+
+.floating-element:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    top: -20px;
+    right: -20px;
+    animation-delay: 0s;
+}
+
+.floating-element:nth-child(2) {
+    width: 50px;
+    height: 50px;
+    bottom: -10px;
+    left: -10px;
+    animation-delay: 2s;
+}
+
+@keyframes floatElement {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(10px, -20px) scale(1.1); }
+    66% { transform: translate(-10px, 10px) scale(0.9); }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== DARK MODE ===== */
+.dark-mode .hero-placeholder {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark-mode .hero-placeholder i {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
     .hero-title {
-        font-size: 2.8rem;
+        font-size: 3rem;
     }
     
     .typing-container {
         font-size: 2.2rem;
+    }
+    
+    .hero-content {
+        gap: 40px;
     }
 }
 
 @media (max-width: 768px) {
     .hero-section {
         padding: 60px 0;
+        min-height: auto;
+    }
+
+    .hero-section::after {
+        height: 60px;
     }
 
     .hero-content {
         grid-template-columns: 1fr;
         text-align: center;
-        gap: 30px;
+        gap: 35px;
     }
 
     .hero-text {
@@ -184,10 +361,18 @@
     .hero-description {
         margin-left: auto;
         margin-right: auto;
+        font-size: 1.1rem;
+        max-width: 500px;
     }
 
     .exam-selection {
         justify-content: center;
+    }
+
+    .exam-btn {
+        padding: 14px 28px;
+        font-size: 1rem;
+        white-space: normal;
     }
 
     .hero-placeholder {
@@ -195,35 +380,55 @@
         max-width: 350px;
         margin: 0 auto;
     }
+
+    .hero-placeholder i {
+        font-size: 4.5rem;
+    }
 }
 
 @media (max-width: 480px) {
+    .hero-section {
+        padding: 40px 0;
+    }
+
     .hero-title {
         font-size: 2rem;
     }
 
     .typing-container {
         font-size: 1.5rem;
+        min-height: 40px;
     }
 
     .hero-description {
-        font-size: 1rem;
+        font-size: 0.95rem;
+        max-width: 100%;
+    }
+
+    .exam-selection {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
     }
 
     .exam-btn {
         width: 100%;
         justify-content: center;
-        white-space: normal;
         padding: 12px 20px;
-        font-size: 1rem;
+        font-size: 0.95rem;
+        gap: 10px;
+    }
+
+    .exam-btn i {
+        font-size: 1.1rem;
     }
 
     .hero-placeholder {
-        height: 200px;
-        max-width: 280px;
+        height: 180px;
+        max-width: 260px;
     }
 
     .hero-placeholder i {
-        font-size: 4rem;
+        font-size: 3.5rem;
     }
 }

@@ -1,93 +1,190 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import loadable from '@loadable/component';
-import Header from './components/common/Header';
-import Footer from './components/common/Footer';
-import ChatAssistant from './components/chat/ChatAssistant';
+import React, { useEffect, Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
 import { ThemeProvider } from './hooks/useTheme';
 import { LoadingProvider, useLoading } from './hooks/useLoading';
 import { NotificationProvider } from './hooks/useNotifications';
 import LoadingScreen from './components/common/LoadingScreen';
+import Loader from './components/common/Loader';
 import './styles/App.css';
 
+// Lazy load components with proper error boundaries
+const Header = lazy(() => import('./components/common/Header'));
+const Footer = lazy(() => import('./components/common/Footer'));
+const ChatAssistant = lazy(() => import('./components/chat/ChatAssistant'));
+
 // Lazy load pages
-const Home = loadable(() => import('./pages/Home'), { 
-  fallback: <Loader size="large" text="Loading home..." /> 
-});
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const StudyTools = lazy(() => import('./pages/StudyTools'));
+const Features = lazy(() => import('./pages/Features'));
+const Settings = lazy(() => import('./pages/Settings'));
+const NotFound = lazy(() => import('./pages/404page'));
 
-const Login = loadable(() => import('./pages/Login'), { 
-  fallback: <Loader size="large" text="Loading login..." /> 
-});
+// Page loading fallbacks
+const pageLoaders = {
+  home: <Loader size="large" text="Loading home page..." />,
+  login: <Loader size="large" text="Loading login..." />,
+  dashboard: <Loader size="large" text="Loading dashboard..." />,
+  studyTools: <Loader size="large" text="Loading study tools..." />,
+  features: <Loader size="large" text="Loading features..." />,
+  settings: <Loader size="large" text="Loading settings..." />,
+  notFound: <Loader size="medium" text="Loading..." />,
+};
 
-const Dashboard = loadable(() => import('./pages/Dashboard'), { 
-  fallback: <Loader size="large" text="Loading dashboard..." /> 
-});
-
-const StudyTools = loadable(() => import('./pages/StudyTools'), { 
-  fallback: <Loader size="large" text="Loading study tools..." /> 
-});
-
-const Features = loadable(() => import('./pages/Features'), { 
-  fallback: <Loader size="large" text="Loading features..." /> 
-});
-
-const Settings = loadable(() => import('./pages/Settings'), { 
-  fallback: <Loader size="large" text="Loading settings..." /> 
-});
-
-const NotFound = loadable(() => import('./pages/404page'), { 
-  fallback: <Loader size="medium" text="..." /> 
-});
-
+// ===== LAYOUT COMPONENT =====
 function Layout({ children }) {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
-  
-  // REMOVED the forceScrollbar function entirely
-  
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+
   return (
     <div className="app">
       <ScrollToTop />
-      {!isLoginPage && <Header />}
+      
+      {/* Show header on all pages except auth pages */}
+      {!isAuthPage && (
+        <Suspense fallback={<div className="header-loader" />}>
+          <Header />
+        </Suspense>
+      )}
+      
       <main className={`main-content ${isLoginPage ? 'login-page-content' : ''}`}>
         <div className="content-wrapper">
           <ErrorBoundary>
-            {children}
+            <Suspense fallback={pageLoaders.home}>
+              {children}
+            </Suspense>
           </ErrorBoundary>
         </div>
       </main>
-      {!isLoginPage && <Footer />}
-      {!isLoginPage && <ChatAssistant />}
+      
+      {/* Show footer and chat on all pages except auth pages */}
+      {!isAuthPage && (
+        <>
+          <Suspense fallback={<div className="footer-loader" />}>
+            <Footer />
+          </Suspense>
+          <Suspense fallback={null}>
+            <ChatAssistant />
+          </Suspense>
+        </>
+      )}
     </div>
   );
 }
 
-// AppContent handles loading state
-function AppContent() {
-  const { isLoading } = useLoading();
+// ===== AUTH GUARD COMPONENT =====
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
   
-  if (isLoading) {
-    return <LoadingScreen />;
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
   }
   
+  return children;
+}
+
+// ===== PUBLIC ROUTE COMPONENT =====
+function PublicRoute({ children }) {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  
+  if (token && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
+}
+
+// ===== APP CONTENT =====
+function AppContent() {
+  const { isLoading, loadingProgress } = useLoading();
+
+  useEffect(() => {
+    // Handle body class for loading state
+    if (isLoading) {
+      document.body.classList.add('loading-active');
+    } else {
+      document.body.classList.remove('loading-active');
+    }
+    
+    return () => {
+      document.body.classList.remove('loading-active');
+    };
+  }, [isLoading]);
+
+  if (isLoading) {
+    return <LoadingScreen progress={loadingProgress} />;
+  }
+
   return (
     <Layout>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/study-tools" element={<StudyTools />} />
-        <Route path="/features" element={<Features />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/signup" 
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } 
+        />
+        
+        {/* Protected Routes */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/study-tools" 
+          element={
+            <ProtectedRoute>
+              <StudyTools />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/features" 
+          element={
+            <ProtectedRoute>
+              <Features />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* 404 Page */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
   );
 }
 
+// ===== MAIN APP =====
 function App() {
   return (
     <ThemeProvider>
