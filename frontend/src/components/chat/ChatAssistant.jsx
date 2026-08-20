@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useChat } from '../../hooks/useChat';
 import { useNotifications } from '../../hooks/useNotifications';
 import '../../styles/ChatAssistant.css';
@@ -7,7 +7,9 @@ const ChatAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [showSessions, setShowSessions] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
   const { showNotification } = useNotifications();
   
   const {
@@ -24,60 +26,95 @@ const ChatAssistant = () => {
     clearAllChats
   } = useChat();
 
-  // Debug logs for input value changes
-  useEffect(() => {
-    console.log('📝 Input value changed:', inputValue);
-    console.log('🔘 Send button should be:', !inputValue.trim() || sending ? 'disabled' : 'enabled');
-  }, [inputValue, sending]);
-
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'end'
+    });
   }, [messages]);
 
-  const toggleChat = () => {
-    console.log('Toggling chat:', !isOpen);
-    setIsOpen(!isOpen);
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 300);
+    }
+  }, [isOpen]);
+
+  // Keyboard shortcut: Escape to close chat
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
+  // Toggle chat
+  const toggleChat = useCallback(() => {
+    setIsOpen(prev => !prev);
     if (!isOpen) {
       setShowSessions(false);
     }
-  };
+  }, [isOpen]);
 
-  const handleSendMessage = async (e) => {
+  // Handle send message
+  const handleSendMessage = useCallback(async (e) => {
     e.preventDefault();
-    if (!inputValue.trim() || sending) return;
+    const trimmedInput = inputValue.trim();
     
-    const message = inputValue;
-    console.log('📤 Sending message:', message);
+    if (!trimmedInput || sending) return;
+    
+    const message = trimmedInput;
     setInputValue('');
-    await sendMessage(message);
-  };
+    setIsTyping(true);
+    
+    try {
+      await sendMessage(message);
+    } catch (err) {
+      showNotification('Failed to send message. Please try again.', 'error');
+    } finally {
+      setIsTyping(false);
+    }
+  }, [inputValue, sending, sendMessage, showNotification]);
 
-  const handleKeyPress = (e) => {
+  // Handle key press
+  const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
     }
-  };
+  }, [handleSendMessage]);
 
-  const handleNewChat = async () => {
+  // Handle new chat
+  const handleNewChat = useCallback(async () => {
     await createNewSession();
     setShowSessions(false);
-  };
+    setInputValue('');
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [createNewSession]);
 
-  const handleQuickQuestion = async (question) => {
+  // Handle quick question
+  const handleQuickQuestion = useCallback(async (question) => {
     setInputValue(question);
-    setTimeout(() => handleSendMessage({ preventDefault: () => {} }), 100);
-  };
+    setTimeout(() => {
+      handleSendMessage({ preventDefault: () => {} });
+    }, 100);
+  }, [handleSendMessage]);
 
-  const formatTime = (timestamp) => {
+  // Format time
+  const formatTime = useCallback((timestamp) => {
+    if (!timestamp) return '';
     return new Date(timestamp).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
-  };
+  }, []);
 
-  const getSuggestionQuestions = () => {
+  // Get suggestion questions
+  const suggestionQuestions = useMemo(() => {
     const weakTopics = contextData?.weakTopics || [];
     
     const suggestions = [
@@ -92,81 +129,112 @@ const ChatAssistant = () => {
     }
 
     return suggestions.slice(0, 4);
-  };
+  }, [contextData]);
 
-  // Function to format mathematical expressions
-  const formatMathematicalContent = (content) => {
-    // Handle integration formulas
-    let formatted = content
-      .replace(/∫/g, '∫') // Integral symbol
-      .replace(/∑/g, '∑') // Summation symbol
-      .replace(/∏/g, '∏') // Product symbol
-      .replace(/√/g, '√') // Square root symbol
-      .replace(/π/g, 'π') // Pi symbol
-      .replace(/θ/g, 'θ') // Theta symbol
-      .replace(/α/g, 'α') // Alpha symbol
-      .replace(/β/g, 'β') // Beta symbol
-      .replace(/γ/g, 'γ') // Gamma symbol
-      .replace(/Δ/g, 'Δ') // Delta symbol
-      .replace(/∞/g, '∞'); // Infinity symbol
+  // Format mathematical content
+  const formatMathematicalContent = useCallback((content) => {
+    if (!content) return '';
+    
+    const symbols = {
+      '∫': '∫',
+      '∑': '∑',
+      '∏': '∏',
+      '√': '√',
+      'π': 'π',
+      'θ': 'θ',
+      'α': 'α',
+      'β': 'β',
+      'γ': 'γ',
+      'Δ': 'Δ',
+      '∞': '∞',
+      '→': '→',
+      '≈': '≈',
+      '≠': '≠',
+      '≤': '≤',
+      '≥': '≥'
+    };
+
+    let formatted = content;
+    Object.entries(symbols).forEach(([key, value]) => {
+      formatted = formatted.replace(new RegExp(key, 'g'), value);
+    });
 
     return formatted;
-  };
+  }, []);
 
-  // Function to render formatted message content
-  const renderFormattedContent = (content) => {
+  // Render formatted message content
+  const renderFormattedContent = useCallback((content) => {
     if (!content) return null;
     
-    // First, format mathematical symbols
     const formattedContent = formatMathematicalContent(content);
+    const lines = formattedContent.split('\n').filter(line => line.trim() !== '');
     
-    // Split by lines and process each line
-    return formattedContent.split('\n').map((line, i) => {
+    if (lines.length === 0) {
+      return <p className="text-line">Empty message</p>;
+    }
+
+    const elements = [];
+    let isList = false;
+    let listItems = [];
+
+    lines.forEach((line, index) => {
       const trimmedLine = line.trim();
       
-      // Skip empty lines but add spacing
-      if (!trimmedLine) {
-        return <br key={i} />;
-      }
-      
-      // Check if line contains a formula (has =, ∫, ∑, etc.)
-      if (trimmedLine.includes('=') || 
-          trimmedLine.includes('∫') || 
-          trimmedLine.includes('∑') ||
-          trimmedLine.includes('lim') ||
-          trimmedLine.includes('→') ||
-          trimmedLine.includes('dx') ||
-          trimmedLine.includes('dt')) {
-        return (
-          <div key={i} className="formula-block">
+      // Formula detection
+      if (/[=∫∑lim→dxdt]/.test(trimmedLine) && !trimmedLine.startsWith('-')) {
+        if (isList && listItems.length > 0) {
+          elements.push(
+            <ul key={`list-${index}`} className="formatted-list">
+              {listItems.map((item, i) => (
+                <li key={i} className="bullet-item">{item}</li>
+              ))}
+            </ul>
+          );
+          listItems = [];
+          isList = false;
+        }
+        elements.push(
+          <div key={`formula-${index}`} className="formula-block">
             {trimmedLine}
           </div>
         );
+        return;
       }
-      
-      // Check for bullet points
+
+      // Bullet points
       if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
-        return (
-          <li key={i} className="bullet-item">
-            {trimmedLine.substring(1).trim()}
-          </li>
-        );
+        isList = true;
+        listItems.push(trimmedLine.substring(1).trim());
+        return;
       }
-      
-      // Check for numbered lists
+
+      // Numbered lists
       if (/^\d+\./.test(trimmedLine)) {
-        return (
-          <li key={i} className="numbered-item">
-            {trimmedLine}
-          </li>
-        );
+        isList = true;
+        listItems.push(trimmedLine);
+        return;
       }
-      
-      // Check for bold text (surrounded by **)
+
+      // Flush list if exists
+      if (isList && listItems.length > 0) {
+        elements.push(
+          <ul key={`list-${index}`} className="formatted-list">
+            {listItems.map((item, i) => (
+              <li key={i} className={/^\d+\./.test(item) ? 'numbered-item' : 'bullet-item'}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        );
+        listItems = [];
+        isList = false;
+      }
+
+      // Bold text
       if (trimmedLine.includes('**')) {
         const parts = trimmedLine.split(/(\*\*.*?\*\*)/g);
-        return (
-          <p key={i} className="text-line">
+        elements.push(
+          <p key={`text-${index}`} className="text-line">
             {parts.map((part, j) => {
               if (part.startsWith('**') && part.endsWith('**')) {
                 return <strong key={j}>{part.slice(2, -2)}</strong>;
@@ -175,13 +243,14 @@ const ChatAssistant = () => {
             })}
           </p>
         );
+        return;
       }
-      
-      // Check for italic text (surrounded by *)
+
+      // Italic text
       if (trimmedLine.includes('*') && !trimmedLine.includes('**')) {
         const parts = trimmedLine.split(/(\*.*?\*)/g);
-        return (
-          <p key={i} className="text-line">
+        elements.push(
+          <p key={`text-${index}`} className="text-line">
             {parts.map((part, j) => {
               if (part.startsWith('*') && part.endsWith('*')) {
                 return <em key={j}>{part.slice(1, -1)}</em>;
@@ -190,12 +259,30 @@ const ChatAssistant = () => {
             })}
           </p>
         );
+        return;
       }
-      
+
       // Regular text
-      return <p key={i} className="text-line">{trimmedLine}</p>;
+      elements.push(
+        <p key={`text-${index}`} className="text-line">{trimmedLine}</p>
+      );
     });
-  };
+
+    // Flush remaining list
+    if (isList && listItems.length > 0) {
+      elements.push(
+        <ul key="list-final" className="formatted-list">
+          {listItems.map((item, i) => (
+            <li key={i} className={/^\d+\./.test(item) ? 'numbered-item' : 'bullet-item'}>
+              {item}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    return <div className="formatted-response">{elements}</div>;
+  }, [formatMathematicalContent]);
 
   return (
     <div className="ai-assistant">
@@ -203,59 +290,77 @@ const ChatAssistant = () => {
       <button 
         className={`chat-toggle-btn btn-animated ${isOpen ? 'active' : ''}`}
         onClick={toggleChat}
-        aria-label="Open chat assistant"
+        aria-label={isOpen ? 'Close chat assistant' : 'Open chat assistant'}
+        title="Study Assistant"
       >
         <i className="fas fa-robot"></i>
         <span className="btn-text">Study Assistant</span>
-        {!isOpen && messages.length > 1 && <span className="notification-dot"></span>}
+        {!isOpen && messages.length > 1 && <span className="notification-dot" />}
       </button>
 
       {/* Chat Window */}
-      <div className={`chat-window ${isOpen ? 'active' : ''} ${showSessions ? 'sessions-open' : ''}`}>
+      <div 
+        className={`chat-window ${isOpen ? 'active' : ''} ${showSessions ? 'sessions-open' : ''}`}
+        role="dialog"
+        aria-label="Chat assistant"
+      >
+        {/* Chat Header */}
         <div className="chat-header">
           <div className="chat-title">
-            <i className="fas fa-robot"></i>
+            <i className="fas fa-robot" />
             <div className="chat-info">
               <h4 className="chat-name">StudyBuddy AI</h4>
               <span className="status">
-                {sending ? 'Typing...' : 'Online • Ready to help'}
+                {sending || isTyping ? 'Typing...' : 'Online • Ready to help'}
               </span>
             </div>
           </div>
           <div className="chat-header-actions">
             <button 
               className={`icon-btn ${showSessions ? 'active' : ''}`}
-              onClick={() => setShowSessions(!showSessions)}
+              onClick={() => setShowSessions(prev => !prev)}
+              aria-label="Chat history"
               title="Chat history"
             >
-              <i className="fas fa-history"></i>
+              <i className="fas fa-history" />
             </button>
             <button 
               className="close-chat" 
               onClick={toggleChat}
               aria-label="Close chat"
             >
-              <i className="fas fa-times"></i>
+              <i className="fas fa-times" />
             </button>
           </div>
         </div>
 
-        {/* Split View: Sessions Sidebar + Messages */}
+        {/* Split View */}
         <div className="chat-split-view">
           {/* Sessions Sidebar */}
           {showSessions && (
             <div className="chat-sessions-sidebar">
               <div className="sessions-header">
                 <h4>Chat History</h4>
-                <button className="btn-icon" onClick={handleNewChat} title="New chat">
-                  <i className="fas fa-plus"></i>
+                <button 
+                  className="btn-icon" 
+                  onClick={handleNewChat} 
+                  title="New chat"
+                  aria-label="New chat"
+                >
+                  <i className="fas fa-plus" />
                 </button>
               </div>
               <div className="sessions-list">
                 {sessions.length === 0 ? (
                   <div className="no-sessions">
-                    <i className="fas fa-comment-slash"></i>
+                    <i className="fas fa-comment-slash" />
                     <p>No chats yet</p>
+                    <button 
+                      className="btn btn-primary btn-sm"
+                      onClick={handleNewChat}
+                    >
+                      Start a conversation
+                    </button>
                   </div>
                 ) : (
                   sessions.map(session => (
@@ -266,10 +371,18 @@ const ChatAssistant = () => {
                         loadSession(session._id);
                         setShowSessions(false);
                       }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          loadSession(session._id);
+                          setShowSessions(false);
+                        }
+                      }}
                     >
-                      <i className="fas fa-comment"></i>
+                      <i className="fas fa-comment" />
                       <div className="session-info">
-                        <div className="session-title">{session.title}</div>
+                        <div className="session-title">{session.title || 'Untitled'}</div>
                         <div className="session-date">
                           {new Date(session.updatedAt).toLocaleDateString()}
                         </div>
@@ -278,19 +391,28 @@ const ChatAssistant = () => {
                         className="delete-session"
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteSession(session._id);
+                          if (window.confirm('Delete this chat?')) {
+                            deleteSession(session._id);
+                          }
                         }}
-                        title="Delete chat"
+                        aria-label="Delete chat"
                       >
-                        <i className="fas fa-trash"></i>
+                        <i className="fas fa-trash" />
                       </button>
                     </div>
                   ))
                 )}
               </div>
               {sessions.length > 0 && (
-                <button className="clear-all-btn" onClick={clearAllChats}>
-                  <i className="fas fa-trash-alt"></i> Clear All
+                <button 
+                  className="clear-all-btn" 
+                  onClick={() => {
+                    if (window.confirm('Clear all chat history?')) {
+                      clearAllChats();
+                    }
+                  }}
+                >
+                  <i className="fas fa-trash-alt" /> Clear All
                 </button>
               )}
             </div>
@@ -301,7 +423,7 @@ const ChatAssistant = () => {
             <div className="chat-messages">
               {messages.length === 0 ? (
                 <div className="welcome-message">
-                  <i className="fas fa-robot"></i>
+                  <i className="fas fa-robot" />
                   <h3>Hi! I'm your AI study assistant</h3>
                   <p>I can help you with:</p>
                   <ul>
@@ -314,7 +436,7 @@ const ChatAssistant = () => {
                     <div className="context-hint">
                       <p>Based on your recent practice, you might want help with:</p>
                       <div className="weak-topics">
-                        {contextData.weakTopics.map((t, i) => (
+                        {contextData.weakTopics.slice(0, 4).map((t, i) => (
                           <span key={i} className="topic-tag">{t.topic}</span>
                         ))}
                       </div>
@@ -323,15 +445,17 @@ const ChatAssistant = () => {
                 </div>
               ) : (
                 messages.map((msg, index) => (
-                  <div key={index} className={`message ${msg.role}-message`}>
+                  <div 
+                    key={index} 
+                    className={`message ${msg.role}-message`}
+                    role="article"
+                  >
                     <div className="message-avatar">
-                      <i className={`fas fa-${msg.role === 'user' ? 'user' : 'robot'}`}></i>
+                      <i className={`fas fa-${msg.role === 'user' ? 'user' : 'robot'}`} />
                     </div>
                     <div className="message-content">
                       {msg.role === 'assistant' ? (
-                        <div className="formatted-response">
-                          {renderFormattedContent(msg.content)}
-                        </div>
+                        renderFormattedContent(msg.content)
                       ) : (
                         <p>{msg.content}</p>
                       )}
@@ -341,25 +465,31 @@ const ChatAssistant = () => {
                 ))
               )}
               
-              {sending && (
+              {(sending || isTyping) && (
                 <div className="message ai-message">
                   <div className="message-avatar">
-                    <i className="fas fa-robot"></i>
+                    <i className="fas fa-robot" />
                   </div>
                   <div className="message-content">
                     <div className="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
+                      <span />
+                      <span />
+                      <span />
                     </div>
                   </div>
                 </div>
               )}
               
               {error && (
-                <div className="error-message">
-                  <i className="fas fa-exclamation-circle"></i>
+                <div className="error-message" role="alert">
+                  <i className="fas fa-exclamation-circle" />
                   <span>{error}</span>
+                  <button 
+                    className="retry-btn"
+                    onClick={() => window.location.reload()}
+                  >
+                    Retry
+                  </button>
                 </div>
               )}
               
@@ -369,12 +499,12 @@ const ChatAssistant = () => {
             {/* Quick Questions */}
             {messages.length === 0 && (
               <div className="quick-questions">
-                {getSuggestionQuestions().map((q, i) => (
+                {suggestionQuestions.map((q, i) => (
                   <button
                     key={i}
                     className="quick-question-btn"
                     onClick={() => handleQuickQuestion(q)}
-                    disabled={sending}
+                    disabled={sending || isTyping}
                   >
                     {q}
                   </button>
@@ -382,40 +512,38 @@ const ChatAssistant = () => {
               </div>
             )}
 
-            {/* Input Area - FIXED with better event handling */}
+            {/* Input Area */}
             <form className="chat-input-container" onSubmit={handleSendMessage}>
               <div className="chat-input">
                 <input
+                  ref={inputRef}
                   type="text"
                   value={inputValue}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setInputValue(newValue);
-                    console.log('✏️ Input changed to:', newValue);
-                  }}
+                  onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about your studies..."
                   disabled={sending}
                   maxLength="500"
+                  aria-label="Chat input"
                 />
                 <button 
                   type="submit" 
                   className="send-btn"
                   disabled={!inputValue.trim() || sending}
-                  style={{
-                    opacity: (!inputValue.trim() || sending) ? 0.5 : 1,
-                    cursor: (!inputValue.trim() || sending) ? 'not-allowed' : 'pointer'
-                  }}
+                  aria-label="Send message"
                 >
                   {sending ? (
-                    <i className="fas fa-spinner fa-spin"></i>
+                    <i className="fas fa-spinner fa-spin" />
                   ) : (
-                    <i className="fas fa-paper-plane"></i>
+                    <i className="fas fa-paper-plane" />
                   )}
                 </button>
               </div>
               <div className="input-hint">
                 <span>Press Enter to send</span>
+                {inputValue.length > 0 && (
+                  <span className="char-count">{inputValue.length}/500</span>
+                )}
               </div>
             </form>
           </div>
