@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle, useCallback, useMemo } from 'react';
 import { practiceAPI } from '../../services/api';
 import '../../styles/PomodoroTimer.css';
 
@@ -10,24 +10,34 @@ const PomodoroTimer = forwardRef((props, ref) => {
   const [selectedSubject, setSelectedSubject] = useState('general');
   const [showSubjectSelector, setShowSubjectSelector] = useState(false);
   const [todayTotal, setTodayTotal] = useState(0);
-  const timerRef = useRef(null);
   const [notification, setNotification] = useState(null);
+  const [breakType, setBreakType] = useState('short');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [autoStartBreak, setAutoStartBreak] = useState(true);
+  const [autoStartStudy, setAutoStartStudy] = useState(true);
+  const [pomodoroLength, setPomodoroLength] = useState(25);
+  const [shortBreakLength, setShortBreakLength] = useState(5);
+  const [longBreakLength, setLongBreakLength] = useState(15);
+  const timerRef = useRef(null);
 
-  // Expose methods to parent
+  // Subjects
+  const subjects = useMemo(() => [
+    { id: 'physics', name: 'Physics', icon: 'fa-atom', color: '#4cc9f0' },
+    { id: 'chemistry', name: 'Chemistry', icon: 'fa-flask', color: '#f8961e' },
+    { id: 'math', name: 'Mathematics', icon: 'fa-square-root-alt', color: '#7209b7' },
+    { id: 'biology', name: 'Biology', icon: 'fa-dna', color: '#4caf50' }
+  ], []);
+
+  // Expose methods
   useImperativeHandle(ref, () => ({
     startQuickSession: (minutes) => {
-      console.log(`🚀 Quick session started: ${minutes} minutes`);
       setTimeLeft(minutes * 60);
       setIsBreak(false);
       setSelectedSubject('general');
       setShowSubjectSelector(true);
     },
-    pauseTimer: () => {
-      console.log('⏸️ Timer paused');
-      setIsRunning(false);
-    },
+    pauseTimer: () => setIsRunning(false),
     startTimer: () => {
-      console.log('▶️ Timer start requested');
       if (selectedSubject !== 'general' || isBreak) {
         setIsRunning(true);
       } else {
@@ -36,46 +46,25 @@ const PomodoroTimer = forwardRef((props, ref) => {
     }
   }));
 
-  // Load today's total on mount
+  // Load today's total
   useEffect(() => {
-    console.log('📊 Loading today\'s total...');
     loadTodayTotal();
   }, []);
 
-  // Listen for quick session events
+  // Event listeners
   useEffect(() => {
     const handleQuickSession = (e) => {
-      console.log(`🚀 Quick session event: ${e.detail.minutes} minutes`);
       setTimeLeft(e.detail.minutes * 60);
       setIsBreak(false);
       setSelectedSubject('general');
       setShowSubjectSelector(true);
     };
 
-    const handleTimerPause = () => {
-      console.log('⏸️ Timer pause event received');
-      setIsRunning(false);
-    };
-    
-    const handleTimerResume = () => {
-      console.log('▶️ Timer resume event received');
-      if (selectedSubject !== 'general' || isBreak) {
-        setIsRunning(true);
-      }
-    };
-
     window.addEventListener('quick-session-start', handleQuickSession);
-    window.addEventListener('timer-pause', handleTimerPause);
-    window.addEventListener('timer-resume', handleTimerResume);
+    return () => window.removeEventListener('quick-session-start', handleQuickSession);
+  }, []);
 
-    return () => {
-      window.removeEventListener('quick-session-start', handleQuickSession);
-      window.removeEventListener('timer-pause', handleTimerPause);
-      window.removeEventListener('timer-resume', handleTimerResume);
-    };
-  }, [selectedSubject, isBreak]);
-
-  const loadTodayTotal = async () => {
+  const loadTodayTotal = useCallback(async () => {
     try {
       const data = await practiceAPI.getSessions(1, 50);
       const sessions = data.sessions || [];
@@ -85,29 +74,26 @@ const PomodoroTimer = forwardRef((props, ref) => {
       );
       const total = todaySessions.reduce((sum, s) => sum + (s.timeSpent || 0), 0);
       setTodayTotal(total);
-      console.log(`📊 Today's total: ${Math.floor(total / 60)}h ${total % 60}m`);
     } catch (error) {
-      console.error('❌ Failed to load today\'s total:', error);
+      console.error('Failed to load today\'s total:', error);
     }
-  };
+  }, []);
 
-  const formatTime = () => {
+  const formatTime = useCallback(() => {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
+  }, [timeLeft]);
 
-  const showNotification = (message, type = 'success') => {
-    console.log(`🔔 Notification: ${message} (${type})`);
+  const showNotification = useCallback((message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
-    
-    // Also dispatch global event
     const event = new CustomEvent('show-notification', { detail: { message, type } });
     window.dispatchEvent(event);
-  };
+  }, []);
 
-  const playNotificationSound = () => {
+  const playSound = useCallback(() => {
+    if (!soundEnabled) return;
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -124,42 +110,20 @@ const PomodoroTimer = forwardRef((props, ref) => {
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
-      
-      console.log('🔊 Notification sound played');
     } catch (error) {
       console.log('Audio not supported:', error);
     }
-  };
+  }, [soundEnabled]);
 
-  useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      clearInterval(timerRef.current);
-      setIsRunning(false);
-      handleTimerComplete();
-    }
-
-    return () => clearInterval(timerRef.current);
-  }, [isRunning, timeLeft]);
-
-  const handleTimerComplete = async () => {
-    console.log('⏰ Timer completed!');
+  const handleTimerComplete = useCallback(async () => {
+    playSound();
     
     if (!isBreak) {
       // Study session completed
-      const minutes = 25; // Default Pomodoro length
-      
-      console.log('🔵 Study session completed!');
-      console.log(`   Subject: ${selectedSubject}`);
-      console.log(`   Minutes: ${minutes}`);
+      const minutes = pomodoroLength;
+      const subjectToSave = selectedSubject === 'general' ? 'physics' : selectedSubject;
       
       try {
-        // Make sure we have a valid subject
-        const subjectToSave = selectedSubject === 'general' ? 'physics' : selectedSubject;
-        
         const sessionData = {
           subject: subjectToSave,
           topic: 'pomodoro-session',
@@ -170,103 +134,104 @@ const PomodoroTimer = forwardRef((props, ref) => {
           notes: `Completed Pomodoro session`
         };
         
-        console.log('📤 Sending to API:', sessionData);
-        
-        const response = await practiceAPI.saveSession(sessionData);
-        
-        console.log('📥 API Response:', response);
-        console.log('✅ Session saved with ID:', response._id);
-        
-        // Update today's total
-        setTodayTotal(prev => {
-          const newTotal = prev + minutes;
-          console.log(`📊 Today's total updated: ${Math.floor(newTotal / 60)}h ${newTotal % 60}m`);
-          return newTotal;
-        });
-        
-        showNotification('Pomodoro session saved!');
+        await practiceAPI.saveSession(sessionData);
+        setTodayTotal(prev => prev + minutes);
+        showNotification('✅ Pomodoro session saved!');
         
       } catch (error) {
-        console.error('❌ Failed to save session:', error);
-        console.error('   Error details:', error.message);
+        console.error('Failed to save session:', error);
         showNotification('Failed to save session', 'error');
       }
       
-      // Start break
-      setSessionCount(prev => {
-        const newCount = prev + 1;
-        console.log(`🔄 Session count: ${newCount}`);
-        return newCount;
-      });
+      setSessionCount(prev => prev + 1);
       
+      // Determine break type
+      const newBreakType = (sessionCount + 1) % 4 === 0 ? 'long' : 'short';
+      setBreakType(newBreakType);
       setIsBreak(true);
-      setTimeLeft(5 * 60);
-      console.log('☕ Starting 5-minute break');
-      showNotification('Study session completed! Time for a 5-minute break.');
-      playNotificationSound();
+      setTimeLeft(newBreakType === 'long' ? longBreakLength * 60 : shortBreakLength * 60);
+      
+      showNotification(`☕ ${newBreakType === 'long' ? 'Long' : 'Short'} break started!`);
       
     } else {
       // Break completed
-      console.log('✅ Break completed!');
       setIsBreak(false);
-      setTimeLeft(25 * 60);
+      setTimeLeft(pomodoroLength * 60);
       showNotification('Break over! Time to focus again.');
-      playNotificationSound();
     }
-  };
+  }, [isBreak, pomodoroLength, selectedSubject, sessionCount, shortBreakLength, longBreakLength, playSound, showNotification]);
 
-  const startTimer = () => {
-    console.log('▶️ Start button clicked');
+  // Timer logic
+  useEffect(() => {
+    if (isRunning && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && isRunning) {
+      clearInterval(timerRef.current);
+      setIsRunning(false);
+      handleTimerComplete();
+    }
+
+    return () => clearInterval(timerRef.current);
+  }, [isRunning, timeLeft, handleTimerComplete]);
+
+  const startTimer = useCallback(() => {
     if (selectedSubject === 'general' && !isBreak) {
-      console.log('📚 Showing subject selector');
       setShowSubjectSelector(true);
     } else {
-      console.log(`▶️ Starting timer with subject: ${selectedSubject}`);
       setIsRunning(true);
     }
-  };
+  }, [selectedSubject, isBreak]);
 
-  const pauseTimer = () => {
-    console.log('⏸️ Pause button clicked');
+  const pauseTimer = useCallback(() => {
     setIsRunning(false);
-  };
+  }, []);
 
-  const resetTimer = () => {
-    console.log('🔄 Reset button clicked');
+  const resetTimer = useCallback(() => {
     clearInterval(timerRef.current);
     setIsRunning(false);
     setIsBreak(false);
-    setTimeLeft(25 * 60);
+    setTimeLeft(pomodoroLength * 60);
     setSessionCount(0);
     setSelectedSubject('general');
-    console.log('🔄 Timer reset to 25:00');
-  };
+  }, [pomodoroLength]);
 
-  const handleSubjectSelect = (subject) => {
-    console.log(`📚 Subject selected: ${subject}`);
+  const handleSubjectSelect = useCallback((subject) => {
     setSelectedSubject(subject);
     setShowSubjectSelector(false);
     setIsRunning(true);
-  };
+  }, []);
 
-  const subjects = [
-    { id: 'physics', name: 'Physics', icon: 'fa-atom' },
-    { id: 'chemistry', name: 'Chemistry', icon: 'fa-flask' },
-    { id: 'math', name: 'Mathematics', icon: 'fa-square-root-alt' },
-    { id: 'biology', name: 'Biology', icon: 'fa-dna' }
-  ];
+  const getStatusText = useCallback(() => {
+    if (isBreak) {
+      return breakType === 'long' ? 'Long Break' : 'Short Break';
+    }
+    return 'Study';
+  }, [isBreak, breakType]);
 
   return (
     <div className="tool-card feature-card">
       <div className="tool-header">
-        <div className="tool-icon">
-          <i className="fas fa-hourglass-half"></i>
-        </div>
+        <div className="tool-icon"><i className="fas fa-hourglass-half"></i></div>
         <h2>Pomodoro Timer</h2>
+        <span className="session-count">{sessionCount} / 4</span>
       </div>
       
       <div className={`timer-container ${isRunning ? 'timer-active' : ''}`}>
         <div className="timer-display">{formatTime()}</div>
+        
+        {/* Status */}
+        <div className="timer-status">
+          <span className={`status-badge ${isBreak ? 'break' : 'study'}`}>
+            {getStatusText()}
+          </span>
+          {!isBreak && selectedSubject !== 'general' && (
+            <span className="subject-badge">
+              {subjects.find(s => s.id === selectedSubject)?.name}
+            </span>
+          )}
+        </div>
         
         {/* Subject Selector Modal */}
         {showSubjectSelector && (
@@ -279,6 +244,7 @@ const PomodoroTimer = forwardRef((props, ref) => {
                     key={subject.id}
                     className="subject-option"
                     onClick={() => handleSubjectSelect(subject.id)}
+                    style={{ '--subject-color': subject.color }}
                   >
                     <i className={`fas ${subject.icon}`}></i>
                     <span>{subject.name}</span>
@@ -286,11 +252,8 @@ const PomodoroTimer = forwardRef((props, ref) => {
                 ))}
               </div>
               <button 
-                className="btn btn-outline"
-                onClick={() => {
-                  console.log('❌ Subject selection cancelled');
-                  setShowSubjectSelector(false);
-                }}
+                className="btn btn-secondary"
+                onClick={() => setShowSubjectSelector(false)}
               >
                 Cancel
               </button>
@@ -298,49 +261,58 @@ const PomodoroTimer = forwardRef((props, ref) => {
           </div>
         )}
 
-        {/* Current Subject Display */}
-        {selectedSubject !== 'general' && !isBreak && (
-          <div className="current-subject">
-            Studying: {subjects.find(s => s.id === selectedSubject)?.name}
-            <button onClick={() => {
-              console.log('✏️ Changing subject');
-              setSelectedSubject('general');
-            }}>
-              <i className="fas fa-edit"></i>
-            </button>
-          </div>
-        )}
-
+        {/* Controls */}
         <div className="timer-controls">
           {!isRunning ? (
             <button className="timer-btn btn-primary" onClick={startTimer}>
               <i className="fas fa-play"></i> {isBreak ? 'Start Break' : 'Start'}
             </button>
           ) : (
-            <button className="timer-btn btn-primary" onClick={pauseTimer}>
+            <button className="timer-btn btn-warning" onClick={pauseTimer}>
               <i className="fas fa-pause"></i> Pause
             </button>
           )}
-          <button className="timer-btn btn-outline" onClick={resetTimer}>
+          <button className="timer-btn btn-secondary" onClick={resetTimer}>
             <i className="fas fa-redo"></i> Reset
           </button>
         </div>
 
+        {/* Sessions */}
         <div className="timer-sessions">
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className={`session-dot ${i < sessionCount ? 'active' : ''}`}
-            ></div>
+              className={`session-dot ${i < sessionCount ? 'active' : ''} ${i === sessionCount && isRunning ? 'current' : ''}`}
+            />
           ))}
         </div>
 
-        <p className="session-info">
-          Current Session: <span>{isBreak ? 'Break' : 'Study'}</span>
-        </p>
+        {/* Settings */}
+        <div className="timer-settings">
+          <div className="setting-group">
+            <label>
+              <i className="fas fa-volume-up"></i>
+              <input 
+                type="checkbox" 
+                checked={soundEnabled}
+                onChange={(e) => setSoundEnabled(e.target.checked)}
+              />
+            </label>
+            <label>
+              <i className="fas fa-play-circle"></i>
+              <input 
+                type="checkbox" 
+                checked={autoStartBreak}
+                onChange={(e) => setAutoStartBreak(e.target.checked)}
+                title="Auto-start breaks"
+              />
+            </label>
+          </div>
+        </div>
 
-        {/* Today's Total from Backend */}
+        {/* Today's Total */}
         <div className="today-total">
+          <i className="fas fa-clock"></i>
           Today's study time: {Math.floor(todayTotal / 60)}h {todayTotal % 60}m
         </div>
       </div>

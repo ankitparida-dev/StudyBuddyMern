@@ -49,41 +49,54 @@ const LoadingScreen = ({
   showStats = true,
   showProgress = true,
   minDuration = 2000,
-  onComplete = null
+  onComplete = null,
+  customLogo = null
 }) => {
-  const { progress = 0, isLoading = true } = useLoading();
-  const [currentMessage, setCurrentMessage] = useState('');
+  // Get loading state from the hook
+  const { isLoading, progress = 0, loadingMessage: hookMessage, isTimeout } = useLoading();
+  
   const [currentTip, setCurrentTip] = useState('');
   const [tipIndex, setTipIndex] = useState(0);
-  const [showMessage, setShowMessage] = useState(true);
   const [elapsedTime, setElapsedTime] = useState(0);
 
-  // Get message based on progress
+  // Get message based on progress (fallback if hook message not available)
   const getMessageForProgress = useCallback((progressValue) => {
     if (progressValue < 20) {
-      return LOADING_MESSAGES.initial[Math.floor(Math.random() * LOADING_MESSAGES.initial.length)];
+      const messages = LOADING_MESSAGES.initial;
+      return messages[Math.floor(Math.random() * messages.length)];
     } else if (progressValue < 40) {
-      return LOADING_MESSAGES.preparing[Math.floor(Math.random() * LOADING_MESSAGES.preparing.length)];
+      const messages = LOADING_MESSAGES.preparing;
+      return messages[Math.floor(Math.random() * messages.length)];
     } else if (progressValue < 70) {
-      return LOADING_MESSAGES.loading[Math.floor(Math.random() * LOADING_MESSAGES.loading.length)];
+      const messages = LOADING_MESSAGES.loading;
+      return messages[Math.floor(Math.random() * messages.length)];
     } else if (progressValue < 95) {
-      return LOADING_MESSAGES.almost[Math.floor(Math.random() * LOADING_MESSAGES.almost.length)];
+      const messages = LOADING_MESSAGES.almost;
+      return messages[Math.floor(Math.random() * messages.length)];
     } else {
-      return LOADING_MESSAGES.complete[Math.floor(Math.random() * LOADING_MESSAGES.complete.length)];
+      const messages = LOADING_MESSAGES.complete;
+      return messages[Math.floor(Math.random() * messages.length)];
     }
   }, []);
 
-  // Update message when progress changes
-  useEffect(() => {
-    if (progress >= 0 && progress <= 100) {
-      const newMessage = getMessageForProgress(progress);
-      setCurrentMessage(newMessage);
-      
-      // Reset show message to trigger animation
-      setShowMessage(false);
-      setTimeout(() => setShowMessage(true), 50);
+  // Get current display message (prefer hook message, fallback to generated)
+  const displayMessage = useMemo(() => {
+    if (hookMessage && hookMessage !== 'Loading...') {
+      return hookMessage;
     }
-  }, [progress, getMessageForProgress]);
+    return getMessageForProgress(progress);
+  }, [hookMessage, progress, getMessageForProgress]);
+
+  // Get loading status
+  const getLoadingStatus = useCallback((progressValue) => {
+    if (isTimeout) return '⏳ Timeout';
+    if (progressValue < 20) return 'Connecting...';
+    if (progressValue < 40) return 'Preparing...';
+    if (progressValue < 70) return 'Loading...';
+    if (progressValue < 95) return 'Almost ready...';
+    if (progressValue >= 100) return 'Complete!';
+    return 'Loading...';
+  }, [isTimeout]);
 
   // Rotate tips
   useEffect(() => {
@@ -91,13 +104,17 @@ const LoadingScreen = ({
     
     const tipInterval = setInterval(() => {
       setTipIndex((prev) => (prev + 1) % STUDY_TIPS.length);
-      setCurrentTip(STUDY_TIPS[tipIndex]);
     }, 4000);
 
     setCurrentTip(STUDY_TIPS[0]);
 
     return () => clearInterval(tipInterval);
-  }, [showTips, tipIndex]);
+  }, [showTips]);
+
+  // Update current tip when index changes
+  useEffect(() => {
+    setCurrentTip(STUDY_TIPS[tipIndex]);
+  }, [tipIndex]);
 
   // Track elapsed time
   useEffect(() => {
@@ -127,15 +144,6 @@ const LoadingScreen = ({
     return `${secs}s`;
   }, []);
 
-  // Get loading status
-  const getLoadingStatus = useCallback((progressValue) => {
-    if (progressValue < 20) return 'Connecting...';
-    if (progressValue < 40) return 'Preparing...';
-    if (progressValue < 70) return 'Loading...';
-    if (progressValue < 95) return 'Almost ready...';
-    return 'Complete!';
-  }, []);
-
   // Memoized stats
   const stats = useMemo(() => [
     {
@@ -144,16 +152,19 @@ const LoadingScreen = ({
       icon: progress < 100 ? 'fa-spinner fa-pulse' : 'fa-check-circle'
     },
     {
-      value: 'AI',
-      label: 'Powered',
-      icon: 'fa-robot'
+      value: isTimeout ? '⏳' : 'AI',
+      label: isTimeout ? 'Timeout' : 'Powered',
+      icon: isTimeout ? 'fa-exclamation-triangle' : 'fa-robot'
     },
     {
       value: formatTime(elapsedTime),
       label: 'Time Elapsed',
       icon: 'fa-clock'
     }
-  ], [progress, elapsedTime, formatTime]);
+  ], [progress, elapsedTime, formatTime, isTimeout]);
+
+  // Don't render if not loading
+  if (!isLoading) return null;
 
   return (
     <div className="loading-screen" role="status" aria-live="polite">
@@ -161,7 +172,7 @@ const LoadingScreen = ({
         {/* Logo Section */}
         <div className="loading-logo">
           <div className="logo-wrapper">
-            <img src={logo} alt="StudyBuddy Logo" />
+            <img src={customLogo || logo} alt="StudyBuddy Logo" />
             <div className="logo-ring"></div>
           </div>
           <div className="logo-text-wrapper">
@@ -179,11 +190,12 @@ const LoadingScreen = ({
 
           {/* Message */}
           <div className="loading-text-content">
-            <h2 className={`loading-text ${showMessage ? 'visible' : ''}`}>
-              {currentMessage}
+            <h2 className={`loading-text ${displayMessage ? 'visible' : ''} ${isTimeout ? 'timeout' : ''}`}>
+              {isTimeout ? '⏳ Taking longer than expected...' : displayMessage}
             </h2>
             <p className="loading-subtext">
               {getLoadingStatus(progress)}
+              {isTimeout && ' • Please wait or try refreshing'}
             </p>
           </div>
 
@@ -192,7 +204,7 @@ const LoadingScreen = ({
             <div className="progress-container">
               <div className="progress-track">
                 <div 
-                  className={`progress-bar ${progress >= 100 ? 'complete' : ''}`} 
+                  className={`progress-bar ${isTimeout ? 'timeout' : ''} ${progress >= 100 ? 'complete' : ''}`} 
                   style={{ 
                     width: `${Math.min(100, Math.max(0, progress))}%` 
                   }}
@@ -203,14 +215,14 @@ const LoadingScreen = ({
                   {Math.round(progress)}%
                 </span>
                 <span className="progress-status">
-                  {progress >= 100 ? '🎉 Ready!' : 'Loading...'}
+                  {isTimeout ? '⏳ Timeout' : progress >= 100 ? '🎉 Ready!' : 'Loading...'}
                 </span>
               </div>
             </div>
           )}
 
           {/* Loading Tips */}
-          {showTips && currentTip && (
+          {showTips && currentTip && !isTimeout && (
             <div className="loading-tips">
               <div className="tip-icon">
                 <i className="fas fa-lightbulb"></i>
@@ -219,6 +231,14 @@ const LoadingScreen = ({
                 <span className="tip-label">Study Tip:</span>
                 <span className="tip-content">{currentTip}</span>
               </p>
+            </div>
+          )}
+
+          {/* Timeout Message */}
+          {isTimeout && (
+            <div className="timeout-message">
+              <i className="fas fa-exclamation-circle"></i>
+              <span>Loading is taking longer than expected. You can wait or try refreshing.</span>
             </div>
           )}
 

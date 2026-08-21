@@ -1,0 +1,709 @@
+/* ===== METRICS SECTION ===== */
+
+.metrics-container {
+    width: 100%;
+    padding: 0;
+}
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+    margin-bottom: 28px;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.section-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffd166, #ffb347);
+    color: #1e293b;
+    display: inline-block;
+}
+
+.section-subtitle {
+    color: var(--secondary, #64748b);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ===== METRIC GRID ===== */
+.metric-grid {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.main-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.additional-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* ===== METRIC CARD ===== */
+.metric-card {
+    background: var(--card-bg, rgba(255, 255, 255, 0.95));
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow, 0 8px 30px rgba(0, 0, 0, 0.08));
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric-card.interactive {
+    cursor: pointer;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.metric-card.hovered {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.15);
+}
+
+.metric-card.compact {
+    padding: 14px 16px;
+}
+
+.metric-card.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.metric-card-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.metric-card-inner.compact {
+    gap: 12px;
+    align-items: center;
+}
+
+/* ===== METRIC ICON ===== */
+.metric-icon-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.metric-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.4rem;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.metric-card:hover .metric-icon {
+    transform: scale(1.05) rotate(-5deg);
+}
+
+.metric-icon-small {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover .metric-icon-small {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.metric-pulse {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    background: var(--primary, #2563eb);
+    opacity: 0.2;
+    animation: pulseRing 2s ease-in-out infinite;
+}
+
+@keyframes pulseRing {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.2;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.1;
+    }
+}
+
+/* ===== METRIC CONTENT ===== */
+.metric-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.metric-content-compact {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.metric-value-wrapper {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark, #1e293b);
+    line-height: 1.2;
+    font-family: 'Courier New', monospace;
+}
+
+.metric-value.small {
+    font-size: 1.2rem;
+}
+
+.metric-suffix {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--secondary, #64748b);
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--secondary, #64748b);
+    margin-top: 2px;
+}
+
+.metric-label.small {
+    font-size: 0.75rem;
+}
+
+.metric-description {
+    font-size: 0.75rem;
+    color: var(--secondary, #64748b);
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+/* ===== METRIC RING ===== */
+.metric-ring {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.metric-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.metric-ring .ring-bg {
+    fill: none;
+    stroke: var(--sky-light, #f0f9ff);
+    stroke-width: 3;
+}
+
+.metric-ring .ring-progress {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.8s ease;
+}
+
+/* ===== METRIC HOVER TOOLTIP ===== */
+.metric-hover-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--dark, #1e293b);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.metric-hover-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--dark, #1e293b);
+}
+
+.metric-card.hovered .metric-hover-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-4px);
+}
+
+.metric-hover-tooltip i {
+    font-size: 0.7rem;
+}
+
+/* ===== ADDITIONAL METRICS ===== */
+.additional-metrics {
+    margin-top: 8px;
+}
+
+.additional-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.additional-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.additional-title i {
+    color: var(--primary, #2563eb);
+}
+
+.additional-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 12px;
+    background: var(--primary, #2563eb);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== OVERALL PROGRESS ===== */
+.overall-progress {
+    margin-top: 24px;
+    padding: 20px 24px;
+    background: var(--card-bg, rgba(255, 255, 255, 0.95));
+    border-radius: 16px;
+    box-shadow: var(--shadow, 0 8px 30px rgba(0, 0, 0, 0.08));
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.progress-title {
+    font-weight: 600;
+    color: var(--dark, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.progress-title i {
+    color: var(--primary, #2563eb);
+}
+
+.progress-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary, #2563eb);
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    background: var(--sky-light, #f0f9ff);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--secondary, #64748b);
+}
+
+/* ===== SKELETON LOADING ===== */
+.metric-skeleton {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--sky-light, #f0f9ff);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.metric-skeleton-text {
+    height: 20px;
+    width: 60%;
+    background: var(--sky-light, #f0f9ff);
+    border-radius: 4px;
+    animation: pulse 1.5s ease-in-out infinite 0.2s;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ===== DARK MODE ===== */
+.dark-mode .metric-card {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .metric-card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .metric-value {
+    color: #f8fafc;
+}
+
+.dark-mode .metric-label {
+    color: #94a3b8;
+}
+
+.dark-mode .metric-description {
+    color: #94a3b8;
+}
+
+.dark-mode .metric-hover-tooltip {
+    background: #1e293b;
+}
+
+.dark-mode .metric-hover-tooltip::after {
+    border-top-color: #1e293b;
+}
+
+.dark-mode .overall-progress {
+    background: #1e293b;
+}
+
+.dark-mode .progress-track {
+    background: #0f172a;
+}
+
+.dark-mode .metric-skeleton {
+    background: #1e293b;
+}
+
+.dark-mode .metric-skeleton-text {
+    background: #1e293b;
+}
+
+.dark-mode .additional-title {
+    color: #f8fafc;
+}
+
+.dark-mode .section-title {
+    color: #f8fafc;
+}
+
+.dark-mode .section-subtitle {
+    color: #94a3b8;
+}
+
+.dark-mode .progress-title {
+    color: #f8fafc;
+}
+
+.dark-mode .progress-stats {
+    color: #94a3b8;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .main-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .additional-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .main-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+    
+    .additional-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .section-badge {
+        font-size: 0.65rem;
+        padding: 3px 12px;
+    }
+    
+    .metric-card {
+        padding: 16px;
+    }
+    
+    .metric-card.compact {
+        padding: 12px 14px;
+    }
+    
+    .metric-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+        border-radius: 12px;
+    }
+    
+    .metric-icon-small {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+    
+    .metric-value {
+        font-size: 1.6rem;
+    }
+    
+    .metric-value.small {
+        font-size: 1rem;
+    }
+    
+    .metric-ring {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .overall-progress {
+        padding: 16px 18px;
+    }
+    
+    .additional-header {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .additional-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .metric-card {
+        padding: 14px 12px;
+        border-radius: 12px;
+    }
+    
+    .metric-card.compact {
+        padding: 10px 12px;
+    }
+    
+    .metric-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+    
+    .metric-icon-small {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+        border-radius: 6px;
+    }
+    
+    .metric-value {
+        font-size: 1.3rem;
+    }
+    
+    .metric-value.small {
+        font-size: 0.9rem;
+    }
+    
+    .metric-label {
+        font-size: 0.7rem;
+    }
+    
+    .metric-label.small {
+        font-size: 0.65rem;
+    }
+    
+    .metric-description {
+        display: none;
+    }
+    
+    .metric-ring {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .metric-ring .ring-bg,
+    .metric-ring .ring-progress {
+        stroke-width: 2;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+    }
+    
+    .section-badge {
+        font-size: 0.55rem;
+        padding: 2px 10px;
+    }
+    
+    .section-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .overall-progress {
+        padding: 14px 16px;
+    }
+    
+    .progress-title {
+        font-size: 0.85rem;
+    }
+    
+    .progress-value {
+        font-size: 0.95rem;
+    }
+    
+    .progress-track {
+        height: 6px;
+    }
+    
+    .progress-stats {
+        font-size: 0.7rem;
+    }
+    
+    .additional-title {
+        font-size: 0.95rem;
+    }
+    
+    .additional-badge {
+        font-size: 0.55rem;
+        padding: 2px 8px;
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    .metric-card,
+    .metric-icon,
+    .metric-icon-small,
+    .progress-fill,
+    .metric-pulse,
+    .metric-ring .ring-progress {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .metric-card:hover {
+        transform: none !important;
+    }
+    
+    .progress-fill::after {
+        display: none;
+    }
+    
+    .metric-hover-tooltip {
+        display: none;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.metric-card:focus-visible {
+    outline: 2px solid var(--primary, #2563eb);
+    outline-offset: 2px;
+}
+
+.metric-card.interactive:focus-visible {
+    outline: 2px solid var(--primary, #2563eb);
+    outline-offset: 2px;
+}
