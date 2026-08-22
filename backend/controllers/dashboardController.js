@@ -1,176 +1,174 @@
 const StudySession = require('../models/StudySession');
 
-// @desc    Get dashboard statistics
-// @route   GET /api/dashboard/stats
-// @access  Private
+// ============================================
+// Helper Functions
+// ============================================
+const getDateRange = (days) => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - days);
+  start.setHours(0, 0, 0, 0);
+  return { start, end };
+};
+
+const formatDuration = (minutes) => ({
+  minutes,
+  hours: Math.round(minutes / 60 * 10) / 10,
+  display: minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`
+});
+
+// ============================================
+// Controller Functions
+// ============================================
+
+/**
+ * @desc    Get dashboard statistics
+ * @route   GET /api/dashboard/stats
+ * @access  Private
+ */
 const getStats = async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Get current date ranges
+    // Get date ranges
     const now = new Date();
-    
-    // Start of today
     const startOfDay = new Date(now);
     startOfDay.setHours(0, 0, 0, 0);
     
-    // Start of this week (Sunday)
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
     
-    // Start of this month
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    // Get today's sessions
-    const todaySessions = await StudySession.find({
-      userId,
-      date: { $gte: startOfDay }
-    });
+    // Get sessions for different time periods
+    const [todaySessions, weekSessions, monthSessions, allSessions] = await Promise.all([
+      StudySession.find({ userId, date: { $gte: startOfDay } }),
+      StudySession.find({ userId, date: { $gte: startOfWeek } }),
+      StudySession.find({ userId, date: { $gte: startOfMonth } }),
+      StudySession.find({ userId })
+    ]);
     
-    const todayTotal = todaySessions.reduce((sum, session) => sum + session.duration, 0);
+    // Calculate totals
+    const calculateTotal = (sessions) => sessions.reduce((sum, s) => sum + s.duration, 0);
     
-    // Get this week's sessions
-    const weekSessions = await StudySession.find({
-      userId,
-      date: { $gte: startOfWeek }
-    });
-    
-    const weekTotal = weekSessions.reduce((sum, session) => sum + session.duration, 0);
-    
-    // Get this month's sessions
-    const monthSessions = await StudySession.find({
-      userId,
-      date: { $gte: startOfMonth }
-    });
-    
-    const monthTotal = monthSessions.reduce((sum, session) => sum + session.duration, 0);
-    
-    // Get ALL sessions for subject totals
-    const allSessions = await StudySession.find({ userId });
+    const todayTotal = calculateTotal(todaySessions);
+    const weekTotal = calculateTotal(weekSessions);
+    const monthTotal = calculateTotal(monthSessions);
+    const totalMinutes = calculateTotal(allSessions);
     
     // Calculate subject-wise totals
     const subjectTotals = {};
     allSessions.forEach(session => {
-      if (!subjectTotals[session.subject]) {
-        subjectTotals[session.subject] = 0;
-      }
-      subjectTotals[session.subject] += session.duration;
+      const subject = session.subject || 'general';
+      subjectTotals[subject] = (subjectTotals[subject] || 0) + session.duration;
     });
     
-    // Calculate grand total
-    const totalMinutes = allSessions.reduce((sum, s) => sum + s.duration, 0);
-    
-    // Return COMPLETE stats object
     res.json({
+      success: true,
       today: {
-        minutes: todayTotal,
-        hours: Math.round(todayTotal / 60 * 10) / 10,
+        ...formatDuration(todayTotal),
         sessions: todaySessions.length
       },
       week: {
-        minutes: weekTotal,
-        hours: Math.round(weekTotal / 60 * 10) / 10,
+        ...formatDuration(weekTotal),
         sessions: weekSessions.length
       },
       month: {
-        minutes: monthTotal,
-        hours: Math.round(monthTotal / 60 * 10) / 10,
+        ...formatDuration(monthTotal),
         sessions: monthSessions.length
       },
       subjects: subjectTotals,
       total: {
-        minutes: totalMinutes,
-        hours: Math.round(totalMinutes / 60 * 10) / 10,
+        ...formatDuration(totalMinutes),
         sessions: allSessions.length
       }
     });
     
   } catch (error) {
-    console.error('Dashboard Stats Error:', error);
-    res.status(500).json({ message: error.message });
+    console.error('❌ Dashboard Stats Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to get stats'
+    });
   }
 };
 
-// @desc    Get subject progress
-// @route   GET /api/dashboard/progress
-// @access  Private
+/**
+ * @desc    Get subject progress
+ * @route   GET /api/dashboard/progress
+ * @access  Private
+ */
 const getProgress = async (req, res) => {
   try {
     const userId = req.user._id;
+    const { start, end, days = 30 } = req.query;
     
-    // Get last 30 days of sessions
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    thirtyDaysAgo.setHours(0, 0, 0, 0);
+    const dateRange = getDateRange(parseInt(days));
     
     const sessions = await StudySession.find({
       userId,
-      date: { $gte: thirtyDaysAgo }
+      date: { $gte: dateRange.start, $lte: dateRange.end }
     }).sort({ date: 1 });
     
-    // Group by date for daily progress
+    // Group by date
     const dailyProgress = {};
     sessions.forEach(session => {
       const dateStr = session.date.toISOString().split('T')[0];
-      if (!dailyProgress[dateStr]) {
-        dailyProgress[dateStr] = 0;
-      }
-      dailyProgress[dateStr] += session.duration;
+      dailyProgress[dateStr] = (dailyProgress[dateStr] || 0) + session.duration;
     });
     
-    // Convert to array format for charts
     const progressData = Object.entries(dailyProgress).map(([date, minutes]) => ({
       date,
-      minutes,
-      hours: Math.round(minutes / 60 * 10) / 10
+      ...formatDuration(minutes)
     }));
     
-    // Calculate subject distribution
+    // Subject distribution
     const subjectDistribution = {};
     sessions.forEach(session => {
-      if (!subjectDistribution[session.subject]) {
-        subjectDistribution[session.subject] = 0;
-      }
-      subjectDistribution[session.subject] += session.duration;
+      const subject = session.subject || 'general';
+      subjectDistribution[subject] = (subjectDistribution[subject] || 0) + session.duration;
     });
     
-    // Calculate totals
     const totalMinutes = sessions.reduce((sum, s) => sum + s.duration, 0);
     const uniqueDays = new Set(sessions.map(s => s.date.toISOString().split('T')[0])).size;
     
     res.json({
+      success: true,
       daily: progressData,
       subjects: subjectDistribution,
       total: {
         days: uniqueDays,
-        minutes: totalMinutes,
-        hours: Math.round(totalMinutes / 60 * 10) / 10
+        ...formatDuration(totalMinutes),
+        sessions: sessions.length
       }
     });
     
   } catch (error) {
-    console.error('Dashboard Progress Error:', error);
-    res.status(500).json({ message: error.message });
+    console.error('❌ Dashboard Progress Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to get progress'
+    });
   }
 };
 
-// @desc    Get study streaks
-// @route   GET /api/dashboard/streaks
-// @access  Private
+/**
+ * @desc    Get study streaks
+ * @route   GET /api/dashboard/streaks
+ * @access  Private
+ */
 const getStreaks = async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Get all sessions sorted by date
     const sessions = await StudySession.find({ userId }).sort({ date: 1 });
     
-    // Create a map of dates with sessions
-    const sessionDates = new Set();
-    sessions.forEach(session => {
-      const dateStr = session.date.toISOString().split('T')[0];
-      sessionDates.add(dateStr);
-    });
+    // Get unique study dates
+    const studyDates = new Set(
+      sessions.map(s => s.date.toISOString().split('T')[0])
+    );
+    const sortedDates = Array.from(studyDates).sort();
     
     // Calculate current streak
     let currentStreak = 0;
@@ -182,9 +180,9 @@ const getStreaks = async (req, res) => {
       checkDate.setDate(checkDate.getDate() - i);
       const dateStr = checkDate.toISOString().split('T')[0];
       
-      if (sessionDates.has(dateStr)) {
+      if (studyDates.has(dateStr)) {
         currentStreak++;
-      } else {
+      } else if (i > 0) {
         break;
       }
     }
@@ -192,14 +190,13 @@ const getStreaks = async (req, res) => {
     // Calculate longest streak
     let longestStreak = 0;
     let tempStreak = 0;
-    const allDates = Array.from(sessionDates).sort();
     
-    for (let i = 0; i < allDates.length; i++) {
+    for (let i = 0; i < sortedDates.length; i++) {
       if (i === 0) {
         tempStreak = 1;
       } else {
-        const prevDate = new Date(allDates[i-1]);
-        const currDate = new Date(allDates[i]);
+        const prevDate = new Date(sortedDates[i - 1]);
+        const currDate = new Date(sortedDates[i]);
         const diffDays = Math.round((currDate - prevDate) / (1000 * 60 * 60 * 24));
         
         if (diffDays === 1) {
@@ -211,7 +208,7 @@ const getStreaks = async (req, res) => {
       longestStreak = Math.max(longestStreak, tempStreak);
     }
     
-    // Get weekly activity (last 7 days)
+    // Weekly activity (last 7 days)
     const weekly = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
@@ -225,51 +222,74 @@ const getStreaks = async (req, res) => {
       weekly.push({
         date: dateStr,
         day: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        studied: sessionDates.has(dateStr),
+        studied: studyDates.has(dateStr),
         minutes: daySessions.reduce((sum, s) => sum + s.duration, 0),
         sessions: daySessions.length
       });
     }
     
     res.json({
+      success: true,
       currentStreak,
       longestStreak,
-      totalStudyDays: sessionDates.size,
+      totalStudyDays: studyDates.size,
       weekly
     });
     
   } catch (error) {
-    console.error('Dashboard Streaks Error:', error);
-    res.status(500).json({ message: error.message });
+    console.error('❌ Dashboard Streaks Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to get streaks'
+    });
   }
 };
 
-// @desc    Add a test study session
-// @route   POST /api/dashboard/test-session
-// @access  Private
+/**
+ * @desc    Add a test study session
+ * @route   POST /api/dashboard/test-session
+ * @access  Private
+ */
 const addTestSession = async (req, res) => {
   try {
-    const { subject, duration } = req.body;
+    const { subject, duration, topic, notes } = req.body;
     
     if (!subject || !duration) {
-      return res.status(400).json({ message: 'Subject and duration are required' });
+      return res.status(400).json({
+        success: false,
+        error: 'Subject and duration are required'
+      });
+    }
+    
+    if (duration < 1 || duration > 720) {
+      return res.status(400).json({
+        success: false,
+        error: 'Duration must be between 1 and 720 minutes'
+      });
     }
     
     const session = await StudySession.create({
       userId: req.user._id,
-      subject: subject,
-      duration: duration,
+      subject,
+      topic: topic || 'general',
+      duration,
+      notes: notes || '',
       date: new Date()
     });
     
-    res.status(201).json(session);
+    res.status(201).json({
+      success: true,
+      session
+    });
   } catch (error) {
-    console.error('Add Test Session Error:', error);
-    res.status(500).json({ message: error.message });
+    console.error('❌ Add Test Session Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to add test session'
+    });
   }
 };
 
-// Export all functions
 module.exports = {
   getStats,
   getProgress,

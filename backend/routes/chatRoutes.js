@@ -1,232 +1,427 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
+const { body, validationResult } = require('express-validator');
 const { getGeminiResponse } = require('../services/geminiService');
+const ChatSession = require('../models/ChatSession');
+const mongoose = require('mongoose');
 
-// In-memory storage (you can replace with MongoDB later)
-const userChats = new Map();
+// ============================================
+// Validation Rules
+// ============================================
+const messageValidation = [
+  body('message')
+    .trim()
+    .notEmpty().withMessage('Message is required')
+    .isLength({ min: 1, max: 5000 }).withMessage('Message must be between 1 and 5000 characters'),
+  
+  body('sessionId')
+    .optional()
+    .isString().withMessage('Session ID must be a string')
+];
 
-const getUserChats = (userId) => {
-  if (!userChats.has(userId)) {
-    userChats.set(userId, []);
-  }
-  return userChats.get(userId);
+const sessionValidation = [
+  body('title')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 }).withMessage('Title must be between 1 and 100 characters')
+];
+
+const validate = (validations) => {
+  return async (req, res, next) => {
+    await Promise.all(validations.map(validation => validation.run(req)));
+
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      return next();
+    }
+
+    res.status(400).json({
+      success: false,
+      error: 'Validation failed',
+      errors: errors.array().map(err => ({
+        field: err.path,
+        message: err.msg
+      }))
+    });
+  };
 };
 
 // ============================================
-// ROUTE: Create a new chat session
+// Helper Functions
 // ============================================
-router.post('/session', (req, res) => {
-  console.log('✅ POST /session called');
-  
+const getUserId = (req) => {
+  return req.user?._id || req.user?.id || 'anonymous';
+};
+
+const generateSessionTitle = (message) => {
+  const words = message.split(' ');
+  if (words.length <= 5) {
+    return message.slice(0, 50);
+  }
+  return words.slice(0, 5).join(' ') + '...';
+};
+
+// ============================================
+// ROUTES
+// ============================================
+
+/**
+ * @route   GET /api/chat/history
+ * @desc    Get all chat sessions for a user
+ * @access  Private
+ */
+router.get('/history', protect, async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
-    }
+    const userId = getUserId(req);
     
-    const token = authHeader.split(' ')[1];
-    const userId = token ? token.substring(0, 10) : 'anonymous';
+    const sessions = await ChatSession.find({ userId })
+      .select('_id title createdAt updatedAt messageCount')
+      .sort({ updatedAt: -1 })
+      .limit(50);
     
-    const { title } = req.body;
-    
-    const newSession = {
-      _id: Date.now().toString(),
-      title: title || 'New Chat',
-      messages: [],
-      userId: userId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    const userSessions = getUserChats(userId);
-    userSessions.push(newSession);
-    
-    console.log(`✅ Session created: ${newSession._id}`);
-    res.status(201).json(newSession);
+    res.json({
+      success: true,
+      sessions: sessions || []
+    });
     
   } catch (error) {
-    console.error('❌ Error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Get history error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load chat history'
+    });
   }
 });
 
-// ============================================
-// ROUTE: Send a message - USING GEMINI API
-// ============================================
-router.post('/message', async (req, res) => {
-  console.log('✅ POST /message called - Using Gemini API');
-  
+/**
+ * @route   GET /api/chat/session/:sessionId
+ * @desc    Get a specific chat session
+ * @access  Private
+ */
+router.get('/session/:sessionId', protect, async (req, res) => {
   try {
+    const userId = getUserId(req);
+    const { sessionId } = req.params;
+    
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid session ID'
+      });
+    }
+    
+    const session = await ChatSession.findOne({ 
+      _id: sessionId, 
+      userId 
+    });
+    
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      session
+    });
+    
+  } catch (error) {
+    console.error('❌ Get session error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load session'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/chat/session
+ * @desc    Create a new chat session
+ * @access  Private
+ */
+router.post('/session', protect, validate(sessionValidation), async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const { title } = req.body;
+    
+    const session = new ChatSession({
+      userId,
+      title: title || 'New Chat',
+      messages: [],
+      messageCount: 0
+    });
+    
+    await session.save();
+    
+    res.status(201).json({
+      success: true,
+      session: {
+        _id: session._id,
+        title: session.title,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        messageCount: session.messageCount
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Create session error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create session'
+    });
+  }
+});
+
+/**
+ * @route   PUT /api/chat/session/:sessionId
+ * @desc    Rename a chat session
+ * @access  Private
+ */
+router.put('/session/:sessionId', protect, validate(sessionValidation), async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const { sessionId } = req.params;
+    const { title } = req.body;
+    
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Title is required'
+      });
+    }
+    
+    const session = await ChatSession.findOneAndUpdate(
+      { _id: sessionId, userId },
+      { title: title.trim() },
+      { new: true }
+    );
+    
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      session: {
+        _id: session._id,
+        title: session.title,
+        updatedAt: session.updatedAt
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Rename session error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to rename session'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/chat/message
+ * @desc    Send a message and get AI response
+ * @access  Private
+ */
+router.post('/message', protect, validate(messageValidation), async (req, res) => {
+  try {
+    const userId = getUserId(req);
     const { message, sessionId } = req.body;
     
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
+    // Get or create session
+    let session = null;
+    let sessionExists = false;
+    
+    if (sessionId && mongoose.Types.ObjectId.isValid(sessionId)) {
+      session = await ChatSession.findOne({ _id: sessionId, userId });
+      if (session) {
+        sessionExists = true;
+      }
     }
     
-    // Get user ID from auth header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
+    // If session doesn't exist, create one
+    if (!session) {
+      const title = generateSessionTitle(message);
+      session = new ChatSession({
+        userId,
+        title,
+        messages: [],
+        messageCount: 0
+      });
     }
     
-    const token = authHeader.split(' ')[1];
-    const userId = token ? token.substring(0, 10) : 'anonymous';
+    // Add user message to session
+    const userMessage = {
+      role: 'user',
+      content: message,
+      timestamp: new Date().toISOString()
+    };
+    
+    session.messages.push(userMessage);
+    session.messageCount = (session.messageCount || 0) + 1;
+    session.updatedAt = new Date();
+    
+    // Save session to get _id if new
+    if (!sessionExists) {
+      await session.save();
+    }
+    
+    // Get chat history for context (last 10 messages)
+    const chatHistory = session.messages.slice(-10).map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
     
     // Call Gemini API
-    console.log('🤖 Calling Gemini API with message:', message);
+    console.log('🤖 Calling Gemini API...');
     let aiResponseText;
     
     try {
-      aiResponseText = await getGeminiResponse(message);
+      aiResponseText = await getGeminiResponse(message, chatHistory);
       console.log('✅ Gemini API response received');
     } catch (geminiError) {
       console.error('❌ Gemini API Error:', geminiError);
-      aiResponseText = "I'm having trouble connecting to the AI service. Please try again in a moment.";
+      aiResponseText = "I'm having trouble connecting to the AI service. Please try again in a moment. If the problem persists, please check your internet connection.";
     }
     
+    // Add AI response to session
     const aiMessage = {
       role: 'assistant',
       content: aiResponseText,
       timestamp: new Date().toISOString()
     };
     
-    // Store in session if sessionId provided
-    if (sessionId) {
-      const userSessions = getUserChats(userId);
-      const session = userSessions.find(s => s._id === sessionId);
-      
-      if (session) {
-        // Add user message
-        session.messages.push({
-          role: 'user',
-          content: message,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Add AI response
-        session.messages.push(aiMessage);
-        session.updatedAt = new Date().toISOString();
-      }
-    }
+    session.messages.push(aiMessage);
+    session.messageCount = (session.messageCount || 0) + 1;
+    session.updatedAt = new Date();
+    
+    // Save session
+    await session.save();
     
     res.json({
-      sessionId: sessionId || 'new-' + Date.now(),
-      message: aiMessage
+      success: true,
+      sessionId: session._id,
+      message: {
+        role: 'assistant',
+        content: aiResponseText,
+        timestamp: aiMessage.timestamp
+      }
     });
     
   } catch (error) {
-    console.error('❌ Error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Message error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to get AI response'
+    });
   }
 });
 
-// ============================================
-// ROUTE: Get chat history
-// ============================================
-router.get('/history', (req, res) => {
+/**
+ * @route   DELETE /api/chat/session/:sessionId
+ * @desc    Delete a chat session
+ * @access  Private
+ */
+router.delete('/session/:sessionId', protect, async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
+    const userId = getUserId(req);
+    const { sessionId } = req.params;
+    
+    const result = await ChatSession.findOneAndDelete({ 
+      _id: sessionId, 
+      userId 
+    });
+    
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found'
+      });
     }
     
-    const token = authHeader.split(' ')[1];
-    const userId = token ? token.substring(0, 10) : 'anonymous';
-    
-    const userSessions = getUserChats(userId);
-    
-    // Return only metadata, not full messages
-    const sessions = userSessions.map(s => ({
-      _id: s._id,
-      title: s.title,
-      createdAt: s.createdAt,
-      updatedAt: s.updatedAt
-    }));
-    
-    res.json({ sessions });
+    res.json({
+      success: true,
+      message: 'Session deleted successfully'
+    });
     
   } catch (error) {
-    console.error('❌ Error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Delete session error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete session'
+    });
   }
 });
 
-// ============================================
-// ROUTE: Get single session
-// ============================================
-router.get('/session/:sessionId', (req, res) => {
+/**
+ * @route   DELETE /api/chat/clear
+ * @desc    Clear all chat sessions for a user
+ * @access  Private
+ */
+router.delete('/clear', protect, async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
-    }
+    const userId = getUserId(req);
     
-    const token = authHeader.split(' ')[1];
-    const userId = token ? token.substring(0, 10) : 'anonymous';
+    const result = await ChatSession.deleteMany({ userId });
     
-    const userSessions = getUserChats(userId);
-    const session = userSessions.find(s => s._id === req.params.sessionId);
-    
-    if (!session) {
-      return res.status(404).json({ error: 'Session not found' });
-    }
-    
-    res.json(session);
+    res.json({
+      success: true,
+      message: `Cleared ${result.deletedCount || 0} sessions`,
+      deletedCount: result.deletedCount || 0
+    });
     
   } catch (error) {
-    console.error('❌ Error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Clear chats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to clear chats'
+    });
   }
 });
 
-// ============================================
-// ROUTE: Delete session
-// ============================================
-router.delete('/session/:sessionId', (req, res) => {
+/**
+ * @route   GET /api/chat/stats
+ * @desc    Get chat statistics
+ * @access  Private
+ */
+router.get('/stats', protect, async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
-    }
+    const userId = getUserId(req);
     
-    const token = authHeader.split(' ')[1];
-    const userId = token ? token.substring(0, 10) : 'anonymous';
+    const totalSessions = await ChatSession.countDocuments({ userId });
+    const totalMessages = await ChatSession.aggregate([
+      { $match: { userId } },
+      { $group: { _id: null, total: { $sum: '$messageCount' } } }
+    ]);
     
-    const userSessions = getUserChats(userId);
-    const index = userSessions.findIndex(s => s._id === req.params.sessionId);
+    const recentSessions = await ChatSession.find({ userId })
+      .sort({ updatedAt: -1 })
+      .limit(5)
+      .select('_id title updatedAt messageCount');
     
-    if (index === -1) {
-      return res.status(404).json({ error: 'Session not found' });
-    }
-    
-    userSessions.splice(index, 1);
-    res.json({ message: 'Session deleted successfully' });
+    res.json({
+      success: true,
+      stats: {
+        totalSessions,
+        totalMessages: totalMessages[0]?.total || 0,
+        recentSessions: recentSessions || []
+      }
+    });
     
   } catch (error) {
-    console.error('❌ Error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ============================================
-// ROUTE: Clear all chats
-// ============================================
-router.delete('/clear', (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
-    }
-    
-    const token = authHeader.split(' ')[1];
-    const userId = token ? token.substring(0, 10) : 'anonymous';
-    
-    userChats.delete(userId);
-    res.json({ message: 'All chats cleared successfully' });
-    
-  } catch (error) {
-    console.error('❌ Error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Chat stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get chat stats'
+    });
   }
 });
 
