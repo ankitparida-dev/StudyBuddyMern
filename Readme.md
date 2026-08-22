@@ -92,5 +92,5 @@ Ankit Parida - ankitparida386@gmail.com
 
 Project Link: https://github.com/ankitparida-dev/StudyBuddyMern
 
-⭐ Star this repo if you found it helpful!
+⭐ Star this repo if you found it helpful
 
