@@ -1,0 +1,16 @@
+.study-path-container {
+  width: 100%;
+}
+
+.study-path-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.study-path-card {
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 8px;
+  background: var(--card-background, #fff);
+}

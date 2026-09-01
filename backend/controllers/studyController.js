@@ -1,4 +1,6 @@
 const StudySession = require('../models/StudySession');
+const Goal = require('../models/Goal');
+const PracticeSession = require('../models/PracticeSession');
 
 // ============================================
 // Helper Functions
@@ -290,9 +292,131 @@ const addTestSession = async (req, res) => {
   }
 };
 
+const createGoal = async (req, res) => {
+  try {
+    const goal = await Goal.create({ ...req.body, userId: req.user._id });
+    res.status(201).json({ success: true, goal });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || 'Failed to create goal' });
+  }
+};
+
+const getGoals = async (req, res) => {
+  const goals = await Goal.find({ userId: req.user._id, isDeleted: false }).sort({ createdAt: -1 });
+  res.json({ success: true, goals });
+};
+
+const getGoalById = async (req, res) => {
+  const goal = await Goal.findOne({ _id: req.params.id, userId: req.user._id, isDeleted: false });
+  if (!goal) return res.status(404).json({ success: false, error: 'Goal not found' });
+  res.json({ success: true, goal });
+};
+
+const updateGoal = async (req, res) => {
+  const goal = await Goal.findOneAndUpdate(
+    { _id: req.params.id, userId: req.user._id, isDeleted: false },
+    req.body,
+    { new: true, runValidators: true }
+  );
+  if (!goal) return res.status(404).json({ success: false, error: 'Goal not found' });
+  res.json({ success: true, goal });
+};
+
+const deleteGoal = async (req, res) => {
+  const goal = await Goal.findOneAndUpdate(
+    { _id: req.params.id, userId: req.user._id, isDeleted: false },
+    { isDeleted: true },
+    { new: true }
+  );
+  if (!goal) return res.status(404).json({ success: false, error: 'Goal not found' });
+  res.json({ success: true, message: 'Goal deleted successfully' });
+};
+
+const markComplete = async (req, res) => {
+  const goal = await Goal.findOneAndUpdate(
+    { _id: req.params.id, userId: req.user._id, isDeleted: false },
+    { completed: true, progress: 100, completedAt: new Date() },
+    { new: true }
+  );
+  if (!goal) return res.status(404).json({ success: false, error: 'Goal not found' });
+  res.json({ success: true, goal });
+};
+
+const markIncomplete = async (req, res) => {
+  const goal = await Goal.findOneAndUpdate(
+    { _id: req.params.id, userId: req.user._id, isDeleted: false },
+    { completed: false, completedAt: null, progress: 0 },
+    { new: true }
+  );
+  if (!goal) return res.status(404).json({ success: false, error: 'Goal not found' });
+  res.json({ success: true, goal });
+};
+
+const savePracticeSession = async (req, res) => {
+  try {
+    const session = await PracticeSession.create({ ...req.body, userId: req.user._id });
+    res.status(201).json({ success: true, session });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || 'Failed to save practice session' });
+  }
+};
+
+const getPracticeSessions = async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 10, 100);
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const sessions = await PracticeSession.find({ userId: req.user._id }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit);
+  res.json({ success: true, sessions, page, limit });
+};
+
+const getPracticeStats = async (req, res) => {
+  const sessions = await PracticeSession.find({ userId: req.user._id });
+  const totalQuestions = sessions.reduce((sum, session) => sum + session.totalQuestions, 0);
+  const correctAnswers = sessions.reduce((sum, session) => sum + session.correctAnswers, 0);
+  res.json({ success: true, overview: { totalSessions: sessions.length, totalQuestions, correctAnswers, accuracy: totalQuestions ? Math.round(correctAnswers / totalQuestions * 100) : 0 } });
+};
+
+const getPracticeSessionById = async (req, res) => {
+  const session = await PracticeSession.findOne({ _id: req.params.id, userId: req.user._id });
+  if (!session) return res.status(404).json({ success: false, error: 'Practice session not found' });
+  res.json({ success: true, session });
+};
+
+const deletePracticeSession = async (req, res) => {
+  const session = await PracticeSession.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+  if (!session) return res.status(404).json({ success: false, error: 'Practice session not found' });
+  res.json({ success: true, message: 'Practice session deleted successfully' });
+};
+
+const getTopicPerformance = async (req, res) => {
+  const filter = { userId: req.user._id };
+  if (req.query.subject) filter.subject = req.query.subject;
+  const sessions = await PracticeSession.find(filter);
+  const topics = {};
+  sessions.forEach(session => {
+    if (!topics[session.topic]) topics[session.topic] = { sessions: 0, questions: 0, correct: 0 };
+    topics[session.topic].sessions += 1;
+    topics[session.topic].questions += session.totalQuestions;
+    topics[session.topic].correct += session.correctAnswers;
+  });
+  res.json({ success: true, topics });
+};
+
 module.exports = {
   getStats,
   getProgress,
   getStreaks,
-  addTestSession
+  addTestSession,
+  createGoal,
+  getGoals,
+  getGoalById,
+  updateGoal,
+  deleteGoal,
+  markComplete,
+  markIncomplete,
+  savePracticeSession,
+  getPracticeSessions,
+  getPracticeStats,
+  getPracticeSessionById,
+  deletePracticeSession,
+  getTopicPerformance
 };

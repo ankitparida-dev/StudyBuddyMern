@@ -103,12 +103,22 @@ const SubjectsSection = ({ examType, subjectStats = {}, onTopicClick = null }) =
           }
         ];
 
-    // Add progress data
-    return baseSubjects.map(subject => ({
-      ...subject,
-      progress: subjectStats[subject.name.toLowerCase()] || 0,
-      topicsCompleted: subjectStats[subject.name.toLowerCase() + 'Completed'] || 0
-    }));
+    // Normalize the numeric and object shapes returned by different dashboard APIs.
+    return baseSubjects.map(subject => {
+      const subjectKey = subject.name.toLowerCase();
+      const rawStats = subjectStats[subjectKey];
+      const stats = typeof rawStats === 'object' && rawStats !== null ? rawStats : {};
+      const numericProgress = typeof rawStats === 'number' ? rawStats : stats.progress ?? stats.accuracy ?? 0;
+      const numericTopics = typeof rawStats === 'number'
+        ? subjectStats[`${subjectKey}Completed`] || 0
+        : stats.topicsCompleted ?? stats.completed ?? 0;
+
+      return {
+        ...subject,
+        progress: Number.isFinite(Number(numericProgress)) ? Math.max(0, Math.min(100, Number(numericProgress))) : 0,
+        topicsCompleted: Number.isFinite(Number(numericTopics)) ? Math.max(0, Number(numericTopics)) : 0
+      };
+    });
   }, [examType, subjectStats]);
 
   const toggleSubject = useCallback((subjectName) => {

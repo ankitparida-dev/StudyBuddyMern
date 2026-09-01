@@ -22,7 +22,10 @@ const fetchAPI = async (endpoint, options = {}) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || data.message || 'Request failed');
+      const fieldErrors = data.errors?.map(error => error.message).join(', ');
+      const requestError = new Error(fieldErrors || data.error || data.message || 'Request failed');
+      requestError.details = data.errors || [];
+      throw requestError;
     }
 
     return data;
@@ -113,16 +116,17 @@ export const planAPI = {
   // Get all study plans/goals
   getPlans: (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
-    return fetchAPI(`/study/goals?${queryParams}`);
+    return fetchAPI(`/study/goals?${queryParams}`).then(data => data.goals || []);
   },
   
   // Get plan statistics (combine goals + practice data)
   getStats: async () => {
     try {
-      const [goals, practice] = await Promise.all([
+      const [goalsResponse, practice] = await Promise.all([
         fetchAPI('/study/goals'),
         fetchAPI('/study/practice/stats?days=30')
       ]);
+      const goals = goalsResponse?.goals || [];
       
       // Calculate stats from goals data
       const completed = goals.filter(g => g.completed).length;
@@ -164,7 +168,8 @@ export const planAPI = {
   // Get weekly schedule (create from goals data)
   getSchedule: async () => {
     try {
-      const goals = await fetchAPI('/study/goals');
+      const goalsResponse = await fetchAPI('/study/goals');
+      const goals = goalsResponse?.goals || [];
       const today = new Date();
       const weekStart = new Date(today);
       weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
@@ -258,7 +263,7 @@ export const planAPI = {
 // ===== GOALS API (Clean version for Daily Goals) =====
 export const goalsAPI = {
   // Get all goals
-  getGoals: () => fetchAPI('/study/goals'),
+  getGoals: () => fetchAPI('/study/goals').then(data => data.goals || []),
   
   // Create new goal
   createGoal: (goalData) => 
@@ -297,13 +302,13 @@ export const goalsAPI = {
 export const sendChatMessage = async (prompt) => {
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/chat`, {
+    const response = await fetch(`${API_BASE_URL}/chat/message`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token && { 'Authorization': `Bearer ${token}` })
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ message: prompt }),
     });
 
     const data = await response.json();
@@ -312,7 +317,7 @@ export const sendChatMessage = async (prompt) => {
       throw new Error(data.error || 'Failed to get response');
     }
 
-    return data.response;
+    return data.message?.content || data.response;
   } catch (error) {
     console.error('Chat API Error:', error);
     throw error;

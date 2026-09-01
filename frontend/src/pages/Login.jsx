@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { validateLoginForm, validateRegisterForm } from '../utils/validation';
 import logo from '../assets/StudyBuddyLogo.jpg';
 import '../styles/Login.css';
 
@@ -48,6 +49,11 @@ const Login = () => {
   // Login handler
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    const validation = validateLoginForm(loginData.email, loginData.password);
+    if (!validation.isValid) {
+      showNotification(Object.values(validation.errors)[0], 'error');
+      return;
+    }
     setIsLoading(true);
     
     try {
@@ -80,29 +86,9 @@ const Login = () => {
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation
-    if (!signupData.firstName.trim()) {
-      showNotification('First name is required', 'error');
-      return;
-    }
-    if (!signupData.lastName.trim()) {
-      showNotification('Last name is required', 'error');
-      return;
-    }
-    if (!signupData.email.includes('@')) {
-      showNotification('Please enter a valid email', 'error');
-      return;
-    }
-    if (signupData.password.length < 8) {
-      showNotification('Password must be at least 8 characters', 'error');
-      return;
-    }
-    if (!signupData.status) {
-      showNotification('Please select your status', 'error');
-      return;
-    }
-    if (!signupData.examType) {
-      showNotification('Please select your exam type', 'error');
+    const validation = validateRegisterForm({ ...signupData, currentGrade: signupData.status });
+    if (!validation.isValid) {
+      showNotification(Object.values(validation.errors)[0], 'error');
       return;
     }
     

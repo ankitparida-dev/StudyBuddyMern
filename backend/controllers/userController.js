@@ -159,9 +159,59 @@ const updateSettings = async (req, res) => {
   }
 };
 
+const getUserStats = async (req, res) => {
+  res.json({ success: true, stats: req.user.studyStats });
+};
+
+const getUserActivity = async (req, res) => {
+  res.json({ success: true, activity: [] });
+};
+
+const deleteAccount = async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user._id, { isActive: false });
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete account' });
+  }
+};
+
+const getNotifications = async (req, res) => {
+  res.json({ success: true, notifications: [] });
+};
+
+const markNotificationRead = async (req, res) => {
+  res.json({ success: true, message: 'Notification marked as read' });
+};
+
+const getStudyPreferences = async (req, res) => {
+  res.json({ success: true, preferences: req.user.preferences });
+};
+
+const updateStudyPreferences = async (req, res) => {
+  try {
+    const allowedFields = ['preferredStudyTime', 'preferredSubjects', 'dailyGoal', 'weeklyGoal', 'learningStyle', 'difficultyLevel'];
+    const updateData = {};
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) updateData[`preferences.${field}`] = req.body[field];
+    });
+    const user = await User.findByIdAndUpdate(req.user._id, { $set: updateData }, { new: true, runValidators: true });
+    res.json({ success: true, preferences: user.preferences });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || 'Failed to update preferences' });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   getSettings,
-  updateSettings
+  updateSettings,
+  getUserStats,
+  getUserActivity,
+  deleteAccount,
+  getNotifications,
+  markNotificationRead,
+  getStudyPreferences,
+  updateStudyPreferences
 };

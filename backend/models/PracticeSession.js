@@ -268,7 +268,7 @@ practiceSessionSchema.virtual('formattedTime').get(function() {
 // ============================================
 // Middleware
 // ============================================
-practiceSessionSchema.pre('save', function(next) {
+practiceSessionSchema.pre('save', function() {
   // Calculate accuracy
   if (this.totalQuestions > 0) {
     this.accuracy = Math.round((this.correctAnswers / this.totalQuestions) * 100);
@@ -302,7 +302,6 @@ practiceSessionSchema.pre('save', function(next) {
   // Update weak areas from questions
   this.updateWeakAreas();
   
-  next();
 });
 
 // ============================================

@@ -4,11 +4,11 @@ export const validateEmail = (email) => {
 };
 
 export const validatePassword = (password) => {
-  return password.length >= 8;
+  return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password);
 };
 
 export const validateName = (name) => {
-  return name.trim().length >= 2;
+  return name.trim().length >= 2 && name.trim().length <= 50 && /^[a-zA-Z\s]+$/.test(name.trim());
 };
 
 export const validatePhone = (phone) => {
@@ -28,7 +28,7 @@ export const validateLoginForm = (email, password) => {
   if (!password) {
     errors.password = 'Password is required';
   } else if (!validatePassword(password)) {
-    errors.password = 'Password must be at least 8 characters';
+    errors.password = 'Password must be 8+ characters with uppercase, lowercase, number, and special character';
   }
   
   return {
@@ -61,7 +61,7 @@ export const validateRegisterForm = (data) => {
   if (!data.password) {
     errors.password = 'Password is required';
   } else if (!validatePassword(data.password)) {
-    errors.password = 'Password must be at least 8 characters';
+    errors.password = 'Password must be 8+ characters with uppercase, lowercase, number, and special character';
   }
   
   if (!data.currentGrade) {

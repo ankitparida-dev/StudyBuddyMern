@@ -39,20 +39,6 @@ const StreaksSection = ({
     }
   }, [streaks.current]);
 
-  // Check for new achievements
-  useEffect(() => {
-    const newUnlocked = achievements.filter(a => a.achieved && !unlockedAchievements.includes(a.id));
-    if (newUnlocked.length > 0) {
-      setUnlockedAchievements(prev => [...prev, ...newUnlocked.map(a => a.id)]);
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 3000);
-      
-      newUnlocked.forEach(achievement => {
-        onAchievementUnlock?.(achievement);
-      });
-    }
-  }, [achievements, unlockedAchievements, onAchievementUnlock]);
-
   // Calculate streak metrics
   const streakMetrics = useMemo(() => {
     const current = streaks.current || 0;
@@ -217,6 +203,20 @@ const StreaksSection = ({
       color: '#8b5cf6'
     }
   ], [streaks.current, streaks.accuracy, recentSessions, streakMetrics.weeklyProgress]);
+
+  // Check for new achievements
+  useEffect(() => {
+    const newUnlocked = achievements.filter(a => a.achieved && !unlockedAchievements.includes(a.id));
+    if (newUnlocked.length > 0) {
+      setUnlockedAchievements(prev => [...prev, ...newUnlocked.map(a => a.id)]);
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 3000);
+
+      newUnlocked.forEach(achievement => {
+        onAchievementUnlock?.(achievement);
+      });
+    }
+  }, [achievements, unlockedAchievements, onAchievementUnlock]);
 
   // Get rarity badge
   const getRarityBadge = useCallback((rarity) => {

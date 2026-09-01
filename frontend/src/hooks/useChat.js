@@ -17,6 +17,10 @@ export const useChat = () => {
 
   // Load chat history and context on mount
   useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      return undefined;
+    }
+
     loadHistory();
     loadContextData();
     
@@ -31,10 +35,13 @@ export const useChat = () => {
   // Load user context for smarter responses
   const loadContextData = useCallback(async () => {
     try {
-      const [practice, topics] = await Promise.all([
+      const [practice, topicsResponse] = await Promise.all([
         practiceAPI.getStats(30).catch(() => null),
         practiceAPI.getTopics().catch(() => [])
       ]);
+      const topics = Array.isArray(topicsResponse)
+        ? topicsResponse
+        : Object.entries(topicsResponse?.topics || {}).map(([topic, stats]) => ({ topic, ...stats }));
       
       setContextData({
         practice: practice?.overview || {},

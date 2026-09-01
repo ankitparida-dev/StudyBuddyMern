@@ -158,7 +158,7 @@ chatSessionSchema.virtual('assistantMessageCount').get(function() {
 // ============================================
 
 // Update timestamps and stats before save
-chatSessionSchema.pre('save', function(next) {
+chatSessionSchema.pre('save', function() {
   this.updatedAt = new Date();
   
   // Update metadata
@@ -173,7 +173,6 @@ chatSessionSchema.pre('save', function(next) {
     this.stats.assistantMessages = this.messages.filter(m => m.role === 'assistant').length;
   }
   
-  next();
 });
 
 // ============================================

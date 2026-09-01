@@ -214,7 +214,7 @@ goalSchema.virtual('priorityLabel').get(function() {
 // ============================================
 // Middleware
 // ============================================
-goalSchema.pre('save', function(next) {
+goalSchema.pre('save', function() {
   // Auto-complete if progress reaches 100%
   if (this.progress >= 100 && !this.completed) {
     this.completed = true;
@@ -231,7 +231,6 @@ goalSchema.pre('save', function(next) {
     this.completedAt = null;
   }
   
-  next();
 });
 
 // ============================================

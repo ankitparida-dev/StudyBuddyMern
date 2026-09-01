@@ -290,9 +290,48 @@ const addTestSession = async (req, res) => {
   }
 };
 
+const getDashboardOverview = async (req, res) => {
+  const [stats, progress, streaks] = await Promise.all([
+    new Promise(resolve => getStats({ ...req }, { json: resolve })),
+    new Promise(resolve => getProgress({ ...req, query: { days: 30 } }, { json: resolve })),
+    new Promise(resolve => getStreaks({ ...req }, { json: resolve }))
+  ]);
+  res.json({ success: true, stats, progress, streaks });
+};
+
+const getRecentActivity = async (req, res) => {
+  const sessions = await StudySession.find({ userId: req.user._id }).sort({ date: -1 }).limit(10);
+  res.json({ success: true, sessions });
+};
+
+const getSubjectPerformance = async (req, res) => {
+  const sessions = await StudySession.find({ userId: req.user._id });
+  const subjects = {};
+  sessions.forEach(session => {
+    const subject = session.subject || 'general';
+    subjects[subject] = (subjects[subject] || 0) + session.duration;
+  });
+  res.json({ success: true, subjects });
+};
+
+const getWeeklyProgress = async (req, res) => {
+  req.query = { days: 7 };
+  return getProgress(req, res);
+};
+
+const getMonthlyProgress = async (req, res) => {
+  req.query = { days: 30 };
+  return getProgress(req, res);
+};
+
 module.exports = {
   getStats,
   getProgress,
   getStreaks,
-  addTestSession
+  addTestSession,
+  getDashboardOverview,
+  getRecentActivity,
+  getSubjectPerformance,
+  getWeeklyProgress,
+  getMonthlyProgress
 };

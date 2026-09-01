@@ -44,7 +44,7 @@ const corsOptions = {
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json());

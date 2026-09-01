@@ -3,7 +3,7 @@ const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { body, validationResult } = require('express-validator');
 const { getGeminiResponse } = require('../services/geminiService');
-const ChatSession = require('../models/ChatSession');
+const ChatSession = require('../models/Chat');
 const mongoose = require('mongoose');
 
 // ============================================

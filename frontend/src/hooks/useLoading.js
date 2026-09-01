@@ -121,12 +121,16 @@ export const LoadingProvider = ({
 
     // Set max duration timeout
     timeoutRef.current = setTimeout(() => {
-      if (mountedRef.current && isLoading) {
+      if (mountedRef.current) {
         console.warn('⚠️ Loading timeout - force completing');
         setIsTimeout(true);
         completeLoading();
       }
     }, maxDuration);
+
+    completeTimeoutRef.current = setTimeout(() => {
+      completeLoading();
+    }, minDuration);
 
     // Start progress animation
     progressIntervalRef.current = setInterval(() => {
@@ -143,7 +147,7 @@ export const LoadingProvider = ({
         return newProgress;
       });
     }, 100);
-  }, [maxDuration, isLoading, completeLoading, updateLoadingMessage]);
+  }, [maxDuration, minDuration, completeLoading, updateLoadingMessage]);
 
   // Reset loading
   const resetLoading = useCallback(() => {

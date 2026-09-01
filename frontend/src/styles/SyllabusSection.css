@@ -1,0 +1,21 @@
+.syllabus-container {
+  width: 100%;
+}
+
+.syllabus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.syllabus-card {
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 8px;
+  background: var(--card-background, #fff);
+}
+
+.syllabus-card h3,
+.syllabus-card p {
+  margin-top: 0;
+}

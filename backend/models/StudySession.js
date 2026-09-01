@@ -237,7 +237,7 @@ studySessionSchema.virtual('dayOfWeek').get(function() {
 // ============================================
 // Middleware
 // ============================================
-studySessionSchema.pre('save', function(next) {
+studySessionSchema.pre('save', function() {
   // Auto-set completed if session exists
   if (this.duration > 0) {
     this.completed = true;
@@ -252,7 +252,6 @@ studySessionSchema.pre('save', function(next) {
     else this.metadata.timeOfDay = 'night';
   }
   
-  next();
 });
 
 // ============================================
