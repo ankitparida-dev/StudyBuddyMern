@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { storage } from '../utils/storage';
+import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 import { authApi } from '../utils/api';
+import { storage } from '../utils/storage';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,40 +12,34 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [target, setTarget] = useState('JEE');
   const [cls, setCls] = useState('11');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
-      const [firstName = 'Student', ...lastNameParts] = name.trim().split(/\s+/);
-      const response = isLogin
-        ? await authApi.login({ email, password })
-        : await authApi.register({
-            firstName,
-            lastName: lastNameParts.join(' ') || firstName,
-            email,
-            password,
-            currentGrade: `Class ${cls}`,
-            examType: target,
-          });
+      const payload = isLogin
+        ? { email, password }
+        : { name, email, password, target, class: cls };
 
-      storage.set('sb_token', response.token);
+      const res = isLogin
+        ? await authApi.login(payload)
+        : await authApi.register(payload);
+
+      // Backend returns: { success, user, token } (or similar — adjust if needed)
+      const user = res.user || res;
+      const token = res.token;
+
+      if (token) storage.set('sb_token', token);
+      storage.set('sb_user', user);
       storage.set('sb_authed', true);
-      storage.set('sb_user', response.user || {
-        id: response._id,
-        firstName: response.firstName,
-        lastName: response.lastName,
-        name: `${response.firstName || ''} ${response.lastName || ''}`.trim(),
-        email: response.email,
-      });
+
+      toast.success(isLogin ? 'Welcome back!' : 'Account created!');
       navigate('/dashboard');
-    } catch (requestError) {
-      setError(requestError.message);
+    } catch (err) {
+      toast.error(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -119,14 +115,13 @@ export default function AuthPage() {
             </>
           )}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
-
           <button
             type="submit"
-            className="w-full bg-sb-blue text-white p-3 rounded-xl font-semibold hover:opacity-90"
             disabled={loading}
+            className="w-full bg-sb-blue text-white p-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {loading ? 'Please wait...' : isLogin ? 'Login' : 'Register'}
+            {loading && <Loader2 size={18} className="animate-spin" />}
+            {isLogin ? 'Login' : 'Register'}
           </button>
         </form>
 
