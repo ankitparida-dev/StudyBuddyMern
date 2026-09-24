@@ -3,9 +3,10 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import AIWidget from '../widget/AIWidget';
 import { storage } from '../../utils/storage';
+import { getToken } from '../../utils/api';
 
 export default function Layout() {
-  const isAuthed = storage.get('sb_authed', false);
+  const isAuthed = Boolean(getToken());
 
   if (!isAuthed) {
     return <Navigate to="/" replace />;

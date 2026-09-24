@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '../utils/storage';
+import { authApi } from '../utils/api';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,22 +10,43 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [target, setTarget] = useState('JEE');
   const [cls, setCls] = useState('11');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    const user = {
-      name: isLogin ? email.split('@')[0] : name,
-      email,
-      target: isLogin ? 'JEE' : target,
-      class: isLogin ? '11' : cls,
-      joinedAt: Date.now(),
-    };
+    try {
+      const [firstName = 'Student', ...lastNameParts] = name.trim().split(/\s+/);
+      const response = isLogin
+        ? await authApi.login({ email, password })
+        : await authApi.register({
+            firstName,
+            lastName: lastNameParts.join(' ') || firstName,
+            email,
+            password,
+            currentGrade: `Class ${cls}`,
+            examType: target,
+          });
 
-    storage.set('sb_user', user);
-    storage.set('sb_authed', true);
-    navigate('/dashboard');
+      storage.set('sb_token', response.token);
+      storage.set('sb_authed', true);
+      storage.set('sb_user', response.user || {
+        id: response._id,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        name: `${response.firstName || ''} ${response.lastName || ''}`.trim(),
+        email: response.email,
+      });
+      navigate('/dashboard');
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,11 +119,14 @@ export default function AuthPage() {
             </>
           )}
 
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
           <button
             type="submit"
             className="w-full bg-sb-blue text-white p-3 rounded-xl font-semibold hover:opacity-90"
+            disabled={loading}
           >
-            {isLogin ? 'Login' : 'Register'}
+            {loading ? 'Please wait...' : isLogin ? 'Login' : 'Register'}
           </button>
         </form>
 

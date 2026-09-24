@@ -9,7 +9,7 @@ const connectDB = async () => {
     console.log(`📊 Database: ${conn.connection.name}`);
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    console.error('Please make sure MongoDB is running on your system');
+    console.error('Please verify MONGODB_URI and MongoDB Atlas network access');
     process.exit(1);
   }
 };
