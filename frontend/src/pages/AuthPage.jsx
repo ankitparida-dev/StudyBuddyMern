@@ -20,9 +20,20 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
+      const trimmedEmail = email.trim().toLowerCase();
       const payload = isLogin
-        ? { email, password }
-        : { name, email, password, target, class: cls };
+        ? { email: trimmedEmail, password }
+        : (() => {
+            const nameParts = name.trim().split(/\s+/);
+            return {
+              firstName: nameParts[0],
+              lastName: nameParts.slice(1).join(' ') || nameParts[0],
+              email: trimmedEmail,
+              password,
+              currentGrade: `Class ${cls}`,
+              examType: target,
+            };
+          })();
 
       const res = isLogin
         ? await authApi.login(payload)

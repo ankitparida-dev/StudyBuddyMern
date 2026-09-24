@@ -1,34 +1,38 @@
-import { useState, useEffect } from 'react';
-import { storage } from '../../utils/storage';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { learningApi } from '../../utils/api';
 
-const tags = ['Weak', 'Review', 'Strong'];
-const tagColors = {
-  Weak: 'bg-red-200 text-red-700',
-  Review: 'bg-yellow-200 text-yellow-700',
-  Strong: 'bg-green-200 text-green-700',
-};
+export default function TopicRow({ topic, onUpdated }) {
+  const [saving, setSaving] = useState(false);
 
-export default function TopicRow({ topic }) {
-  const [tag, setTag] = useState(() => storage.get(`sb_tag_${topic}`, null));
-
-  useEffect(() => {
-    if (tag) storage.set(`sb_tag_${topic}`, tag);
-    else storage.remove(`sb_tag_${topic}`);
-  }, [tag, topic]);
+  const updateProgress = async (progress) => {
+    setSaving(true);
+    try {
+      const { topic: updated } = await learningApi.updateTopic(topic._id, { progress });
+      onUpdated(updated);
+    } catch (error) {
+      toast.error(error.message || 'Could not update topic');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-between p-3 border rounded-xl">
-      <span>{topic}</span>
+      <div>
+        <span>{topic.name}</span>
+        <p className="text-xs text-gray-500 mt-1">{topic.progress}% complete</p>
+      </div>
       <div className="flex gap-2">
-        {tags.map((t) => (
+        {[0, 50, 100].map((progress) => (
           <button
-            key={t}
-            onClick={() => setTag(t)}
-            className={`px-3 py-1 text-xs rounded-full transition ${
-              tag === t ? tagColors[t] : 'bg-gray-100'
-            }`}
+            key={progress}
+            type="button"
+            disabled={saving}
+            onClick={() => updateProgress(progress)}
+            className={`px-3 py-1 text-xs rounded-full transition ${topic.progress === progress ? 'bg-sb-blue text-white' : 'bg-gray-100'}`}
           >
-            {t}
+            {progress}%
           </button>
         ))}
       </div>
