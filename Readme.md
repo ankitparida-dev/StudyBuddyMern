@@ -85,7 +85,19 @@ cd frontend
 npm run dev
 
 
+## Backend API
 
+The backend uses MongoDB Atlas through `MONGODB_URI` and Gemini through `GEMINI_API_KEY` in `backend/.env`. Keep both values server-side and do not commit the `.env` file.
+
+Protected learning endpoints require `Authorization: Bearer <jwt>`:
+
+| Resource | Endpoints |
+|----------|-----------|
+| Target tasks | `POST/GET /api/learning/tasks`, `PATCH/DELETE /api/learning/tasks/:id` |
+| Session logger | `POST/GET /api/learning/sessions` |
+| Syllabus topics | `POST/GET /api/learning/topics`, `PATCH/DELETE /api/learning/topics/:id` |
+| Test analytics | `POST/GET /api/learning/tests`, `GET /api/learning/tests/summary` |
+| Gemini assistant | `POST /api/chat/message` |
 
 📞 Contact
 Ankit Parida - ankitparida386@gmail.com

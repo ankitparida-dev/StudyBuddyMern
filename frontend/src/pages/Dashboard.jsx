@@ -2,17 +2,11 @@ import { CheckCircle2, Flame } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import PomodoroTimer from '../components/dashboard/PomodoroTimer';
 import { storage } from '../utils/storage';
-
-const DEFAULT_TASKS = [
-  { id: 1, text: 'Revise Kinematics formulas', done: false },
-  { id: 2, text: 'Solve 20 Physics numericals', done: true },
-  { id: 3, text: 'Read Organic Chemistry notes', done: false },
-];
+import { learningApi } from '../utils/api';
 
 export default function Dashboard() {
-  const [tasks, setTasks] = useState(() =>
-    storage.get('sb_tasks', DEFAULT_TASKS)
-  );
+  const [tasks, setTasks] = useState([]);
+  const [taskError, setTaskError] = useState('');
 
   const [streak, setStreak] = useState(() => {
     const saved = storage.get('sb_streak', { count: 0, lastVisit: null });
@@ -33,11 +27,36 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    storage.set('sb_tasks', tasks);
-  }, [tasks]);
+    learningApi.tasks()
+      .then(({ tasks: serverTasks }) => setTasks(serverTasks))
+      .catch((error) => setTaskError(error.message));
+  }, []);
 
-  const toggle = (id) =>
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  const toggle = async (task) => {
+    try {
+      const progress = task.completed ? 0 : 100;
+      const { task: updated } = await learningApi.updateTask(task._id, {
+        progress,
+        completed: progress === 100,
+      });
+      setTasks((current) => current.map((item) => item._id === updated._id ? updated : item));
+    } catch (error) {
+      setTaskError(error.message);
+    }
+  };
+
+  const logQuickSession = async (subject) => {
+    try {
+      await learningApi.logSession({
+        subject: subject.toLowerCase(),
+        topic: 'Quick log session',
+        duration: 25,
+        sessionType: 'study',
+      });
+    } catch (error) {
+      setTaskError(error.message);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -63,19 +82,20 @@ export default function Dashboard() {
           <ul className="space-y-3">
             {tasks.map((t) => (
               <li
-                key={t.id}
-                onClick={() => toggle(t.id)}
+                key={t._id}
+                onClick={() => toggle(t)}
                 className="flex items-center gap-3 cursor-pointer"
               >
                 <CheckCircle2
-                  className={t.done ? 'text-green-500' : 'text-gray-300'}
+                  className={t.completed ? 'text-green-500' : 'text-gray-300'}
                 />
-                <span className={t.done ? 'line-through text-gray-400' : ''}>
-                  {t.text}
+                <span className={t.completed ? 'line-through text-gray-400' : ''}>
+                  {t.title}
                 </span>
               </li>
             ))}
           </ul>
+          {taskError && <p className="text-sm text-red-600 mt-3">{taskError}</p>}
         </div>
 
         <div className="bg-white rounded-2xl shadow p-6">
@@ -84,6 +104,7 @@ export default function Dashboard() {
             {['Physics', 'Chemistry', 'Math'].map((s) => (
               <button
                 key={s}
+                onClick={() => logQuickSession(s)}
                 className="bg-sb-yellow p-4 rounded-xl font-semibold hover:scale-105 transition"
               >
                 + {s}

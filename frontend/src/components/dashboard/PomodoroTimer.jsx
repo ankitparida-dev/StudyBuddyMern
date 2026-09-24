@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee, Zap } from 'lucide-react';
 import { AMBIENT_SOUNDS, ALARM_URL } from '../../utils/sounds';
 import { storage } from '../../utils/storage';
+import { learningApi } from '../../utils/api';
 
 const FOCUS_TIME = 25 * 60;
 const BREAK_TIME = 5 * 60;
@@ -80,9 +81,20 @@ export default function PomodoroTimer() {
     }
 
     if (mode === 'focus') {
-      const newCount = sessions + 1;
-      setSessions(newCount);
-      storage.set('sb_sessions', newCount);
+      learningApi.logSession({
+        subject: 'general',
+        topic: 'Pomodoro focus session',
+        duration: 25,
+        sessionType: 'focus',
+      }).then(() => {
+        setSessions((current) => {
+          const newCount = current + 1;
+          storage.set('sb_sessions', newCount);
+          return newCount;
+        });
+      }).catch((error) => {
+        console.error('Could not log focus session:', error);
+      });
       setMode('break');
       setSeconds(BREAK_TIME);
     } else {

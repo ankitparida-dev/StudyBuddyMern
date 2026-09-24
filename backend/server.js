@@ -1,9 +1,8 @@
 process.env.NODE_NO_WARNINGS = '1';
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
+const connectDB = require('./config/db');
 
 dotenv.config();
 const app = express();
@@ -53,15 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 // ============================================
 // MongoDB Connection
 // ============================================
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('✅ MongoDB Connected');
-    console.log('📊 Database:', process.env.MONGODB_URI);
-  })
-  .catch((err) => {
-    console.log('❌ MongoDB Error:', err.message);
-    process.exit(1);
-  });
+connectDB();
 
 // ============================================
 // ✅ FIXED: Routes - No wildcard issues
@@ -81,6 +72,9 @@ app.use('/api/study', require('./routes/studyRoutes'));
 // Chat routes
 app.use('/api/chat', require('./routes/chatRoutes'));
 
+// Learning resources: tasks, study sessions, syllabus, and test analytics
+app.use('/api/learning', require('./routes/learningRoutes'));
+
 // ============================================
 // Home route
 // ============================================
@@ -94,7 +88,8 @@ app.get('/', (req, res) => {
       users: '/api/users',
       dashboard: '/api/dashboard',
       study: '/api/study',
-      chat: '/api/chat'
+      chat: '/api/chat',
+      learning: '/api/learning'
     }
   });
 });

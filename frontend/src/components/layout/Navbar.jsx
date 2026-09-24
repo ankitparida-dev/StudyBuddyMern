@@ -8,6 +8,7 @@ export default function Navbar() {
 
   const logout = () => {
     storage.remove('sb_authed');
+    storage.remove('sb_token');
     storage.remove('sb_user');
     navigate('/');
   };
