@@ -29,7 +29,10 @@ export async function apiFetch(path, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(payload.error || payload.message || 'Request failed');
+    const validationDetails = payload.errors
+      ?.map((item) => `${item.field}: ${item.message}`)
+      .join('\n');
+    throw new Error(validationDetails || payload.error || payload.message || 'Request failed');
   }
 
   return payload;
