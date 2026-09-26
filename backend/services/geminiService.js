@@ -55,9 +55,9 @@ const requestGemini = async (input) => {
 };
 
 /**
- * Get response from Gemini AI
+ * Get response from Gemini AI (with proper history handling)
  * @param {string} userMessage - The user's message
- * @param {Array} chatHistory - Optional chat history for context
+ * @param {Array} chatHistory - Optional chat history [{role, content}]
  * @returns {Promise<string>} - The AI response
  */
 const getGeminiResponse = async (userMessage, chatHistory = []) => {
@@ -80,15 +80,13 @@ const getGeminiResponse = async (userMessage, chatHistory = []) => {
 
     return await requestGemini(prompt);
   } catch (error) {
-    console.error('Gemini API Error:', error);
-    throw new Error(`Gemini request failed: ${error.message}`);
+    console.error('❌ Gemini API Error:', error?.message || error);
+    throw new Error(`Gemini request failed: ${error?.message || 'Unknown error'}`);
   }
 };
 
 /**
- * Get a simple response without chat history
- * @param {string} userMessage - The user's message
- * @returns {Promise<string>} - The AI response
+ * Get a simple one-shot response without chat history
  */
 const getSimpleResponse = async (userMessage) => {
   return getGeminiResponse(userMessage);
@@ -96,39 +94,29 @@ const getSimpleResponse = async (userMessage) => {
 
 /**
  * Generate study plan based on user input
- * @param {string} examType - 'jee' or 'neet'
- * @param {string} subjects - Subjects to focus on
- * @param {number} duration - Duration in weeks
- * @returns {Promise<string>} - The AI generated study plan
  */
 const generateStudyPlan = async (examType, subjects, duration = 4) => {
-  return getGeminiResponse(`Create a detailed ${duration}-week study plan for ${examType.toUpperCase()} preparation. Focus subjects: ${subjects}. Include weekly topics, daily schedule, practice and revision, mock tests, and actionable tips.`);
+  return getGeminiResponse(`Create a detailed ${duration}-week study plan for ${examType.toUpperCase()} preparation. Focus subjects: ${subjects}. Include a weekly topic breakdown, daily schedule, practice and revision time, mock tests, and actionable subject tips.`);
 };
 
 /**
  * Explain a concept in simple terms
- * @param {string} concept - The concept to explain
- * @param {string} subject - The subject category
- * @returns {Promise<string>} - The explanation
  */
 const explainConcept = async (concept, subject = 'general') => {
   return getGeminiResponse(`Explain "${concept}" in simple terms for a ${subject} student. Include a definition, key points, an example, common mistakes, and a practice tip.`);
 };
 
 /**
- * Solve a practice problem
- * @param {string} problem - The problem statement
- * @param {string} subject - The subject
- * @returns {Promise<string>} - Step-by-step solution
+ * Solve a practice problem step-by-step
  */
 const solveProblem = async (problem, subject = 'general') => {
-  return getGeminiResponse(`Solve this ${subject} problem step by step. Explain the approach, show the working, state the final answer, and give the key takeaway.\n\nProblem: ${problem}`);
+  return getGeminiResponse(`Solve this ${subject} problem step by step. Explain the approach, show the working, give the final answer, and state the key takeaway.\n\nProblem: ${problem}`);
 };
 
-module.exports = { 
+module.exports = {
   getGeminiResponse,
   getSimpleResponse,
   generateStudyPlan,
   explainConcept,
-  solveProblem
+  solveProblem,
 };

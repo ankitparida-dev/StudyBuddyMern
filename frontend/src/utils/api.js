@@ -32,7 +32,12 @@ export async function apiFetch(path, options = {}) {
     const validationDetails = payload.errors
       ?.map((item) => `${item.field}: ${item.message}`)
       .join('\n');
-    throw new Error(validationDetails || payload.error || payload.message || 'Request failed');
+    throw new Error(
+      validationDetails ||
+        payload.error ||
+        payload.message ||
+        'Request failed'
+    );
   }
 
   return payload;
@@ -64,13 +69,18 @@ export const learningApi = {
   createTask: (data) =>
     apiFetch('/learning/tasks', { method: 'POST', body: JSON.stringify(data) }),
   updateTask: (id, data) =>
-    apiFetch(`/learning/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  deleteTask: (id) =>
-    apiFetch(`/learning/tasks/${id}`, { method: 'DELETE' }),
+    apiFetch(`/learning/tasks/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  deleteTask: (id) => apiFetch(`/learning/tasks/${id}`, { method: 'DELETE' }),
 
   // Sessions
   logSession: (data) =>
-    apiFetch('/learning/sessions', { method: 'POST', body: JSON.stringify(data) }),
+    apiFetch('/learning/sessions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   sessions: (limit) =>
     apiFetch(`/learning/sessions${limit ? `?limit=${limit}` : ''}`),
 
@@ -82,7 +92,10 @@ export const learningApi = {
   createTopic: (data) =>
     apiFetch('/learning/topics', { method: 'POST', body: JSON.stringify(data) }),
   updateTopic: (id, data) =>
-    apiFetch(`/learning/topics/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    apiFetch(`/learning/topics/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
   deleteTopic: (id) =>
     apiFetch(`/learning/topics/${id}`, { method: 'DELETE' }),
 
@@ -107,26 +120,38 @@ export const dashboardApi = {
   weekly: () => apiFetch('/dashboard/weekly'),
   monthly: () => apiFetch('/dashboard/monthly'),
   addTestSession: (data) =>
-    apiFetch('/dashboard/test-session', { method: 'POST', body: JSON.stringify(data) }),
+    apiFetch('/dashboard/test-session', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 // ============================================
 // CHAT (AI Assistant)
 // ============================================
 export const chatApi = {
-  send: (message, sessionId) =>
-    apiFetch('/chat/message', {
+  // Only include sessionId in payload when it's a real value
+  send: (message, sessionId) => {
+    const payload = { message };
+    if (sessionId) payload.sessionId = sessionId;
+    return apiFetch('/chat/message', {
       method: 'POST',
-      body: JSON.stringify({ message, sessionId }),
-    }),
+      body: JSON.stringify(payload),
+    });
+  },
   history: () => apiFetch('/chat/history'),
   session: (id) => apiFetch(`/chat/session/${id}`),
   createSession: (title) =>
-    apiFetch('/chat/session', { method: 'POST', body: JSON.stringify({ title }) }),
+    apiFetch('/chat/session', {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    }),
   renameSession: (id, title) =>
-    apiFetch(`/chat/session/${id}`, { method: 'PUT', body: JSON.stringify({ title }) }),
-  deleteSession: (id) =>
-    apiFetch(`/chat/session/${id}`, { method: 'DELETE' }),
+    apiFetch(`/chat/session/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title }),
+    }),
+  deleteSession: (id) => apiFetch(`/chat/session/${id}`, { method: 'DELETE' }),
   clearAll: () => apiFetch('/chat/clear', { method: 'DELETE' }),
   stats: () => apiFetch('/chat/stats'),
 };
