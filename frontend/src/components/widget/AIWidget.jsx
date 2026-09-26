@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { LoaderCircle, MessageCircle, Send, X } from 'lucide-react';
+import { chatApi } from '../../utils/api';
 
 export default function AIWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,18 +8,27 @@ export default function AIWidget() {
     { from: 'ai', text: 'Hi! Ask me for formulas or revision tips.' },
   ]);
   const [input, setInput] = useState('');
+  const [sessionId, setSessionId] = useState(null);
+  const [sending, setSending] = useState(false);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    setMessages((prev) => [...prev, { from: 'user', text: input }]);
-    const userQuery = input;
+  const sendMessage = async () => {
+    const userQuery = input.trim();
+    if (!userQuery || sending) return;
+    setMessages((previous) => [...previous, { from: 'user', text: userQuery }]);
     setInput('');
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { from: 'ai', text: `Searching notes for "${userQuery}"...` },
-      ]);
-    }, 800);
+    setSending(true);
+    try {
+      const response = await chatApi.send(userQuery, sessionId);
+      setSessionId(response.sessionId);
+      setMessages((previous) => [...previous, { from: 'ai', text: response.message.content }]);
+    } catch (error) {
+      setMessages((previous) => [...previous, {
+        from: 'ai',
+        text: error.message || 'I could not reach the AI service. Please try again.',
+      }]);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -33,13 +43,9 @@ export default function AIWidget() {
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-80 h-96 bg-white rounded-2xl shadow-2xl flex flex-col z-50">
           <div className="p-3 bg-sb-blue text-white rounded-t-2xl font-semibold flex items-center gap-2">
-  <img
-    src="/logo.png"
-    alt="AI"
-    className="w-6 h-6 rounded-full"
-  />
-  AI Study Buddy
-</div>
+            <img src="/logo.png" alt="AI" className="w-6 h-6 rounded-full" />
+            AI Study Buddy
+          </div>
           <div className="flex-1 p-3 overflow-y-auto space-y-2">
             {messages.map((m, i) => (
               <div
@@ -56,15 +62,18 @@ export default function AIWidget() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
               placeholder="Ask anything..."
               className="flex-1 px-3 py-2 border rounded-lg text-sm outline-none"
+              disabled={sending}
             />
             <button
-              onClick={sendMessage}
+              onClick={() => void sendMessage()}
+              disabled={sending || !input.trim()}
               className="bg-sb-blue text-white p-2 rounded-lg"
+              aria-label="Send message"
             >
-              <Send size={16} />
+              {sending ? <LoaderCircle size={16} className="animate-spin" /> : <Send size={16} />}
             </button>
           </div>
         </div>

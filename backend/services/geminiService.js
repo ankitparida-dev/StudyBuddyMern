@@ -1,7 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Initialize the Gemini API with your key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 // System prompt to make Gemini act as a study assistant
 const STUDY_ASSISTANT_PROMPT = `You are StudyBuddy AI, a helpful study assistant for JEE and NEET students.
@@ -34,81 +34,38 @@ Format your responses using:
  */
 const getGeminiResponse = async (userMessage, chatHistory = []) => {
   try {
-    // Check if API key exists
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is not set in environment variables');
     }
 
-    // ✅ FIXED: Use correct model name
-    // Available models: gemini-pro, gemini-1.5-pro, gemini-1.5-flash
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro", // or "gemini-1.5-flash" for faster responses
+    const model = genAI.getGenerativeModel({
+      model: GEMINI_MODEL,
+      systemInstruction: STUDY_ASSISTANT_PROMPT,
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 2048,
-        topP: 0.95,
-        topK: 40,
       }
     });
 
-    // ✅ FIXED: Build chat history correctly
-    const history = [
-      {
-        role: "user",
-        parts: [{ text: STUDY_ASSISTANT_PROMPT }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "I understand. I'm StudyBuddy AI, ready to help students with their JEE and NEET preparation!" }],
-      },
-    ];
+    const history = chatHistory
+      .filter((entry) => entry.role === 'user' || entry.role === 'assistant')
+      .map((entry) => ({
+        role: entry.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: entry.content }],
+      }));
 
-    // ✅ FIXED: Add chat history if provided
-    if (chatHistory && chatHistory.length > 0) {
-      // Filter and format chat history
-      const formattedHistory = chatHistory
-        .filter(msg => msg.role && msg.content)
-        .map(msg => ({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }]
-        }));
-      
-      // Add formatted history (skip first two if they already exist)
-      if (formattedHistory.length > 0) {
-        history.push(...formattedHistory);
-      }
+    if (history.at(-1)?.role === 'user' && history.at(-1).parts[0].text === userMessage) {
+      history.pop();
     }
+    while (history[0]?.role === 'model') history.shift();
 
-    // Create a chat session
-    const chat = model.startChat({
-      history: history,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      }
-    });
-
-    // Send user message and get response
+    const chat = model.startChat({ history });
     const result = await chat.sendMessage(userMessage);
     const response = await result.response;
-    const text = response.text();
-    
-    return text;
+    return response.text();
   } catch (error) {
     console.error('Gemini API Error:', error);
-    
-    // Handle specific error types
-    if (error.message.includes('API key')) {
-      throw new Error('Invalid Gemini API key. Please check your .env file.');
-    } else if (error.message.includes('model')) {
-      throw new Error('Model not available. Please check your API key and model name.');
-    } else if (error.message.includes('quota')) {
-      throw new Error('API quota exceeded. Please try again later.');
-    } else if (error.message.includes('blocked')) {
-      throw new Error('Request blocked by content safety filters. Please modify your question.');
-    } else {
-      throw new Error(`AI Service Error: ${error.message}`);
-    }
+    throw new Error(`Gemini request failed: ${error.message}`);
   }
 };
 
@@ -124,7 +81,7 @@ const getSimpleResponse = async (userMessage) => {
     }
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 1024,
@@ -151,7 +108,7 @@ const getSimpleResponse = async (userMessage) => {
 const generateStudyPlan = async (examType, subjects, duration = 4) => {
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.5,
         maxOutputTokens: 4096,
@@ -189,7 +146,7 @@ const generateStudyPlan = async (examType, subjects, duration = 4) => {
 const explainConcept = async (concept, subject = 'general') => {
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.6,
         maxOutputTokens: 2048,
@@ -225,7 +182,7 @@ const explainConcept = async (concept, subject = 'general') => {
 const solveProblem = async (problem, subject = 'general') => {
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.3,
         maxOutputTokens: 4096,

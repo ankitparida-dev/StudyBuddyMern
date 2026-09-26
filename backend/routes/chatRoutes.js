@@ -269,11 +269,6 @@ router.post('/message', protect, validate(messageValidation), async (req, res) =
     session.messageCount = (session.messageCount || 0) + 1;
     session.updatedAt = new Date();
     
-    // Save session to get _id if new
-    if (!sessionExists) {
-      await session.save();
-    }
-    
     // Get chat history for context (last 10 messages)
     const chatHistory = session.messages.slice(-10).map(msg => ({
       role: msg.role,
@@ -282,39 +277,36 @@ router.post('/message', protect, validate(messageValidation), async (req, res) =
     
     // Call Gemini API
     console.log('🤖 Calling Gemini API...');
-    let aiResponseText;
-    
     try {
-      aiResponseText = await getGeminiResponse(message, chatHistory);
+      const aiResponseText = await getGeminiResponse(message, chatHistory);
       console.log('✅ Gemini API response received');
-    } catch (geminiError) {
-      console.error('❌ Gemini API Error:', geminiError);
-      aiResponseText = "I'm having trouble connecting to the AI service. Please try again in a moment. If the problem persists, please check your internet connection.";
-    }
-    
-    // Add AI response to session
-    const aiMessage = {
-      role: 'assistant',
-      content: aiResponseText,
-      timestamp: new Date().toISOString()
-    };
-    
-    session.messages.push(aiMessage);
-    session.messageCount = (session.messageCount || 0) + 1;
-    session.updatedAt = new Date();
-    
-    // Save session
-    await session.save();
-    
-    res.json({
-      success: true,
-      sessionId: session._id,
-      message: {
+      const aiMessage = {
         role: 'assistant',
         content: aiResponseText,
-        timestamp: aiMessage.timestamp
-      }
-    });
+        timestamp: new Date().toISOString()
+      };
+
+      session.messages.push(aiMessage);
+      session.messageCount = (session.messageCount || 0) + 1;
+      session.updatedAt = new Date();
+      await session.save();
+
+      res.json({
+        success: true,
+        sessionId: session._id,
+        message: {
+          role: 'assistant',
+          content: aiResponseText,
+          timestamp: aiMessage.timestamp
+        }
+      });
+    } catch (geminiError) {
+      console.error('❌ Gemini API Error:', geminiError.message);
+      res.status(502).json({
+        success: false,
+        error: geminiError.message || 'Gemini service is unavailable'
+      });
+    }
     
   } catch (error) {
     console.error('❌ Message error:', error);
