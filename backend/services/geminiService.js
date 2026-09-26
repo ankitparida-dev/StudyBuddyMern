@@ -1,7 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
 // Model name — use this consistently everywhere
 const MODEL_NAME = 'gemini-flash-latest';
@@ -28,6 +25,37 @@ Format your responses using:
 - Bullet points for lists
 - Numbered steps for processes
 - Code blocks for formulas`;
+
+const requestGemini = async (input) => {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured on the backend');
+  }
+
+  const response = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': process.env.GEMINI_API_KEY,
+    },
+    body: JSON.stringify({ model: GEMINI_MODEL, input }),
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || `Gemini API returned HTTP ${response.status}`);
+  }
+
+  const text = (data.steps || [])
+    .filter((step) => step.type === 'model_output')
+    .flatMap((step) => step.content || [])
+    .filter((part) => part.type === 'text' && part.text)
+    .map((part) => part.text)
+    .join('\n')
+    .trim();
+
+  if (!text) throw new Error('Gemini returned no text response');
+  return text;
+};
 
 /**
  * Get response from Gemini AI (with proper history handling)
