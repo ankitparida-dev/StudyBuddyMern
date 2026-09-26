@@ -1,22 +1,42 @@
-import { CheckCircle2, Flame, Clock, Plus, X, Trophy, Loader2 } from 'lucide-react';
+import {
+  CheckCircle2,
+  Flame,
+  Clock,
+  Plus,
+  X,
+  Trophy,
+  Loader2,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import PomodoroTimer from '../components/dashboard/PomodoroTimer';
 import LogSessionModal from '../components/dashboard/LogSessionModal';
 import { learningApi, dashboardApi } from '../utils/api';
 
+const SUBJECT_COLORS = {
+  physics: 'bg-blue-100 text-blue-700',
+  chemistry: 'bg-purple-100 text-purple-700',
+  math: 'bg-orange-100 text-orange-700',
+  biology: 'bg-green-100 text-green-700',
+  general: 'bg-gray-100 text-gray-600',
+};
+
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState({ count: 0 });
   const [todayMinutes, setTodayMinutes] = useState(0);
+
   const [newTask, setNewTask] = useState('');
+  const [newTaskSubject, setNewTaskSubject] = useState('general');
   const [addingTask, setAddingTask] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSubject, setModalSubject] = useState('Physics');
 
-  // Initial fetch
+  // ============================================
+  // Fetch all dashboard data
+  // ============================================
   const fetchAll = async () => {
     setLoading(true);
     try {
@@ -40,15 +60,19 @@ export default function Dashboard() {
     fetchAll();
   }, []);
 
-  // Toggle task (optimistic)
+  // ============================================
+  // Toggle task complete (optimistic)
+  // ============================================
   const toggle = async (task) => {
     const nextCompleted = !task.completed;
-    const next = { ...task, completed: nextCompleted, progress: nextCompleted ? 100 : 0 };
+    const next = {
+      ...task,
+      completed: nextCompleted,
+      progress: nextCompleted ? 100 : 0,
+    };
 
     // Optimistic update
-    setTasks((curr) =>
-      curr.map((t) => (t._id === task._id ? next : t))
-    );
+    setTasks((curr) => curr.map((t) => (t._id === task._id ? next : t)));
 
     try {
       const { task: updated } = await learningApi.updateTask(task._id, {
@@ -59,31 +83,34 @@ export default function Dashboard() {
       );
     } catch (err) {
       // Revert on failure
-      setTasks((curr) =>
-        curr.map((t) => (t._id === task._id ? task : t))
-      );
+      setTasks((curr) => curr.map((t) => (t._id === task._id ? task : t)));
       toast.error('Failed to update task');
     }
   };
 
+  // ============================================
   // Add task
+  // ============================================
   const addTask = async (e) => {
     e.preventDefault();
     const title = newTask.trim();
-    if (!title) return;
+    if (title.length < 3) {
+      toast.error('Task title must be at least 3 characters');
+      return;
+    }
 
     setAddingTask(true);
     try {
       const { task } = await learningApi.createTask({
         title,
-        subject: 'general',
+        subject: newTaskSubject,
         priority: 'medium',
-        type: 'study',
+        type: 'daily',
         progress: 0,
-        target: 100,
       });
       setTasks((curr) => [...curr, task]);
       setNewTask('');
+      setNewTaskSubject('general');
       toast.success('Task added ✅');
     } catch (err) {
       toast.error(err.message || 'Failed to add task');
@@ -92,7 +119,9 @@ export default function Dashboard() {
     }
   };
 
-  // Delete task
+  // ============================================
+  // Delete task (optimistic)
+  // ============================================
   const deleteTask = async (id) => {
     const backup = tasks;
     setTasks((curr) => curr.filter((t) => t._id !== id));
@@ -105,7 +134,9 @@ export default function Dashboard() {
     }
   };
 
+  // ============================================
   // Session logging
+  // ============================================
   const openLogModal = (subject) => {
     setModalSubject(subject);
     setModalOpen(true);
@@ -127,12 +158,17 @@ export default function Dashboard() {
     }
   };
 
+  // ============================================
+  // Derived values
+  // ============================================
   const allDone = tasks.length > 0 && tasks.every((t) => t.completed);
   const todayHours = (todayMinutes / 60).toFixed(1);
 
   return (
     <div className="space-y-6">
-      {/* Top row: Streak + Hours + Timer */}
+      {/* ============================================ */}
+      {/* Top row: Streak + Hours + Timer              */}
+      {/* ============================================ */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-4">
           <Flame className="text-orange-500" size={40} />
@@ -157,9 +193,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Second row: Tasks + Quick Log */}
+      {/* ============================================ */}
+      {/* Second row: Tasks + Quick Log                */}
+      {/* ============================================ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Tasks */}
+        {/* -------------- Tasks -------------- */}
         <div className="bg-white rounded-2xl shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">Today's Targets</h3>
@@ -190,24 +228,36 @@ export default function Dashboard() {
                 <li key={t._id} className="flex items-center gap-3 group">
                   <button
                     onClick={() => toggle(t)}
-                    className="flex items-center gap-3 flex-1 text-left"
+                    className="flex items-center gap-3 flex-1 text-left min-w-0"
                   >
                     <CheckCircle2
-                      className={
+                      className={`shrink-0 ${
                         t.completed ? 'text-green-500' : 'text-gray-300'
-                      }
+                      }`}
+                      size={20}
                     />
                     <span
-                      className={
+                      className={`flex-1 truncate ${
                         t.completed ? 'line-through text-gray-400' : ''
-                      }
+                      }`}
                     >
                       {t.title}
                     </span>
                   </button>
+
+                  {t.subject && t.subject !== 'general' && (
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
+                        SUBJECT_COLORS[t.subject] || SUBJECT_COLORS.general
+                      }`}
+                    >
+                      {t.subject}
+                    </span>
+                  )}
+
                   <button
                     onClick={() => deleteTask(t._id)}
-                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition"
+                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition shrink-0"
                     title="Delete task"
                   >
                     <X size={16} />
@@ -217,18 +267,35 @@ export default function Dashboard() {
             </ul>
           )}
 
-          <form onSubmit={addTask} className="flex gap-2 mt-4">
+          {/* Add task form */}
+          <form
+            onSubmit={addTask}
+            className="flex gap-2 mt-4 flex-wrap"
+          >
             <input
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               placeholder="Add a new task..."
-              className="flex-1 p-3 border rounded-xl outline-none focus:border-sb-blue text-sm"
+              className="flex-1 min-w-[140px] p-3 border rounded-xl outline-none focus:border-sb-blue text-sm"
               disabled={addingTask}
+              maxLength={200}
             />
+            <select
+              value={newTaskSubject}
+              onChange={(e) => setNewTaskSubject(e.target.value)}
+              disabled={addingTask}
+              className="p-3 border rounded-xl outline-none focus:border-sb-blue text-sm bg-white"
+            >
+              <option value="general">General</option>
+              <option value="physics">Physics</option>
+              <option value="chemistry">Chemistry</option>
+              <option value="math">Math</option>
+              <option value="biology">Biology</option>
+            </select>
             <button
               type="submit"
               disabled={addingTask}
-              className="bg-sb-blue text-white px-4 rounded-xl hover:opacity-90 transition disabled:opacity-50"
+              className="bg-sb-blue text-white px-4 rounded-xl hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center"
             >
               {addingTask ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -239,7 +306,7 @@ export default function Dashboard() {
           </form>
         </div>
 
-        {/* Quick Log */}
+        {/* -------------- Quick Log -------------- */}
         <div className="bg-white rounded-2xl shadow p-6">
           <h3 className="font-semibold mb-4">Quick Log Session</h3>
           <div className="grid grid-cols-3 gap-3">
@@ -266,6 +333,9 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ============================================ */}
+      {/* Modal                                       */}
+      {/* ============================================ */}
       <LogSessionModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
