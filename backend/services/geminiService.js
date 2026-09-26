@@ -1,7 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
 // System prompt to make Gemini act as a study assistant
 const STUDY_ASSISTANT_PROMPT = `You are StudyBuddy AI, a helpful study assistant for JEE and NEET students.
@@ -26,6 +23,37 @@ Format your responses using:
 - Numbered steps for processes
 - Code blocks for formulas`;
 
+const requestGemini = async (input) => {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured on the backend');
+  }
+
+  const response = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': process.env.GEMINI_API_KEY,
+    },
+    body: JSON.stringify({ model: GEMINI_MODEL, input }),
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || `Gemini API returned HTTP ${response.status}`);
+  }
+
+  const text = (data.steps || [])
+    .filter((step) => step.type === 'model_output')
+    .flatMap((step) => step.content || [])
+    .filter((part) => part.type === 'text' && part.text)
+    .map((part) => part.text)
+    .join('\n')
+    .trim();
+
+  if (!text) throw new Error('Gemini returned no text response');
+  return text;
+};
+
 /**
  * Get response from Gemini AI
  * @param {string} userMessage - The user's message
@@ -34,35 +62,23 @@ Format your responses using:
  */
 const getGeminiResponse = async (userMessage, chatHistory = []) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not set in environment variables');
-    }
-
-    const model = genAI.getGenerativeModel({
-      model: GEMINI_MODEL,
-      systemInstruction: STUDY_ASSISTANT_PROMPT,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      }
-    });
-
     const history = chatHistory
-      .filter((entry) => entry.role === 'user' || entry.role === 'assistant')
-      .map((entry) => ({
-        role: entry.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: entry.content }],
-      }));
+      .filter((entry) => (entry.role === 'user' || entry.role === 'assistant') && entry.content)
+      .slice(-10);
+    const lastEntry = history[history.length - 1];
+    if (lastEntry?.role === 'user' && lastEntry.content === userMessage) history.pop();
 
-    if (history.at(-1)?.role === 'user' && history.at(-1).parts[0].text === userMessage) {
-      history.pop();
-    }
-    while (history[0]?.role === 'model') history.shift();
+    const conversation = history
+      .map((entry) => `${entry.role === 'assistant' ? 'StudyBuddy AI' : 'Student'}: ${entry.content}`)
+      .join('\n');
+    const prompt = [
+      STUDY_ASSISTANT_PROMPT,
+      conversation && `Conversation so far:\n${conversation}`,
+      `Student: ${userMessage}`,
+      'StudyBuddy AI:',
+    ].filter(Boolean).join('\n\n');
 
-    const chat = model.startChat({ history });
-    const result = await chat.sendMessage(userMessage);
-    const response = await result.response;
-    return response.text();
+    return await requestGemini(prompt);
   } catch (error) {
     console.error('Gemini API Error:', error);
     throw new Error(`Gemini request failed: ${error.message}`);
@@ -75,27 +91,7 @@ const getGeminiResponse = async (userMessage, chatHistory = []) => {
  * @returns {Promise<string>} - The AI response
  */
 const getSimpleResponse = async (userMessage) => {
-  try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not set');
-    }
-
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-      }
-    });
-
-    const prompt = `${STUDY_ASSISTANT_PROMPT}\n\nUser: ${userMessage}\n\nStudyBuddy AI:`;
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('Gemini Simple API Error:', error);
-    throw new Error('Failed to get AI response');
-  }
+  return getGeminiResponse(userMessage);
 };
 
 /**
@@ -106,35 +102,7 @@ const getSimpleResponse = async (userMessage) => {
  * @returns {Promise<string>} - The AI generated study plan
  */
 const generateStudyPlan = async (examType, subjects, duration = 4) => {
-  try {
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.5,
-        maxOutputTokens: 4096,
-      }
-    });
-
-    const prompt = `Create a detailed ${duration}-week study plan for ${examType.toUpperCase()} preparation.
-    
-    Focus subjects: ${subjects}
-    
-    Include:
-    1. Weekly breakdown of topics
-    2. Daily study schedule
-    3. Practice and revision time
-    4. Mock test schedule
-    5. Tips for each subject
-    
-    Make it realistic and actionable.`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('Study Plan Generation Error:', error);
-    throw new Error('Failed to generate study plan');
-  }
+  return getGeminiResponse(`Create a detailed ${duration}-week study plan for ${examType.toUpperCase()} preparation. Focus subjects: ${subjects}. Include weekly topics, daily schedule, practice and revision, mock tests, and actionable tips.`);
 };
 
 /**
@@ -144,33 +112,7 @@ const generateStudyPlan = async (examType, subjects, duration = 4) => {
  * @returns {Promise<string>} - The explanation
  */
 const explainConcept = async (concept, subject = 'general') => {
-  try {
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.6,
-        maxOutputTokens: 2048,
-      }
-    });
-
-    const prompt = `Explain "${concept}" in simple terms for a ${subject} student.
-    
-    Include:
-    1. Simple definition
-    2. Key points
-    3. Example
-    4. Common mistakes to avoid
-    5. Practice tip
-    
-    Keep it clear and student-friendly.`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('Concept Explanation Error:', error);
-    throw new Error('Failed to explain concept');
-  }
+  return getGeminiResponse(`Explain "${concept}" in simple terms for a ${subject} student. Include a definition, key points, an example, common mistakes, and a practice tip.`);
 };
 
 /**
@@ -180,33 +122,7 @@ const explainConcept = async (concept, subject = 'general') => {
  * @returns {Promise<string>} - Step-by-step solution
  */
 const solveProblem = async (problem, subject = 'general') => {
-  try {
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 4096,
-      }
-    });
-
-    const prompt = `Solve this ${subject} problem step-by-step:
-    
-    Problem: ${problem}
-    
-    Provide:
-    1. Understanding the problem
-    2. Approach
-    3. Step-by-step solution
-    4. Final answer
-    5. Key takeaway`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('Problem Solving Error:', error);
-    throw new Error('Failed to solve problem');
-  }
+  return getGeminiResponse(`Solve this ${subject} problem step by step. Explain the approach, show the working, state the final answer, and give the key takeaway.\n\nProblem: ${problem}`);
 };
 
 module.exports = { 
