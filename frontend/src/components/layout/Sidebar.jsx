@@ -10,15 +10,16 @@ const links = [
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-white h-screen p-4 shadow-md fixed left-0 top-0">
+    <aside className="hidden md:flex w-64 bg-white dark:bg-sb-dark-card h-screen p-4 shadow-md fixed left-0 top-0 flex-col transition-colors">
       <div className="flex items-center gap-3 mb-8">
-  <img
-    src="/logo.png"
-    alt="StudyBuddy Logo"
-    className="w-10 h-10 rounded-full object-cover"
-  />
-  <h1 className="text-xl font-bold text-sb-blue">StudyBuddy</h1>
-</div>
+        <img
+          src="/logo.png"
+          alt="StudyBuddy Logo"
+          className="w-10 h-10 rounded-full object-cover"
+        />
+        <h1 className="text-xl font-bold text-sb-blue">StudyBuddy</h1>
+      </div>
+
       <nav className="space-y-2">
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -26,7 +27,9 @@ export default function Sidebar() {
             to={to}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-xl transition ${
-                isActive ? 'bg-sb-blue text-white' : 'hover:bg-sb-bg'
+                isActive
+                  ? 'bg-sb-blue text-white'
+                  : 'hover:bg-sb-bg dark:hover:bg-sb-dark-border dark:text-sb-dark-text'
               }`
             }
           >

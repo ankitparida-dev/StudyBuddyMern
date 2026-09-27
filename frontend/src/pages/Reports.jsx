@@ -8,8 +8,9 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { learningApi, dashboardApi } from '../utils/api';
+import { usePageTitle } from '../utils/usePageTitle';
 
-const PIE_COLORS = ['#4A90E2', '#F5D547', '#E5E7EB']; // Completed / In Progress / Not Started
+const PIE_COLORS = ['#4A90E2', '#F5D547', '#E5E7EB'];
 const SUBJECT_COLORS = {
   physics: '#4A90E2',
   chemistry: '#A78BFA',
@@ -28,6 +29,8 @@ const formatDuration = (mins) => {
 };
 
 export default function Reports() {
+  usePageTitle('Reports');
+
   const [topics, setTopics] = useState([]);
   const [stats, setStats] = useState(null);
   const [streaks, setStreaks] = useState(null);
@@ -51,7 +54,7 @@ export default function Reports() {
         setTopics(topicsRes.topics || []);
         setStats(statsRes);
         setStreaks(streaksRes);
-        // subjects comes as object: { physics: 120, chemistry: 60 }
+
         const subjectObj = subjectsRes.subjects || {};
         setSubjects(
           Object.entries(subjectObj).map(([name, minutes]) => ({
@@ -68,7 +71,6 @@ export default function Reports() {
     })();
   }, []);
 
-  // ---- Syllabus completion breakdown ----
   const syllabusStats = useMemo(() => {
     let completed = 0;
     let inProgress = 0;
@@ -93,19 +95,17 @@ export default function Reports() {
     };
   }, [topics]);
 
-  // ---- Subject-wise stats for cards ----
   const subjectCards = useMemo(() => {
     const groups = {};
     topics.forEach((t) => {
       const key = t.subject || 'other';
-      if (!groups[key]) {
-        groups[key] = { total: 0, completed: 0, minutes: 0 };
-      }
+      if (!groups[key]) groups[key] = { total: 0, completed: 0, minutes: 0 };
       groups[key].total += 1;
       if (t.progress >= 100) groups[key].completed += 1;
     });
     subjects.forEach((s) => {
-      if (!groups[s.name]) groups[s.name] = { total: 0, completed: 0, minutes: 0 };
+      if (!groups[s.name])
+        groups[s.name] = { total: 0, completed: 0, minutes: 0 };
       groups[s.name].minutes = s.minutes;
     });
 
@@ -116,26 +116,19 @@ export default function Reports() {
         total: data.total,
         completed: data.completed,
         minutes: data.minutes,
-        pct: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
+        pct:
+          data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
       }));
   }, [topics, subjects]);
 
-  // ---- AI insight (local logic) ----
   const aiInsight = useMemo(() => {
     if (topics.length === 0) return null;
-
-    // Find subject with most not-started
-    const weakest = [...subjectCards].sort(
-      (a, b) => a.pct - b.pct
-    )[0];
-
-    // Find subject with most time spent
+    const weakest = [...subjectCards].sort((a, b) => a.pct - b.pct)[0];
     const mostStudied = [...subjectCards].sort(
       (a, b) => b.minutes - a.minutes
     )[0];
 
     if (!weakest) return null;
-
     if (weakest.pct < 30) {
       return `${capitalize(weakest.name)} syllabus is only ${weakest.pct}% complete. ${
         mostStudied && mostStudied.name !== weakest.name
@@ -143,14 +136,10 @@ export default function Reports() {
           : 'Consider adding focused sessions this week.'
       }`;
     }
-
     if (syllabusStats.completedPct >= 80) {
       return `Great progress! You've completed ${syllabusStats.completedPct}% of your syllabus. Focus on revision and mock tests now.`;
     }
-
-    return `Keep going — ${syllabusStats.completedPct}% completed. Prioritize ${
-      weakest.name
-    } next (${weakest.pct}% done).`;
+    return `Keep going — ${syllabusStats.completedPct}% completed. Prioritize ${weakest.name} next (${weakest.pct}% done).`;
   }, [subjectCards, syllabusStats, topics.length]);
 
   if (loading) {
@@ -160,13 +149,13 @@ export default function Reports() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-24 bg-white rounded-2xl shadow animate-pulse"
+              className="h-24 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse"
             />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-80 bg-white rounded-2xl shadow animate-pulse" />
-          <div className="h-80 bg-white rounded-2xl shadow animate-pulse" />
+          <div className="h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
+          <div className="h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
         </div>
       </div>
     );
@@ -174,7 +163,6 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      {/* ============ TOP STATS ============ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           icon={<Clock className="text-sb-blue" size={24} />}
@@ -198,11 +186,11 @@ export default function Reports() {
         />
       </div>
 
-      {/* ============ PIE + SUBJECT BARS ============ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pie chart */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="font-semibold mb-4">Syllabus Completion</h3>
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+          <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+            Syllabus Completion
+          </h3>
           {syllabusStats.total === 0 ? (
             <div className="h-64 flex items-center justify-center text-gray-400">
               No syllabus topics yet
@@ -230,7 +218,10 @@ export default function Reports() {
 
               <div className="flex justify-center gap-4 mt-2 text-xs">
                 {syllabusStats.data.map((d, i) => (
-                  <span key={d.name} className="flex items-center gap-1">
+                  <span
+                    key={d.name}
+                    className="flex items-center gap-1 dark:text-sb-dark-text"
+                  >
                     <span
                       className="w-3 h-3 rounded-full inline-block"
                       style={{ background: PIE_COLORS[i] }}
@@ -240,16 +231,17 @@ export default function Reports() {
                 ))}
               </div>
 
-              <p className="text-center text-sm text-gray-500 mt-3">
+              <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
                 {syllabusStats.completedPct}% of syllabus completed
               </p>
             </>
           )}
         </div>
 
-        {/* Subject-wise hours */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="font-semibold mb-4">Time per Subject</h3>
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+          <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+            Time per Subject
+          </h3>
           {subjects.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-gray-400">
               No study sessions yet
@@ -260,7 +252,6 @@ export default function Reports() {
                 data={subjects.map((s) => ({
                   name: capitalize(s.name),
                   hours: Math.round((s.minutes / 60) * 10) / 10,
-                  fill: SUBJECT_COLORS[s.name] || '#94A3B8',
                 }))}
                 layout="vertical"
                 margin={{ left: 20 }}
@@ -291,18 +282,21 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* ============ SUBJECT CARDS ============ */}
       {subjectCards.length > 0 && (
         <div>
-          <h3 className="font-semibold mb-3">Subject-Wise Progress</h3>
+          <h3 className="font-semibold mb-3 dark:text-sb-dark-text">
+            Subject-Wise Progress
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {subjectCards.map((s) => (
               <div
                 key={s.name}
-                className="bg-white rounded-2xl shadow p-5"
+                className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-5 transition-colors"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-bold capitalize">{s.name}</h4>
+                  <h4 className="font-bold capitalize dark:text-sb-dark-text">
+                    {s.name}
+                  </h4>
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
@@ -311,7 +305,7 @@ export default function Reports() {
                   />
                 </div>
 
-                <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
+                <div className="w-full bg-gray-100 dark:bg-sb-dark-border rounded-full h-2 mb-2">
                   <div
                     className="h-2 rounded-full transition-all"
                     style={{
@@ -321,7 +315,7 @@ export default function Reports() {
                   />
                 </div>
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {s.completed}/{s.total} topics · {formatDuration(s.minutes)}
                 </p>
               </div>
@@ -330,10 +324,9 @@ export default function Reports() {
         </div>
       )}
 
-      {/* ============ WEEKLY ACTIVITY ============ */}
       {streaks?.weekly && (
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
             <Activity size={18} /> This Week
           </h3>
           <div className="grid grid-cols-7 gap-2">
@@ -343,12 +336,14 @@ export default function Reports() {
                 className={`p-3 rounded-xl text-center transition ${
                   d.studied
                     ? 'bg-sb-blue text-white'
-                    : 'bg-gray-100 text-gray-400'
+                    : 'bg-gray-100 dark:bg-sb-dark-border text-gray-400'
                 }`}
               >
                 <p className="text-xs font-medium">{d.day}</p>
                 <p className="text-lg font-bold mt-1">
-                  {d.studied ? `${Math.round((d.minutes / 60) * 10) / 10}h` : '—'}
+                  {d.studied
+                    ? `${Math.round((d.minutes / 60) * 10) / 10}h`
+                    : '—'}
                 </p>
               </div>
             ))}
@@ -356,23 +351,27 @@ export default function Reports() {
         </div>
       )}
 
-      {/* ============ RECENT ACTIVITY ============ */}
-      <div className="bg-white rounded-2xl shadow p-6">
-        <h3 className="font-semibold mb-4">Recent Activity</h3>
+      <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+        <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+          Recent Activity
+        </h3>
         {recent.length === 0 ? (
           <p className="text-center py-6 text-gray-400">
             No activity yet. Start logging sessions!
           </p>
         ) : (
-          <ul className="divide-y">
+          <ul className="divide-y dark:divide-sb-dark-border">
             {recent.slice(0, 10).map((s) => (
-              <li key={s._id} className="py-3 flex items-center justify-between">
+              <li
+                key={s._id}
+                className="py-3 flex items-center justify-between"
+              >
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">
+                  <p className="font-medium truncate dark:text-sb-dark-text">
                     {capitalize(s.subject)}
                     {s.topic ? ` — ${s.topic}` : ''}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(s.date).toLocaleDateString('en-US', {
                       day: 'numeric',
                       month: 'short',
@@ -389,13 +388,14 @@ export default function Reports() {
         )}
       </div>
 
-      {/* ============ AI INSIGHT ============ */}
       {aiInsight && (
         <div className="bg-gradient-to-r from-sb-yellow/40 to-sb-pink/30 p-6 rounded-2xl flex items-start gap-3">
           <Sparkles className="text-sb-blue shrink-0 mt-0.5" size={22} />
           <div>
-            <p className="font-semibold mb-1">AI Insight</p>
-            <p className="text-sm">{aiInsight}</p>
+            <p className="font-semibold mb-1 dark:text-sb-dark-text">
+              AI Insight
+            </p>
+            <p className="text-sm dark:text-sb-dark-text">{aiInsight}</p>
           </div>
         </div>
       )}
@@ -403,16 +403,17 @@ export default function Reports() {
   );
 }
 
-// ============================================
-// Sub-component
-// ============================================
 function StatCard({ icon, label, value }) {
   return (
-    <div className="bg-white rounded-2xl shadow p-4 flex items-center gap-3">
+    <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 flex items-center gap-3 transition-colors">
       <div className="shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-2xl font-bold truncate">{value}</p>
-        <p className="text-xs text-gray-500 truncate">{label}</p>
+        <p className="text-2xl font-bold truncate dark:text-sb-dark-text">
+          {value}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {label}
+        </p>
       </div>
     </div>
   );

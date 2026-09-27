@@ -4,10 +4,11 @@ import {
   ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import {
-  TrendingUp, Plus, X, Loader2, Award, Clock, Target, BookOpen,
+  TrendingUp, Plus, Loader2, Award, Clock, Target, BookOpen,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { learningApi, dashboardApi } from '../utils/api';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const SUBJECTS = ['physics', 'chemistry', 'math', 'biology', 'general'];
 const SESSION_TYPES = ['study', 'practice', 'revision', 'test', 'focus'];
@@ -15,21 +16,19 @@ const SESSION_TYPES = ['study', 'practice', 'revision', 'test', 'focus'];
 const capitalize = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 export default function Progress() {
-  // ---------- Sessions state ----------
+  usePageTitle('Progress');
+
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
 
-  // ---------- Trend state ----------
   const [trend, setTrend] = useState([]);
   const [trendDays, setTrendDays] = useState(7);
   const [loadingTrend, setLoadingTrend] = useState(false);
 
-  // ---------- Tests state ----------
   const [tests, setTests] = useState([]);
   const [testSummary, setTestSummary] = useState(null);
   const [loadingTests, setLoadingTests] = useState(true);
 
-  // ---------- Form state ----------
   const [sessionForm, setSessionForm] = useState({
     subject: 'physics',
     topic: '',
@@ -52,7 +51,6 @@ export default function Progress() {
   });
   const [submittingTest, setSubmittingTest] = useState(false);
 
-  // ---------- Fetch sessions on mount ----------
   useEffect(() => {
     (async () => {
       setLoadingSessions(true);
@@ -67,7 +65,6 @@ export default function Progress() {
     })();
   }, []);
 
-  // ---------- Fetch tests + summary on mount ----------
   const fetchTests = async () => {
     setLoadingTests(true);
     try {
@@ -87,7 +84,6 @@ export default function Progress() {
     fetchTests();
   }, []);
 
-  // ---------- Fetch trend when days change ----------
   useEffect(() => {
     (async () => {
       setLoadingTrend(true);
@@ -96,7 +92,6 @@ export default function Progress() {
           trendDays === 7
             ? await dashboardApi.weekly()
             : await dashboardApi.monthly();
-        // Backend returns { daily: [{ date, minutes, hours, display }] }
         const daily = res.daily || [];
         setTrend(
           daily.map((d) => ({
@@ -115,7 +110,6 @@ export default function Progress() {
     })();
   }, [trendDays]);
 
-  // ---------- Submit session ----------
   const handleSubmitSession = async (e) => {
     e.preventDefault();
     const duration = parseInt(sessionForm.duration, 10);
@@ -144,7 +138,7 @@ export default function Progress() {
         notes: '',
       });
       toast.success('Session logged ✅');
-      // Refresh trend
+
       const res =
         trendDays === 7
           ? await dashboardApi.weekly()
@@ -165,7 +159,6 @@ export default function Progress() {
     }
   };
 
-  // ---------- Submit test ----------
   const handleSubmitTest = async (e) => {
     e.preventDefault();
     const total = parseInt(testForm.totalQuestions, 10);
@@ -205,7 +198,7 @@ export default function Progress() {
         takenAt: new Date().toISOString().split('T')[0],
       });
       toast.success('Test recorded ✅');
-      // Refresh summary
+
       const s = await learningApi.testSummary().catch(() => ({ summary: null }));
       setTestSummary(s.summary || null);
     } catch (err) {
@@ -215,7 +208,6 @@ export default function Progress() {
     }
   };
 
-  // ---------- Derived: total hours today ----------
   const todayTotal = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     return sessions
@@ -232,7 +224,6 @@ export default function Progress() {
 
   return (
     <div className="space-y-6">
-      {/* ============ TOP STATS ============ */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
           icon={<Clock className="text-sb-blue" size={28} />}
@@ -256,11 +247,9 @@ export default function Progress() {
         />
       </div>
 
-      {/* ============ TWO COLUMN: Form + Trend ============ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* -------- Session Form -------- */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
             <Plus size={18} /> Log Study Session
           </h3>
           <form onSubmit={handleSubmitSession} className="space-y-3">
@@ -270,7 +259,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setSessionForm({ ...sessionForm, subject: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               >
                 {SUBJECTS.map((s) => (
                   <option key={s} value={s}>
@@ -286,7 +275,7 @@ export default function Progress() {
                     sessionType: e.target.value,
                   })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               >
                 {SESSION_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -303,7 +292,7 @@ export default function Progress() {
               onChange={(e) =>
                 setSessionForm({ ...sessionForm, topic: e.target.value })
               }
-              className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue"
+              className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               maxLength={100}
             />
 
@@ -317,7 +306,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setSessionForm({ ...sessionForm, duration: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
                 required
               />
               <input
@@ -326,7 +315,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setSessionForm({ ...sessionForm, date: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               />
             </div>
 
@@ -336,7 +325,7 @@ export default function Progress() {
               onChange={(e) =>
                 setSessionForm({ ...sessionForm, notes: e.target.value })
               }
-              className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue resize-none"
+              className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue resize-none dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               rows={2}
               maxLength={1000}
             />
@@ -346,16 +335,17 @@ export default function Progress() {
               disabled={submittingSession}
               className="w-full py-3 rounded-xl bg-sb-blue text-white font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {submittingSession && <Loader2 size={16} className="animate-spin" />}
+              {submittingSession && (
+                <Loader2 size={16} className="animate-spin" />
+              )}
               Save Session
             </button>
           </form>
         </div>
 
-        {/* -------- Trend Chart -------- */}
-        <div className="bg-white rounded-2xl shadow p-6">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold flex items-center gap-2">
+            <h3 className="font-semibold flex items-center gap-2 dark:text-sb-dark-text">
               <TrendingUp size={18} /> Study Trend
             </h3>
             <div className="flex gap-2">
@@ -366,7 +356,7 @@ export default function Progress() {
                   className={`px-3 py-1 text-sm rounded-lg transition ${
                     trendDays === d
                       ? 'bg-sb-blue text-white'
-                      : 'bg-gray-100 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-sb-dark-border hover:bg-gray-200'
                   }`}
                 >
                   {d}d
@@ -376,7 +366,7 @@ export default function Progress() {
           </div>
 
           {loadingTrend ? (
-            <div className="h-64 bg-gray-50 rounded-xl animate-pulse" />
+            <div className="h-64 bg-gray-50 dark:bg-sb-dark-bg rounded-xl animate-pulse" />
           ) : trend.every((t) => t.hours === 0) ? (
             <div className="h-64 flex items-center justify-center text-gray-400">
               No data for this period
@@ -398,13 +388,17 @@ export default function Progress() {
         </div>
       </div>
 
-      {/* ============ SESSION LIST ============ */}
-      <div className="bg-white rounded-2xl shadow p-6">
-        <h3 className="font-semibold mb-4">Recent Sessions</h3>
+      <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+        <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+          Recent Sessions
+        </h3>
         {loadingSessions ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-12 bg-gray-50 rounded-xl animate-pulse" />
+              <div
+                key={i}
+                className="h-12 bg-gray-50 dark:bg-sb-dark-bg rounded-xl animate-pulse"
+              />
             ))}
           </div>
         ) : sessions.length === 0 ? (
@@ -412,18 +406,18 @@ export default function Progress() {
             No sessions logged yet. Add your first one above!
           </p>
         ) : (
-          <ul className="divide-y max-h-80 overflow-y-auto">
+          <ul className="divide-y dark:divide-sb-dark-border max-h-80 overflow-y-auto">
             {sessions.map((s) => (
               <li
                 key={s._id}
                 className="py-3 flex items-center justify-between gap-3"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
+                  <p className="font-medium truncate dark:text-sb-dark-text">
                     {capitalize(s.subject)}
                     {s.topic ? ` — ${s.topic}` : ''}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(s.date).toLocaleDateString('en-US', {
                       weekday: 'short',
                       day: 'numeric',
@@ -441,11 +435,9 @@ export default function Progress() {
         )}
       </div>
 
-      {/* ============ MOCK TESTS ============ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* -------- Test Form -------- */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
             <Award size={18} /> Add Mock Test
           </h3>
           <form onSubmit={handleSubmitTest} className="space-y-3">
@@ -456,7 +448,7 @@ export default function Progress() {
               onChange={(e) =>
                 setTestForm({ ...testForm, testName: e.target.value })
               }
-              className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue"
+              className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               required
               maxLength={150}
             />
@@ -467,7 +459,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setTestForm({ ...testForm, subject: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               >
                 {[...SUBJECTS, 'mixed'].map((s) => (
                   <option key={s} value={s}>
@@ -480,7 +472,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setTestForm({ ...testForm, testType: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               >
                 <option value="practice">Practice</option>
                 <option value="mock">Mock</option>
@@ -498,7 +490,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setTestForm({ ...testForm, totalQuestions: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
                 required
               />
               <input
@@ -509,7 +501,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setTestForm({ ...testForm, attempted: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
                 required
               />
               <input
@@ -520,7 +512,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setTestForm({ ...testForm, correct: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
                 required
               />
             </div>
@@ -534,7 +526,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setTestForm({ ...testForm, timeSpentMinutes: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               />
               <input
                 type="date"
@@ -542,7 +534,7 @@ export default function Progress() {
                 onChange={(e) =>
                   setTestForm({ ...testForm, takenAt: e.target.value })
                 }
-                className="p-3 border rounded-xl outline-none focus:border-sb-blue"
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               />
             </div>
 
@@ -551,17 +543,20 @@ export default function Progress() {
               disabled={submittingTest}
               className="w-full py-3 rounded-xl bg-sb-yellow text-sb-teal font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {submittingTest && <Loader2 size={16} className="animate-spin" />}
+              {submittingTest && (
+                <Loader2 size={16} className="animate-spin" />
+              )}
               Save Test
             </button>
           </form>
         </div>
 
-        {/* -------- Test Chart -------- */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="font-semibold mb-4">Test Performance</h3>
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+          <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+            Test Performance
+          </h3>
           {loadingTests ? (
-            <div className="h-64 bg-gray-50 rounded-xl animate-pulse" />
+            <div className="h-64 bg-gray-50 dark:bg-sb-dark-bg rounded-xl animate-pulse" />
           ) : tests.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-gray-400">
               No tests recorded yet
@@ -599,16 +594,17 @@ export default function Progress() {
   );
 }
 
-// ============================================
-// Sub-component
-// ============================================
 function StatCard({ icon, label, value }) {
   return (
-    <div className="bg-white rounded-2xl shadow p-4 flex items-center gap-3">
+    <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 flex items-center gap-3 transition-colors">
       <div className="shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-2xl font-bold truncate">{value}</p>
-        <p className="text-xs text-gray-500 truncate">{label}</p>
+        <p className="text-2xl font-bold truncate dark:text-sb-dark-text">
+          {value}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          {label}
+        </p>
       </div>
     </div>
   );

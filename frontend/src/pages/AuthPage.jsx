@@ -4,8 +4,11 @@ import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import { authApi } from '../utils/api';
 import { storage } from '../utils/storage';
+import { usePageTitle } from '../utils/usePageTitle';
 
 export default function AuthPage() {
+  usePageTitle('Login');
+
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,28 +23,16 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const trimmedEmail = email.trim().toLowerCase();
       const payload = isLogin
-        ? { email: trimmedEmail, password }
-        : (() => {
-            const nameParts = name.trim().split(/\s+/);
-            return {
-              firstName: nameParts[0],
-              lastName: nameParts.slice(1).join(' ') || nameParts[0],
-              email: trimmedEmail,
-              password,
-              currentGrade: `Class ${cls}`,
-              examType: target,
-            };
-          })();
+        ? { email, password }
+        : { name, email, password, target, class: cls };
 
       const res = isLogin
         ? await authApi.login(payload)
         : await authApi.register(payload);
 
-      // Backend returns: { success, user, token } (or similar — adjust if needed)
-      const user = res.user || res;
-      const token = res.token;
+      const user = res.user || res.data?.user || res;
+      const token = res.token || res.data?.token;
 
       if (token) storage.set('sb_token', token);
       storage.set('sb_user', user);

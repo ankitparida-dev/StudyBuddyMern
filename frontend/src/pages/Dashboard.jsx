@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import PomodoroTimer from '../components/dashboard/PomodoroTimer';
 import LogSessionModal from '../components/dashboard/LogSessionModal';
 import { learningApi, dashboardApi } from '../utils/api';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const SUBJECT_COLORS = {
   physics: 'bg-blue-100 text-blue-700',
@@ -22,6 +23,8 @@ const SUBJECT_COLORS = {
 };
 
 export default function Dashboard() {
+  usePageTitle('Dashboard');
+
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState({ count: 0 });
@@ -60,9 +63,7 @@ export default function Dashboard() {
     fetchAll();
   }, []);
 
-  // ============================================
-  // Toggle task complete (optimistic)
-  // ============================================
+  // Toggle task (optimistic)
   const toggle = async (task) => {
     const nextCompleted = !task.completed;
     const next = {
@@ -71,7 +72,6 @@ export default function Dashboard() {
       progress: nextCompleted ? 100 : 0,
     };
 
-    // Optimistic update
     setTasks((curr) => curr.map((t) => (t._id === task._id ? next : t)));
 
     try {
@@ -82,15 +82,12 @@ export default function Dashboard() {
         curr.map((t) => (t._id === updated._id ? updated : t))
       );
     } catch (err) {
-      // Revert on failure
       setTasks((curr) => curr.map((t) => (t._id === task._id ? task : t)));
       toast.error('Failed to update task');
     }
   };
 
-  // ============================================
   // Add task
-  // ============================================
   const addTask = async (e) => {
     e.preventDefault();
     const title = newTask.trim();
@@ -119,9 +116,7 @@ export default function Dashboard() {
     }
   };
 
-  // ============================================
   // Delete task (optimistic)
-  // ============================================
   const deleteTask = async (id) => {
     const backup = tasks;
     setTasks((curr) => curr.filter((t) => t._id !== id));
@@ -134,9 +129,7 @@ export default function Dashboard() {
     }
   };
 
-  // ============================================
   // Session logging
-  // ============================================
   const openLogModal = (subject) => {
     setModalSubject(subject);
     setModalOpen(true);
@@ -152,39 +145,40 @@ export default function Dashboard() {
         date: data.date,
       });
       toast.success(`Logged ${data.hours}h of ${data.subject} 🎯`);
-      fetchAll(); // refresh stats
+      fetchAll();
     } catch (err) {
       toast.error(err.message || 'Failed to log session');
     }
   };
 
-  // ============================================
-  // Derived values
-  // ============================================
   const allDone = tasks.length > 0 && tasks.every((t) => t.completed);
   const todayHours = (todayMinutes / 60).toFixed(1);
 
   return (
     <div className="space-y-6">
-      {/* ============================================ */}
-      {/* Top row: Streak + Hours + Timer              */}
-      {/* ============================================ */}
+      {/* Top row: Streak + Hours + Timer */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-4">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 flex items-center gap-4 transition-colors">
           <Flame className="text-orange-500" size={40} />
           <div>
-            <p className="text-3xl font-bold">
+            <p className="text-3xl font-bold dark:text-sb-dark-text">
               {streak.count} Day{streak.count !== 1 ? 's' : ''}
             </p>
-            <p className="text-sm text-gray-500">Current Streak</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Current Streak
+            </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-4">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 flex items-center gap-4 transition-colors">
           <Clock className="text-sb-blue" size={40} />
           <div>
-            <p className="text-3xl font-bold">{todayHours}h</p>
-            <p className="text-sm text-gray-500">Studied Today</p>
+            <p className="text-3xl font-bold dark:text-sb-dark-text">
+              {todayHours}h
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Studied Today
+            </p>
           </div>
         </div>
 
@@ -193,14 +187,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ============================================ */}
-      {/* Second row: Tasks + Quick Log                */}
-      {/* ============================================ */}
+      {/* Second row: Tasks + Quick Log */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* -------------- Tasks -------------- */}
-        <div className="bg-white rounded-2xl shadow p-6">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Today's Targets</h3>
+            <h3 className="font-semibold dark:text-sb-dark-text">
+              Today's Targets
+            </h3>
             {allDone && (
               <span className="text-sm text-green-600 flex items-center gap-1">
                 <Trophy size={16} /> All done!
@@ -213,7 +206,7 @@ export default function Dashboard() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-6 bg-gray-100 rounded animate-pulse"
+                  className="h-6 bg-gray-100 dark:bg-sb-dark-border rounded animate-pulse"
                 />
               ))}
             </div>
@@ -238,7 +231,9 @@ export default function Dashboard() {
                     />
                     <span
                       className={`flex-1 truncate ${
-                        t.completed ? 'line-through text-gray-400' : ''
+                        t.completed
+                          ? 'line-through text-gray-400'
+                          : 'dark:text-sb-dark-text'
                       }`}
                     >
                       {t.title}
@@ -267,16 +262,12 @@ export default function Dashboard() {
             </ul>
           )}
 
-          {/* Add task form */}
-          <form
-            onSubmit={addTask}
-            className="flex gap-2 mt-4 flex-wrap"
-          >
+          <form onSubmit={addTask} className="flex gap-2 mt-4 flex-wrap">
             <input
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               placeholder="Add a new task..."
-              className="flex-1 min-w-[140px] p-3 border rounded-xl outline-none focus:border-sb-blue text-sm"
+              className="flex-1 min-w-[140px] p-3 border rounded-xl outline-none focus:border-sb-blue text-sm dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               disabled={addingTask}
               maxLength={200}
             />
@@ -284,7 +275,7 @@ export default function Dashboard() {
               value={newTaskSubject}
               onChange={(e) => setNewTaskSubject(e.target.value)}
               disabled={addingTask}
-              className="p-3 border rounded-xl outline-none focus:border-sb-blue text-sm bg-white"
+              className="p-3 border rounded-xl outline-none focus:border-sb-blue text-sm bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
             >
               <option value="general">General</option>
               <option value="physics">Physics</option>
@@ -306,22 +297,23 @@ export default function Dashboard() {
           </form>
         </div>
 
-        {/* -------------- Quick Log -------------- */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="font-semibold mb-4">Quick Log Session</h3>
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+          <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+            Quick Log Session
+          </h3>
           <div className="grid grid-cols-3 gap-3">
             {['Physics', 'Chemistry', 'Mathematics'].map((s) => (
               <button
                 key={s}
                 onClick={() => openLogModal(s)}
-                className="bg-sb-yellow p-4 rounded-xl font-semibold hover:scale-105 transition"
+                className="bg-sb-yellow p-4 rounded-xl font-semibold hover:scale-105 transition text-sb-teal"
               >
                 + {s}
               </button>
             ))}
           </div>
 
-          <p className="text-xs text-gray-500 mt-4 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
             Or click below to log any session
           </p>
           <button
@@ -333,9 +325,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ============================================ */}
-      {/* Modal                                       */}
-      {/* ============================================ */}
       <LogSessionModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
