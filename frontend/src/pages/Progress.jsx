@@ -15,6 +15,15 @@ const SESSION_TYPES = ['study', 'practice', 'revision', 'test', 'focus'];
 
 const capitalize = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
+// Shared tooltip styling — consistent across both charts
+const tooltipStyle = {
+  borderRadius: 12,
+  border: 'none',
+  fontSize: 12,
+  padding: '8px 12px',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+};
+
 export default function Progress() {
   usePageTitle('Progress');
 
@@ -51,6 +60,7 @@ export default function Progress() {
   });
   const [submittingTest, setSubmittingTest] = useState(false);
 
+  // ---- Fetch sessions ----
   useEffect(() => {
     (async () => {
       setLoadingSessions(true);
@@ -65,6 +75,7 @@ export default function Progress() {
     })();
   }, []);
 
+  // ---- Fetch tests + summary ----
   const fetchTests = async () => {
     setLoadingTests(true);
     try {
@@ -84,6 +95,7 @@ export default function Progress() {
     fetchTests();
   }, []);
 
+  // ---- Fetch trend ----
   useEffect(() => {
     (async () => {
       setLoadingTrend(true);
@@ -110,6 +122,7 @@ export default function Progress() {
     })();
   }, [trendDays]);
 
+  // ---- Submit session ----
   const handleSubmitSession = async (e) => {
     e.preventDefault();
     const duration = parseInt(sessionForm.duration, 10);
@@ -159,6 +172,7 @@ export default function Progress() {
     }
   };
 
+  // ---- Submit test ----
   const handleSubmitTest = async (e) => {
     e.preventDefault();
     const total = parseInt(testForm.totalQuestions, 10);
@@ -224,31 +238,34 @@ export default function Progress() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* ---- Stat cards ---- */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <StatCard
-          icon={<Clock className="text-sb-blue" size={28} />}
+          icon={<Clock className="text-sb-blue" size={24} />}
           label="Today"
           value={formatDuration(todayTotal)}
         />
         <StatCard
-          icon={<BookOpen className="text-purple-500" size={28} />}
-          label="Total Sessions"
+          icon={<BookOpen className="text-purple-500" size={24} />}
+          label="Sessions"
           value={sessions.length}
         />
         <StatCard
-          icon={<Award className="text-green-500" size={28} />}
-          label="Tests Taken"
+          icon={<Award className="text-green-500" size={24} />}
+          label="Tests"
           value={testSummary?.tests ?? tests.length}
         />
         <StatCard
-          icon={<Target className="text-orange-500" size={28} />}
+          icon={<Target className="text-orange-500" size={24} />}
           label="Avg Accuracy"
           value={`${testSummary?.averagePercentage?.toFixed(1) ?? 0}%`}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+      {/* ---- Form + Trend ---- */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Session Form */}
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
             <Plus size={18} /> Log Study Session
           </h3>
@@ -343,7 +360,8 @@ export default function Progress() {
           </form>
         </div>
 
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+        {/* Trend Chart */}
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2 dark:text-sb-dark-text">
               <TrendingUp size={18} /> Study Trend
@@ -356,7 +374,7 @@ export default function Progress() {
                   className={`px-3 py-1 text-sm rounded-lg transition ${
                     trendDays === d
                       ? 'bg-sb-blue text-white'
-                      : 'bg-gray-100 dark:bg-sb-dark-border hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-sb-dark-border dark:text-sb-dark-text hover:bg-gray-200'
                   }`}
                 >
                   {d}d
@@ -366,20 +384,25 @@ export default function Progress() {
           </div>
 
           {loadingTrend ? (
-            <div className="h-64 bg-gray-50 dark:bg-sb-dark-bg rounded-xl animate-pulse" />
+            <div className="h-56 md:h-64 bg-gray-50 dark:bg-sb-dark-bg rounded-xl animate-pulse" />
           ) : trend.every((t) => t.hours === 0) ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">
+            <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
               No data for this period
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={trend}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={trend} margin={{ left: -20, right: 8, top: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 11 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis tick={{ fontSize: 11 }} width={30} />
                 <Tooltip
                   formatter={(value) => [`${value}h`, 'Hours']}
-                  contentStyle={{ borderRadius: 12, border: 'none' }}
+                  contentStyle={tooltipStyle}
+                  wrapperStyle={{ outline: 'none' }}
                 />
                 <Bar dataKey="hours" fill="#4A90E2" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -388,7 +411,8 @@ export default function Progress() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+      {/* ---- Recent Sessions ---- */}
+      <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
         <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
           Recent Sessions
         </h3>
@@ -435,8 +459,10 @@ export default function Progress() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+      {/* ---- Test Form + Test Chart ---- */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Test Form */}
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
             <Award size={18} /> Add Mock Test
           </h3>
@@ -481,7 +507,7 @@ export default function Progress() {
               </select>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 md:gap-3">
               <input
                 type="number"
                 min="1"
@@ -551,39 +577,51 @@ export default function Progress() {
           </form>
         </div>
 
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+        {/* Test Chart */}
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
             Test Performance
           </h3>
           {loadingTests ? (
-            <div className="h-64 bg-gray-50 dark:bg-sb-dark-bg rounded-xl animate-pulse" />
+            <div className="h-56 md:h-64 bg-gray-50 dark:bg-sb-dark-bg rounded-xl animate-pulse" />
           ) : tests.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">
+            <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
               No tests recorded yet
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220}>
               <LineChart
                 data={[...tests]
                   .reverse()
                   .map((t) => ({
-                    name: t.testName?.slice(0, 15) || 'Test',
+                    name: t.testName?.slice(0, 12) || 'Test',
                     percentage: t.percentage,
                   }))}
+                margin={{ left: -20, right: 8, top: 8 }}
               >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 10 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fontSize: 11 }}
+                  width={30}
+                />
                 <Tooltip
                   formatter={(value) => [`${value}%`, 'Score']}
-                  contentStyle={{ borderRadius: 12, border: 'none' }}
+                  contentStyle={tooltipStyle}
+                  wrapperStyle={{ outline: 'none' }}
                 />
                 <Line
                   type="monotone"
                   dataKey="percentage"
                   stroke="#F5D547"
                   strokeWidth={3}
-                  dot={{ r: 5 }}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -596,10 +634,10 @@ export default function Progress() {
 
 function StatCard({ icon, label, value }) {
   return (
-    <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 flex items-center gap-3 transition-colors">
+    <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-3 md:p-4 flex items-center gap-2 md:gap-3 transition-colors">
       <div className="shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-2xl font-bold truncate dark:text-sb-dark-text">
+        <p className="text-xl md:text-2xl font-bold truncate dark:text-sb-dark-text">
           {value}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">

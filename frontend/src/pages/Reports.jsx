@@ -28,6 +28,15 @@ const formatDuration = (mins) => {
   return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
 };
 
+// Shared tooltip styling
+const tooltipStyle = {
+  borderRadius: 12,
+  border: 'none',
+  fontSize: 12,
+  padding: '8px 12px',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+};
+
 export default function Reports() {
   usePageTitle('Reports');
 
@@ -145,17 +154,17 @@ export default function Reports() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-24 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse"
+              className="h-20 md:h-24 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse"
             />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
-          <div className="h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div className="h-64 md:h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
+          <div className="h-64 md:h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
         </div>
       </div>
     );
@@ -163,46 +172,48 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* ---- Stat cards ---- */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <StatCard
-          icon={<Clock className="text-sb-blue" size={24} />}
+          icon={<Clock className="text-sb-blue" size={22} />}
           label="Total Hours"
           value={`${stats?.total?.hours ?? 0}h`}
         />
         <StatCard
-          icon={<BookOpen className="text-purple-500" size={24} />}
+          icon={<BookOpen className="text-purple-500" size={22} />}
           label="Sessions"
           value={stats?.total?.sessions ?? 0}
         />
         <StatCard
-          icon={<Trophy className="text-green-500" size={24} />}
-          label="Completed Topics"
+          icon={<Trophy className="text-green-500" size={22} />}
+          label="Completed"
           value={`${syllabusStats.completed}/${syllabusStats.total}`}
         />
         <StatCard
-          icon={<TrendingUp className="text-orange-500" size={24} />}
-          label="Current Streak"
+          icon={<TrendingUp className="text-orange-500" size={22} />}
+          label="Streak"
           value={`${streaks?.currentStreak ?? 0} d`}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+      {/* ---- Pie + Bar ---- */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
             Syllabus Completion
           </h3>
           {syllabusStats.total === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">
+            <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
               No syllabus topics yet
             </div>
           ) : (
             <>
-              <ResponsiveContainer width="100%" height={240}>
+              <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
                     data={syllabusStats.data.filter((d) => d.value > 0)}
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={55}
+                    outerRadius={90}
                     dataKey="value"
                     paddingAngle={4}
                   >
@@ -211,12 +222,13 @@ export default function Reports() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ borderRadius: 12, border: 'none' }}
+                    contentStyle={tooltipStyle}
+                    wrapperStyle={{ outline: 'none' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
 
-              <div className="flex justify-center gap-4 mt-2 text-xs">
+              <div className="flex flex-wrap justify-center gap-3 mt-2 text-xs">
                 {syllabusStats.data.map((d, i) => (
                   <span
                     key={d.name}
@@ -238,35 +250,36 @@ export default function Reports() {
           )}
         </div>
 
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
             Time per Subject
           </h3>
           {subjects.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">
+            <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
               No study sessions yet
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart
                 data={subjects.map((s) => ({
                   name: capitalize(s.name),
                   hours: Math.round((s.minutes / 60) * 10) / 10,
                 }))}
                 layout="vertical"
-                margin={{ left: 20 }}
+                margin={{ left: 0, right: 8, top: 8, bottom: 8 }}
               >
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  tick={{ fontSize: 12 }}
-                  width={80}
+                  tick={{ fontSize: 11 }}
+                  width={70}
                 />
                 <Tooltip
                   formatter={(v) => [`${v}h`, 'Hours']}
-                  contentStyle={{ borderRadius: 12, border: 'none' }}
+                  contentStyle={tooltipStyle}
+                  wrapperStyle={{ outline: 'none' }}
                 />
                 <Bar dataKey="hours" radius={[0, 8, 8, 0]}>
                   {subjects.map((s, i) => (
@@ -282,16 +295,17 @@ export default function Reports() {
         </div>
       </div>
 
+      {/* ---- Subject Cards ---- */}
       {subjectCards.length > 0 && (
         <div>
           <h3 className="font-semibold mb-3 dark:text-sb-dark-text">
             Subject-Wise Progress
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {subjectCards.map((s) => (
               <div
                 key={s.name}
-                className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-5 transition-colors"
+                className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-5 transition-colors"
               >
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-bold capitalize dark:text-sb-dark-text">
@@ -324,23 +338,24 @@ export default function Reports() {
         </div>
       )}
 
+      {/* ---- Weekly Grid ---- */}
       {streaks?.weekly && (
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
             <Activity size={18} /> This Week
           </h3>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 md:gap-2">
             {streaks.weekly.map((d) => (
               <div
                 key={d.date}
-                className={`p-3 rounded-xl text-center transition ${
+                className={`p-2 md:p-3 rounded-xl text-center transition ${
                   d.studied
                     ? 'bg-sb-blue text-white'
                     : 'bg-gray-100 dark:bg-sb-dark-border text-gray-400'
                 }`}
               >
-                <p className="text-xs font-medium">{d.day}</p>
-                <p className="text-lg font-bold mt-1">
+                <p className="text-[10px] md:text-xs font-medium">{d.day}</p>
+                <p className="text-xs md:text-lg font-bold mt-1">
                   {d.studied
                     ? `${Math.round((d.minutes / 60) * 10) / 10}h`
                     : '—'}
@@ -351,7 +366,8 @@ export default function Reports() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+      {/* ---- Recent Activity ---- */}
+      <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
         <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
           Recent Activity
         </h3>
@@ -388,8 +404,9 @@ export default function Reports() {
         )}
       </div>
 
+      {/* ---- AI Insight ---- */}
       {aiInsight && (
-        <div className="bg-gradient-to-r from-sb-yellow/40 to-sb-pink/30 p-6 rounded-2xl flex items-start gap-3">
+        <div className="bg-gradient-to-r from-sb-yellow/40 to-sb-pink/30 p-4 md:p-6 rounded-2xl flex items-start gap-3">
           <Sparkles className="text-sb-blue shrink-0 mt-0.5" size={22} />
           <div>
             <p className="font-semibold mb-1 dark:text-sb-dark-text">
@@ -405,10 +422,10 @@ export default function Reports() {
 
 function StatCard({ icon, label, value }) {
   return (
-    <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 flex items-center gap-3 transition-colors">
+    <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-3 md:p-4 flex items-center gap-2 md:gap-3 transition-colors">
       <div className="shrink-0">{icon}</div>
       <div className="min-w-0">
-        <p className="text-2xl font-bold truncate dark:text-sb-dark-text">
+        <p className="text-xl md:text-2xl font-bold truncate dark:text-sb-dark-text">
           {value}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
