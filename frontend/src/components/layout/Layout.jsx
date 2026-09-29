@@ -1,32 +1,39 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import AIWidget from '../widget/AIWidget';
 import { getToken } from '../../utils/api';
+import { useKeyboardShortcuts } from '../../utils/useKeyboardShortcuts';
 
 export default function Layout() {
   const isAuthed = Boolean(getToken());
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Scroll to top on route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
 
-  // Close sidebar when navigating on mobile
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Lock body scroll when mobile sidebar open
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
   }, [sidebarOpen]);
+
+  // Ctrl+K → open AI widget
+  useKeyboardShortcuts({
+    'ctrl+k': () => {
+      const btn = document.querySelector('[title="AI Study Buddy"]');
+      btn?.click();
+    },
+  });
 
   if (!isAuthed) {
     return <Navigate to="/" replace />;
@@ -38,7 +45,9 @@ export default function Layout() {
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
       <main className="ml-0 md:ml-64 p-4 md:p-8 pt-20 md:pt-24">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <Outlet key={location.pathname} />
+        </AnimatePresence>
       </main>
 
       <AIWidget />

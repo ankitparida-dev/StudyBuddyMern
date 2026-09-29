@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import PomodoroTimer from '../components/dashboard/PomodoroTimer';
 import LogSessionModal from '../components/dashboard/LogSessionModal';
+import PageTransition from '../components/shared/PageTransition';
 import { learningApi, dashboardApi } from '../utils/api';
 import { usePageTitle } from '../utils/usePageTitle';
 
@@ -37,9 +38,6 @@ export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSubject, setModalSubject] = useState('Physics');
 
-  // ============================================
-  // Fetch all dashboard data
-  // ============================================
   const fetchAll = async () => {
     setLoading(true);
     try {
@@ -63,7 +61,6 @@ export default function Dashboard() {
     fetchAll();
   }, []);
 
-  // Toggle task (optimistic)
   const toggle = async (task) => {
     const nextCompleted = !task.completed;
     const next = {
@@ -87,7 +84,6 @@ export default function Dashboard() {
     }
   };
 
-  // Add task
   const addTask = async (e) => {
     e.preventDefault();
     const title = newTask.trim();
@@ -116,7 +112,6 @@ export default function Dashboard() {
     }
   };
 
-  // Delete task (optimistic)
   const deleteTask = async (id) => {
     const backup = tasks;
     setTasks((curr) => curr.filter((t) => t._id !== id));
@@ -129,7 +124,6 @@ export default function Dashboard() {
     }
   };
 
-  // Session logging
   const openLogModal = (subject) => {
     setModalSubject(subject);
     setModalOpen(true);
@@ -155,182 +149,182 @@ export default function Dashboard() {
   const todayHours = (todayMinutes / 60).toFixed(1);
 
   return (
-    <div className="space-y-6">
-      {/* Top row: Streak + Hours + Timer */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 flex items-center gap-4 transition-colors">
-          <Flame className="text-orange-500" size={40} />
-          <div>
-            <p className="text-3xl font-bold dark:text-sb-dark-text">
-              {streak.count} Day{streak.count !== 1 ? 's' : ''}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Current Streak
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 flex items-center gap-4 transition-colors">
-          <Clock className="text-sb-blue" size={40} />
-          <div>
-            <p className="text-3xl font-bold dark:text-sb-dark-text">
-              {todayHours}h
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Studied Today
-            </p>
-          </div>
-        </div>
-
-        <div className="md:col-span-2">
-          <PomodoroTimer />
-        </div>
-      </div>
-
-      {/* Second row: Tasks + Quick Log */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold dark:text-sb-dark-text">
-              Today's Targets
-            </h3>
-            {allDone && (
-              <span className="text-sm text-green-600 flex items-center gap-1">
-                <Trophy size={16} /> All done!
-              </span>
-            )}
-          </div>
-
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-6 bg-gray-100 dark:bg-sb-dark-border rounded animate-pulse"
-                />
-              ))}
+    <PageTransition>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 flex items-center gap-4 transition-colors">
+            <Flame className="text-orange-500" size={40} />
+            <div>
+              <p className="text-3xl font-bold dark:text-sb-dark-text">
+                {streak.count} Day{streak.count !== 1 ? 's' : ''}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Current Streak
+              </p>
             </div>
-          ) : tasks.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
-              <p>No tasks yet.</p>
-              <p className="text-sm mt-1">Add your first one below!</p>
+          </div>
+
+          <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 flex items-center gap-4 transition-colors">
+            <Clock className="text-sb-blue" size={40} />
+            <div>
+              <p className="text-3xl font-bold dark:text-sb-dark-text">
+                {todayHours}h
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Studied Today
+              </p>
             </div>
-          ) : (
-            <ul className="space-y-3 mb-4">
-              {tasks.map((t) => (
-                <li key={t._id} className="flex items-center gap-3 group">
-                  <button
-                    onClick={() => toggle(t)}
-                    className="flex items-center gap-3 flex-1 text-left min-w-0"
-                  >
-                    <CheckCircle2
-                      className={`shrink-0 ${
-                        t.completed ? 'text-green-500' : 'text-gray-300'
-                      }`}
-                      size={20}
-                    />
-                    <span
-                      className={`flex-1 truncate ${
-                        t.completed
-                          ? 'line-through text-gray-400'
-                          : 'dark:text-sb-dark-text'
-                      }`}
-                    >
-                      {t.title}
-                    </span>
-                  </button>
+          </div>
 
-                  {t.subject && t.subject !== 'general' && (
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                        SUBJECT_COLORS[t.subject] || SUBJECT_COLORS.general
-                      }`}
-                    >
-                      {t.subject}
-                    </span>
-                  )}
+          <div className="md:col-span-2">
+            <PomodoroTimer />
+          </div>
+        </div>
 
-                  <button
-                    onClick={() => deleteTask(t._id)}
-                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition shrink-0"
-                    title="Delete task"
-                  >
-                    <X size={16} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <form onSubmit={addTask} className="flex gap-2 mt-4 flex-wrap">
-            <input
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              placeholder="Add a new task..."
-              className="flex-1 min-w-[140px] p-3 border rounded-xl outline-none focus:border-sb-blue text-sm dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
-              disabled={addingTask}
-              maxLength={200}
-            />
-            <select
-              value={newTaskSubject}
-              onChange={(e) => setNewTaskSubject(e.target.value)}
-              disabled={addingTask}
-              className="p-3 border rounded-xl outline-none focus:border-sb-blue text-sm bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
-            >
-              <option value="general">General</option>
-              <option value="physics">Physics</option>
-              <option value="chemistry">Chemistry</option>
-              <option value="math">Math</option>
-              <option value="biology">Biology</option>
-            </select>
-            <button
-              type="submit"
-              disabled={addingTask}
-              className="bg-sb-blue text-white px-4 rounded-xl hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center"
-            >
-              {addingTask ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Plus size={18} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold dark:text-sb-dark-text">
+                Today's Targets
+              </h3>
+              {allDone && (
+                <span className="text-sm text-green-600 flex items-center gap-1">
+                  <Trophy size={16} /> All done!
+                </span>
               )}
-            </button>
-          </form>
-        </div>
+            </div>
 
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
-          <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
-            Quick Log Session
-          </h3>
-          <div className="grid grid-cols-3 gap-3">
-            {['Physics', 'Chemistry', 'Mathematics'].map((s) => (
-              <button
-                key={s}
-                onClick={() => openLogModal(s)}
-                className="bg-sb-yellow p-4 rounded-xl font-semibold hover:scale-105 transition text-sb-teal"
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-6 bg-gray-100 dark:bg-sb-dark-border rounded animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : tasks.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <p>No tasks yet.</p>
+                <p className="text-sm mt-1">Add your first one below!</p>
+              </div>
+            ) : (
+              <ul className="space-y-3 mb-4">
+                {tasks.map((t) => (
+                  <li key={t._id} className="flex items-center gap-3 group">
+                    <button
+                      onClick={() => toggle(t)}
+                      className="flex items-center gap-3 flex-1 text-left min-w-0"
+                    >
+                      <CheckCircle2
+                        className={`shrink-0 ${
+                          t.completed ? 'text-green-500' : 'text-gray-300'
+                        }`}
+                        size={20}
+                      />
+                      <span
+                        className={`flex-1 truncate ${
+                          t.completed
+                            ? 'line-through text-gray-400'
+                            : 'dark:text-sb-dark-text'
+                        }`}
+                      >
+                        {t.title}
+                      </span>
+                    </button>
+
+                    {t.subject && t.subject !== 'general' && (
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
+                          SUBJECT_COLORS[t.subject] || SUBJECT_COLORS.general
+                        }`}
+                      >
+                        {t.subject}
+                      </span>
+                    )}
+
+                    <button
+                      onClick={() => deleteTask(t._id)}
+                      className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition shrink-0"
+                      title="Delete task"
+                    >
+                      <X size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <form onSubmit={addTask} className="flex gap-2 mt-4 flex-wrap">
+              <input
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                placeholder="Add a new task..."
+                className="flex-1 min-w-[140px] p-3 border rounded-xl outline-none focus:border-sb-blue text-sm dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
+                disabled={addingTask}
+                maxLength={200}
+              />
+              <select
+                value={newTaskSubject}
+                onChange={(e) => setNewTaskSubject(e.target.value)}
+                disabled={addingTask}
+                className="p-3 border rounded-xl outline-none focus:border-sb-blue text-sm bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               >
-                + {s}
+                <option value="general">General</option>
+                <option value="physics">Physics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="math">Math</option>
+                <option value="biology">Biology</option>
+              </select>
+              <button
+                type="submit"
+                disabled={addingTask}
+                className="bg-sb-blue text-white px-4 rounded-xl hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center"
+              >
+                {addingTask ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Plus size={18} />
+                )}
               </button>
-            ))}
+            </form>
           </div>
 
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-            Or click below to log any session
-          </p>
-          <button
-            onClick={() => openLogModal('Physics')}
-            className="w-full mt-2 py-3 rounded-xl border border-sb-blue text-sb-blue font-semibold hover:bg-sb-blue/10 transition"
-          >
-            Custom Session
-          </button>
-        </div>
-      </div>
+          <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
+            <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+              Quick Log Session
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {['Physics', 'Chemistry', 'Mathematics'].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => openLogModal(s)}
+                  className="bg-sb-yellow p-4 rounded-xl font-semibold hover:scale-105 transition text-sb-teal"
+                >
+                  + {s}
+                </button>
+              ))}
+            </div>
 
-      <LogSessionModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSaveSession}
-        defaultSubject={modalSubject}
-      />
-    </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+              Or click below to log any session
+            </p>
+            <button
+              onClick={() => openLogModal('Physics')}
+              className="w-full mt-2 py-3 rounded-xl border border-sb-blue text-sb-blue font-semibold hover:bg-sb-blue/10 transition"
+            >
+              Custom Session
+            </button>
+          </div>
+        </div>
+
+        <LogSessionModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSave={handleSaveSession}
+          defaultSubject={modalSubject}
+        />
+      </div>
+    </PageTransition>
   );
 }
