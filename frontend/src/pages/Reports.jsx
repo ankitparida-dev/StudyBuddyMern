@@ -7,6 +7,7 @@ import {
   BookOpen, Clock, Trophy, Sparkles, Activity, TrendingUp,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageTransition from '../components/shared/PageTransition';
 import { learningApi, dashboardApi } from '../utils/api';
 import { usePageTitle } from '../utils/usePageTitle';
 
@@ -28,7 +29,6 @@ const formatDuration = (mins) => {
   return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
 };
 
-// Shared tooltip styling
 const tooltipStyle = {
   borderRadius: 12,
   border: 'none',
@@ -153,270 +153,274 @@ export default function Reports() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-20 md:h-24 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse"
-            />
-          ))}
+      <PageTransition>
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-20 md:h-24 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse"
+              />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div className="h-64 md:h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
+            <div className="h-64 md:h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
+          </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <div className="h-64 md:h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
-          <div className="h-64 md:h-80 bg-white dark:bg-sb-dark-card rounded-2xl shadow animate-pulse" />
-        </div>
-      </div>
+      </PageTransition>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* ---- Stat cards ---- */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <StatCard
-          icon={<Clock className="text-sb-blue" size={22} />}
-          label="Total Hours"
-          value={`${stats?.total?.hours ?? 0}h`}
-        />
-        <StatCard
-          icon={<BookOpen className="text-purple-500" size={22} />}
-          label="Sessions"
-          value={stats?.total?.sessions ?? 0}
-        />
-        <StatCard
-          icon={<Trophy className="text-green-500" size={22} />}
-          label="Completed"
-          value={`${syllabusStats.completed}/${syllabusStats.total}`}
-        />
-        <StatCard
-          icon={<TrendingUp className="text-orange-500" size={22} />}
-          label="Streak"
-          value={`${streaks?.currentStreak ?? 0} d`}
-        />
-      </div>
+    <PageTransition>
+      <div className="space-y-6">
+        {/* ---- Stat cards ---- */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <StatCard
+            icon={<Clock className="text-sb-blue" size={22} />}
+            label="Total Hours"
+            value={`${stats?.total?.hours ?? 0}h`}
+          />
+          <StatCard
+            icon={<BookOpen className="text-purple-500" size={22} />}
+            label="Sessions"
+            value={stats?.total?.sessions ?? 0}
+          />
+          <StatCard
+            icon={<Trophy className="text-green-500" size={22} />}
+            label="Completed"
+            value={`${syllabusStats.completed}/${syllabusStats.total}`}
+          />
+          <StatCard
+            icon={<TrendingUp className="text-orange-500" size={22} />}
+            label="Streak"
+            value={`${streaks?.currentStreak ?? 0} d`}
+          />
+        </div>
 
-      {/* ---- Pie + Bar ---- */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
-          <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
-            Syllabus Completion
-          </h3>
-          {syllabusStats.total === 0 ? (
-            <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
-              No syllabus topics yet
-            </div>
-          ) : (
-            <>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={syllabusStats.data.filter((d) => d.value > 0)}
-                    innerRadius={55}
-                    outerRadius={90}
-                    dataKey="value"
-                    paddingAngle={4}
-                  >
-                    {syllabusStats.data.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i]} />
-                    ))}
-                  </Pie>
+        {/* ---- Pie + Bar ---- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
+            <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+              Syllabus Completion
+            </h3>
+            {syllabusStats.total === 0 ? (
+              <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
+                No syllabus topics yet
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={syllabusStats.data.filter((d) => d.value > 0)}
+                      innerRadius={55}
+                      outerRadius={90}
+                      dataKey="value"
+                      paddingAngle={4}
+                    >
+                      {syllabusStats.data.map((_, i) => (
+                        <Cell key={i} fill={PIE_COLORS[i]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      wrapperStyle={{ outline: 'none' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+
+                <div className="flex flex-wrap justify-center gap-3 mt-2 text-xs">
+                  {syllabusStats.data.map((d, i) => (
+                    <span
+                      key={d.name}
+                      className="flex items-center gap-1 dark:text-sb-dark-text"
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full inline-block"
+                        style={{ background: PIE_COLORS[i] }}
+                      />
+                      {d.name} ({d.value})
+                    </span>
+                  ))}
+                </div>
+
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
+                  {syllabusStats.completedPct}% of syllabus completed
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
+            <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
+              Time per Subject
+            </h3>
+            {subjects.length === 0 ? (
+              <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
+                No study sessions yet
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={subjects.map((s) => ({
+                    name: capitalize(s.name),
+                    hours: Math.round((s.minutes / 60) * 10) / 10,
+                  }))}
+                  layout="vertical"
+                  margin={{ left: 0, right: 8, top: 8, bottom: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 11 }}
+                    width={70}
+                  />
                   <Tooltip
+                    formatter={(v) => [`${v}h`, 'Hours']}
                     contentStyle={tooltipStyle}
                     wrapperStyle={{ outline: 'none' }}
                   />
-                </PieChart>
+                  <Bar dataKey="hours" radius={[0, 8, 8, 0]}>
+                    {subjects.map((s, i) => (
+                      <Cell
+                        key={i}
+                        fill={SUBJECT_COLORS[s.name] || '#94A3B8'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
-
-              <div className="flex flex-wrap justify-center gap-3 mt-2 text-xs">
-                {syllabusStats.data.map((d, i) => (
-                  <span
-                    key={d.name}
-                    className="flex items-center gap-1 dark:text-sb-dark-text"
-                  >
-                    <span
-                      className="w-3 h-3 rounded-full inline-block"
-                      style={{ background: PIE_COLORS[i] }}
-                    />
-                    {d.name} ({d.value})
-                  </span>
-                ))}
-              </div>
-
-              <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
-                {syllabusStats.completedPct}% of syllabus completed
-              </p>
-            </>
-          )}
+            )}
+          </div>
         </div>
 
+        {/* ---- Subject Cards ---- */}
+        {subjectCards.length > 0 && (
+          <div>
+            <h3 className="font-semibold mb-3 dark:text-sb-dark-text">
+              Subject-Wise Progress
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+              {subjectCards.map((s) => (
+                <div
+                  key={s.name}
+                  className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-5 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-bold capitalize dark:text-sb-dark-text">
+                      {s.name}
+                    </h4>
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        background: SUBJECT_COLORS[s.name] || '#94A3B8',
+                      }}
+                    />
+                  </div>
+
+                  <div className="w-full bg-gray-100 dark:bg-sb-dark-border rounded-full h-2 mb-2">
+                    <div
+                      className="h-2 rounded-full transition-all"
+                      style={{
+                        width: `${s.pct}%`,
+                        background: SUBJECT_COLORS[s.name] || '#94A3B8',
+                      }}
+                    />
+                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {s.completed}/{s.total} topics · {formatDuration(s.minutes)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ---- Weekly Grid ---- */}
+        {streaks?.weekly && (
+          <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
+            <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
+              <Activity size={18} /> This Week
+            </h3>
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
+              {streaks.weekly.map((d) => (
+                <div
+                  key={d.date}
+                  className={`p-2 md:p-3 rounded-xl text-center transition ${
+                    d.studied
+                      ? 'bg-sb-blue text-white'
+                      : 'bg-gray-100 dark:bg-sb-dark-border text-gray-400'
+                  }`}
+                >
+                  <p className="text-[10px] md:text-xs font-medium">{d.day}</p>
+                  <p className="text-xs md:text-lg font-bold mt-1">
+                    {d.studied
+                      ? `${Math.round((d.minutes / 60) * 10) / 10}h`
+                      : '—'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ---- Recent Activity ---- */}
         <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
           <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
-            Time per Subject
+            Recent Activity
           </h3>
-          {subjects.length === 0 ? (
-            <div className="h-56 md:h-64 flex items-center justify-center text-gray-400">
-              No study sessions yet
-            </div>
+          {recent.length === 0 ? (
+            <p className="text-center py-6 text-gray-400">
+              No activity yet. Start logging sessions!
+            </p>
           ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={subjects.map((s) => ({
-                  name: capitalize(s.name),
-                  hours: Math.round((s.minutes / 60) * 10) / 10,
-                }))}
-                layout="vertical"
-                margin={{ left: 0, right: 8, top: 8, bottom: 8 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  width={70}
-                />
-                <Tooltip
-                  formatter={(v) => [`${v}h`, 'Hours']}
-                  contentStyle={tooltipStyle}
-                  wrapperStyle={{ outline: 'none' }}
-                />
-                <Bar dataKey="hours" radius={[0, 8, 8, 0]}>
-                  {subjects.map((s, i) => (
-                    <Cell
-                      key={i}
-                      fill={SUBJECT_COLORS[s.name] || '#94A3B8'}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <ul className="divide-y dark:divide-sb-dark-border">
+              {recent.slice(0, 10).map((s) => (
+                <li
+                  key={s._id}
+                  className="py-3 flex items-center justify-between"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate dark:text-sb-dark-text">
+                      {capitalize(s.subject)}
+                      {s.topic ? ` — ${s.topic}` : ''}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(s.date).toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}{' '}
+                      · {s.sessionType}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold text-sb-blue shrink-0 ml-3">
+                    {formatDuration(s.duration)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
-      </div>
 
-      {/* ---- Subject Cards ---- */}
-      {subjectCards.length > 0 && (
-        <div>
-          <h3 className="font-semibold mb-3 dark:text-sb-dark-text">
-            Subject-Wise Progress
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            {subjectCards.map((s) => (
-              <div
-                key={s.name}
-                className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-5 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-bold capitalize dark:text-sb-dark-text">
-                    {s.name}
-                  </h4>
-                  <span
-                    className="w-2 h-2 rounded-full"
-                    style={{
-                      background: SUBJECT_COLORS[s.name] || '#94A3B8',
-                    }}
-                  />
-                </div>
-
-                <div className="w-full bg-gray-100 dark:bg-sb-dark-border rounded-full h-2 mb-2">
-                  <div
-                    className="h-2 rounded-full transition-all"
-                    style={{
-                      width: `${s.pct}%`,
-                      background: SUBJECT_COLORS[s.name] || '#94A3B8',
-                    }}
-                  />
-                </div>
-
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {s.completed}/{s.total} topics · {formatDuration(s.minutes)}
-                </p>
-              </div>
-            ))}
+        {/* ---- AI Insight ---- */}
+        {aiInsight && (
+          <div className="bg-gradient-to-r from-sb-yellow/40 to-sb-pink/30 p-4 md:p-6 rounded-2xl flex items-start gap-3">
+            <Sparkles className="text-sb-blue shrink-0 mt-0.5" size={22} />
+            <div>
+              <p className="font-semibold mb-1 dark:text-sb-dark-text">
+                AI Insight
+              </p>
+              <p className="text-sm dark:text-sb-dark-text">{aiInsight}</p>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* ---- Weekly Grid ---- */}
-      {streaks?.weekly && (
-        <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
-          <h3 className="font-semibold mb-4 flex items-center gap-2 dark:text-sb-dark-text">
-            <Activity size={18} /> This Week
-          </h3>
-          <div className="grid grid-cols-7 gap-1 md:gap-2">
-            {streaks.weekly.map((d) => (
-              <div
-                key={d.date}
-                className={`p-2 md:p-3 rounded-xl text-center transition ${
-                  d.studied
-                    ? 'bg-sb-blue text-white'
-                    : 'bg-gray-100 dark:bg-sb-dark-border text-gray-400'
-                }`}
-              >
-                <p className="text-[10px] md:text-xs font-medium">{d.day}</p>
-                <p className="text-xs md:text-lg font-bold mt-1">
-                  {d.studied
-                    ? `${Math.round((d.minutes / 60) * 10) / 10}h`
-                    : '—'}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ---- Recent Activity ---- */}
-      <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
-        <h3 className="font-semibold mb-4 dark:text-sb-dark-text">
-          Recent Activity
-        </h3>
-        {recent.length === 0 ? (
-          <p className="text-center py-6 text-gray-400">
-            No activity yet. Start logging sessions!
-          </p>
-        ) : (
-          <ul className="divide-y dark:divide-sb-dark-border">
-            {recent.slice(0, 10).map((s) => (
-              <li
-                key={s._id}
-                className="py-3 flex items-center justify-between"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate dark:text-sb-dark-text">
-                    {capitalize(s.subject)}
-                    {s.topic ? ` — ${s.topic}` : ''}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(s.date).toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}{' '}
-                    · {s.sessionType}
-                  </p>
-                </div>
-                <span className="text-sm font-semibold text-sb-blue shrink-0 ml-3">
-                  {formatDuration(s.duration)}
-                </span>
-              </li>
-            ))}
-          </ul>
         )}
       </div>
-
-      {/* ---- AI Insight ---- */}
-      {aiInsight && (
-        <div className="bg-gradient-to-r from-sb-yellow/40 to-sb-pink/30 p-4 md:p-6 rounded-2xl flex items-start gap-3">
-          <Sparkles className="text-sb-blue shrink-0 mt-0.5" size={22} />
-          <div>
-            <p className="font-semibold mb-1 dark:text-sb-dark-text">
-              AI Insight
-            </p>
-            <p className="text-sm dark:text-sb-dark-text">{aiInsight}</p>
-          </div>
-        </div>
-      )}
-    </div>
+    </PageTransition>
   );
 }
 

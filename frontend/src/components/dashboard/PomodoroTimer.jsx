@@ -2,31 +2,36 @@ import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee, Zap } from 'lucide-react';
 import { AMBIENT_SOUNDS, ALARM_URL } from '../../utils/sounds';
 import { storage } from '../../utils/storage';
-import { learningApi } from '../../utils/api';
+import { useKeyboardShortcuts } from '../../utils/useKeyboardShortcuts';
 
 const FOCUS_TIME = 25 * 60;
 const BREAK_TIME = 5 * 60;
 
 export default function PomodoroTimer() {
-  const [mode, setMode] = useState('focus'); // 'focus' | 'break'
+  const [mode, setMode] = useState('focus');
   const [seconds, setSeconds] = useState(FOCUS_TIME);
   const [running, setRunning] = useState(false);
   const [sound, setSound] = useState(null);
-  const [sessions, setSessions] = useState(
-    () => storage.get('sb_sessions', 0)
+  const [sessions, setSessions] = useState(() =>
+    storage.get('sb_sessions', 0)
   );
 
   const audioRef = useRef(null);
   const alarmRef = useRef(null);
 
-  // ask notification permission once
+  // Space bar toggles timer
+  useKeyboardShortcuts({
+    space: () => setRunning((r) => !r),
+  });
+
+  // Ask notification permission once
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, []);
 
-  // countdown
+  // Countdown
   useEffect(() => {
     if (!running) return;
     const interval = setInterval(() => {
@@ -43,7 +48,7 @@ export default function PomodoroTimer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
 
-  // ambient sound
+  // Ambient sound
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -62,11 +67,9 @@ export default function PomodoroTimer() {
   const handleComplete = () => {
     setRunning(false);
 
-    // play alarm
     alarmRef.current = new Audio(ALARM_URL);
     alarmRef.current.play().catch(() => {});
 
-    // browser notification
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(
         mode === 'focus' ? '✅ Focus session done!' : '☕ Break over!',
@@ -81,20 +84,9 @@ export default function PomodoroTimer() {
     }
 
     if (mode === 'focus') {
-      learningApi.logSession({
-        subject: 'general',
-        topic: 'Pomodoro focus session',
-        duration: 25,
-        sessionType: 'focus',
-      }).then(() => {
-        setSessions((current) => {
-          const newCount = current + 1;
-          storage.set('sb_sessions', newCount);
-          return newCount;
-        });
-      }).catch((error) => {
-        console.error('Could not log focus session:', error);
-      });
+      const newCount = sessions + 1;
+      setSessions(newCount);
+      storage.set('sb_sessions', newCount);
       setMode('break');
       setSeconds(BREAK_TIME);
     } else {
@@ -116,12 +108,13 @@ export default function PomodoroTimer() {
 
   const min = String(Math.floor(seconds / 60)).padStart(2, '0');
   const sec = String(seconds % 60).padStart(2, '0');
-  const progress = mode === 'focus'
-    ? ((FOCUS_TIME - seconds) / FOCUS_TIME) * 100
-    : ((BREAK_TIME - seconds) / BREAK_TIME) * 100;
+  const progress =
+    mode === 'focus'
+      ? ((FOCUS_TIME - seconds) / FOCUS_TIME) * 100
+      : ((BREAK_TIME - seconds) / BREAK_TIME) * 100;
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6">
+    <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
       {/* Mode tabs */}
       <div className="flex gap-2 mb-4">
         <button
@@ -129,7 +122,7 @@ export default function PomodoroTimer() {
           className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-2 font-medium transition ${
             mode === 'focus'
               ? 'bg-sb-blue text-white'
-              : 'bg-sb-bg text-gray-600'
+              : 'bg-sb-bg dark:bg-sb-dark-bg text-gray-600 dark:text-sb-dark-text'
           }`}
         >
           <Zap size={16} /> Focus
@@ -139,14 +132,14 @@ export default function PomodoroTimer() {
           className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-2 font-medium transition ${
             mode === 'break'
               ? 'bg-sb-yellow text-sb-teal'
-              : 'bg-sb-bg text-gray-600'
+              : 'bg-sb-bg dark:bg-sb-dark-bg text-gray-600 dark:text-sb-dark-text'
           }`}
         >
           <Coffee size={16} /> Break
         </button>
       </div>
 
-      {/* Circular progress + time */}
+      {/* Circular progress */}
       <div className="flex justify-center my-4">
         <div className="relative w-48 h-48">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -155,7 +148,8 @@ export default function PomodoroTimer() {
               cy="50"
               r="45"
               fill="none"
-              stroke="#E8F4F8"
+              stroke="currentColor"
+              className="text-sb-bg dark:text-sb-dark-border"
               strokeWidth="8"
             />
             <circle
@@ -172,10 +166,8 @@ export default function PomodoroTimer() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-5xl font-bold text-sb-blue">
-              {min}:{sec}
-            </div>
-            <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
+            <div className="text-5xl font-bold text-sb-blue">{min}:{sec}</div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wide">
               {mode === 'focus' ? 'Focus' : 'Break'}
             </p>
           </div>
@@ -183,9 +175,9 @@ export default function PomodoroTimer() {
       </div>
 
       {/* Session counter */}
-      <p className="text-center text-sm text-gray-500 mb-3">
-        🎯 <strong>{sessions}</strong> focus session{sessions !== 1 ? 's' : ''}{' '}
-        completed today
+      <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+        🎯 <strong>{sessions}</strong> focus session
+        {sessions !== 1 ? 's' : ''} completed today
       </p>
 
       {/* Controls */}
@@ -193,6 +185,7 @@ export default function PomodoroTimer() {
         <button
           onClick={() => setRunning(!running)}
           className="bg-sb-blue text-white p-3 rounded-full hover:opacity-90 transition"
+          title="Space bar to toggle"
         >
           {running ? <Pause /> : <Play />}
         </button>
@@ -211,13 +204,19 @@ export default function PomodoroTimer() {
             key={s}
             onClick={() => setSound(sound === s ? null : s)}
             className={`px-3 py-1 rounded-full text-sm transition ${
-              sound === s ? 'bg-sb-yellow' : 'bg-sb-bg'
+              sound === s
+                ? 'bg-sb-yellow text-sb-teal'
+                : 'bg-sb-bg dark:bg-sb-dark-bg dark:text-sb-dark-text'
             }`}
           >
             {s} {sound === s && '🔊'}
           </button>
         ))}
       </div>
+
+      <p className="text-center text-xs text-gray-400 mt-3">
+        Tip: press <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-sb-dark-bg rounded text-[10px]">Space</kbd> to start/pause
+      </p>
     </div>
   );
 }
