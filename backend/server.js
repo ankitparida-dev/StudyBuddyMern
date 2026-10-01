@@ -8,37 +8,46 @@ dotenv.config();
 const app = express();
 
 // ============================================
-// CORS Configuration
+// CORS Configuration — allows localhost + any Vercel domain
 // ============================================
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:5173',
-      'http://localhost:5000',
-      'https://studybuddy-frontend.onrender.com',
-      'https://studybuddy-frontend.vercel.app'
-    ];
-    
-    if (process.env.NODE_ENV === 'development') {
+
+    // Allow localhost on any port (dev)
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
       return callback(null, true);
     }
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log('❌ CORS blocked for origin:', origin);
-      callback(new Error('Not allowed by CORS'));
+
+    // Allow any *.vercel.app subdomain (production + previews)
+    if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
+      return callback(null, true);
     }
+
+    // Allow explicit whitelist (add extra domains here if needed)
+    const allowedOrigins = [
+      'https://studybuddy-frontend.onrender.com',
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.log('❌ CORS blocked for origin:', origin);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+  ],
   exposedHeaders: ['Content-Length', 'X-Kuma-Revision'],
-  maxAge: 86400
+  maxAge: 86400,
 };
 
 // Apply CORS middleware
@@ -49,37 +58,27 @@ app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logger for firebase-session (useful for debugging)
 app.use('/api/auth/firebase-session', (req, res, next) => {
   const startedAt = Date.now();
   console.info(`[request] ${req.method} /api/auth/firebase-session started`);
   res.on('finish', () => {
-    console.info(`[request] ${req.method} /api/auth/firebase-session finished status=${res.statusCode} durationMs=${Date.now() - startedAt}`);
+    console.info(
+      `[request] ${req.method} /api/auth/firebase-session finished status=${res.statusCode} durationMs=${Date.now() - startedAt}`
+    );
   });
   next();
 });
 
 // ============================================
-// ✅ FIXED: Routes - No wildcard issues
+// Routes
 // ============================================
-// Auth routes
 app.use('/api/auth', require('./routes/authRoutes'));
-
-// User routes
 app.use('/api/users', require('./routes/userRoutes'));
-
-// Dashboard routes
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
-
-// Study routes
 app.use('/api/study', require('./routes/studyRoutes'));
-
-// Chat routes
 app.use('/api/chat', require('./routes/chatRoutes'));
-
-// On-demand, user-scoped AI progress and report insights
 app.use('/api/ai', require('./routes/aiRoutes'));
-
-// Learning resources: tasks, study sessions, syllabus, and test analytics
 app.use('/api/learning', require('./routes/learningRoutes'));
 
 // ============================================
@@ -96,8 +95,8 @@ app.get('/', (req, res) => {
       dashboard: '/api/dashboard',
       study: '/api/study',
       chat: '/api/chat',
-      learning: '/api/learning'
-    }
+      learning: '/api/learning',
+    },
   });
 });
 
@@ -109,48 +108,47 @@ app.get('/health', (req, res) => {
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    memory: process.memoryUsage()
+    memory: process.memoryUsage(),
   });
 });
 
 // ============================================
-// ✅ FIXED: 404 handler - No wildcard issues
+// 404 handler
 // ============================================
 app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: 'Route not found',
     path: req.originalUrl,
-    method: req.method
+    method: req.method,
   });
 });
 
 // ============================================
-// ✅ FIXED: Error handler
+// Error handler
 // ============================================
 app.use((err, req, res, next) => {
   console.error('❌ Server Error:', err.stack);
-  
-  // Handle specific errors
+
   if (err.name === 'CastError') {
     return res.status(400).json({
       success: false,
-      error: 'Invalid ID format'
+      error: 'Invalid ID format',
     });
   }
-  
+
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
       error: err.message,
-      details: err.errors
+      details: err.errors,
     });
   }
-  
+
   res.status(err.status || 500).json({
     success: false,
     error: err.message || 'Something went wrong!',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });
 
@@ -187,12 +185,16 @@ const startServer = async () => {
   });
 
   server.on('error', (error) => {
-    console.error(`[startup] HTTP server failed (${error.code || error.name}): ${error.message}`);
+    console.error(
+      `[startup] HTTP server failed (${error.code || error.name}): ${error.message}`
+    );
     process.exitCode = 1;
   });
 };
 
 startServer().catch((error) => {
-  console.error(`[startup] failed (${error.code || error.name}): ${error.message}`);
+  console.error(
+    `[startup] failed (${error.code || error.name}): ${error.message}`
+  );
   process.exitCode = 1;
 });
