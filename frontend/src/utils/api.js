@@ -1,27 +1,51 @@
 import { config } from '../config';
+import { firebaseAuth, firebaseAuthReady } from '../config/firebase';
+import { signOut } from 'firebase/auth';
 import { storage } from './storage';
 
 export const getToken = () => storage.get('sb_token', null);
 
 export async function apiFetch(path, options = {}) {
+  const { authToken, ...fetchOptions } = options;
   const headers = new Headers(options.headers || {});
   headers.set('Content-Type', 'application/json');
 
-  const token = getToken();
+  let token = authToken;
+  if (!token && firebaseAuth) {
+    await firebaseAuthReady;
+    const currentUser = firebaseAuth.currentUser;
+    if (currentUser) token = await currentUser.getIdToken();
+  }
+  token ||= getToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
-  const response = await fetch(`${config.API_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  let response;
+  try {
+    response = await fetch(`${config.API_URL}${path}`, {
+      ...fetchOptions,
+      headers,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('The backend did not respond in time. Check that it is running on port 5000, then try again.');
+    }
+    throw new Error(`Cannot reach the backend at ${config.API_URL}. Start the backend and try again.`);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const payload = await response.json().catch(() => ({}));
 
-  if (response.status === 401) {
+  const isAuthBootstrap = ['/auth/firebase-session', '/auth/login', '/auth/register'].includes(path);
+  if (response.status === 401 && !isAuthBootstrap) {
     // Token expired / invalid → clear and bounce to login
     storage.remove('sb_token');
     storage.remove('sb_user');
     storage.remove('sb_authed');
+    if (firebaseAuth?.currentUser) await signOut(firebaseAuth).catch(() => {});
     if (window.location.pathname !== '/') {
       window.location.href = '/';
     }
@@ -57,6 +81,12 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  firebaseSession: (idToken, profile = {}) =>
+    apiFetch('/auth/firebase-session', {
+      method: 'POST',
+      authToken: idToken,
+      body: JSON.stringify(profile),
+    }),
   profile: () => apiFetch('/auth/profile'),
 };
 
@@ -89,6 +119,11 @@ export const learningApi = {
     const q = new URLSearchParams(filters).toString();
     return apiFetch(`/learning/topics${q ? `?${q}` : ''}`);
   },
+  seedTopics: (topics) =>
+    apiFetch('/learning/topics/seed', {
+      method: 'POST',
+      body: JSON.stringify({ topics }),
+    }),
   createTopic: (data) =>
     apiFetch('/learning/topics', { method: 'POST', body: JSON.stringify(data) }),
   updateTopic: (id, data) =>
@@ -154,4 +189,11 @@ export const chatApi = {
   deleteSession: (id) => apiFetch(`/chat/session/${id}`, { method: 'DELETE' }),
   clearAll: () => apiFetch('/chat/clear', { method: 'DELETE' }),
   stats: () => apiFetch('/chat/stats'),
+};
+
+export const aiApi = {
+  insight: (type) => apiFetch('/ai/insight', {
+    method: 'POST',
+    body: JSON.stringify({ type }),
+  }),
 };

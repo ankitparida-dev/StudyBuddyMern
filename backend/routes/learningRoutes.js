@@ -3,7 +3,7 @@ const { protect } = require('../middleware/authMiddleware');
 const {
   createTask, listTasks, updateTask, deleteTask,
   logSession, listSessions,
-  createTopic, listTopics, updateTopic, deleteTopic,
+  createTopic, listTopics, seedTopics, updateTopic, deleteTopic,
   recordTest, listTestAnalytics, getTestSummary
 } = require('../controllers/learningController');
 
@@ -16,6 +16,7 @@ router.route('/tasks/:id').patch(updateTask).delete(deleteTask);
 router.route('/sessions').post(logSession).get(listSessions);
 
 router.route('/topics').post(createTopic).get(listTopics);
+router.post('/topics/seed', seedTopics);
 router.route('/topics/:id').patch(updateTopic).delete(deleteTopic);
 
 router.post('/tests', recordTest);

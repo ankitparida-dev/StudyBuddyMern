@@ -1,11 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function LogSessionModal({ isOpen, onClose, onSave, defaultSubject }) {
-  const [subject, setSubject] = useState(defaultSubject || 'Physics');
+export default function LogSessionModal({
+  isOpen,
+  onClose,
+  onSave,
+  defaultSubject,
+  subjects = ['Physics'],
+}) {
+  const [subject, setSubject] = useState(defaultSubject || subjects[0] || 'Physics');
   const [hours, setHours] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    setSubject(defaultSubject || subjects[0] || 'Physics');
+  }, [defaultSubject, subjects]);
 
   if (!isOpen) return null;
 
@@ -44,10 +54,7 @@ export default function LogSessionModal({ isOpen, onClose, onSave, defaultSubjec
               onChange={(e) => setSubject(e.target.value)}
               className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue"
             >
-              <option>Physics</option>
-              <option>Chemistry</option>
-              <option>Mathematics</option>
-              <option>Biology</option>
+              {subjects.map((item) => <option key={item}>{item}</option>)}
             </select>
           </div>
 

@@ -1,13 +1,11 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// ============================================
-// Init Gemini client
-// ============================================
-if (!process.env.GEMINI_API_KEY) {
-  console.error('❌ GEMINI_API_KEY is missing in .env');
-}
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const getGeminiClient = () => {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured on the backend');
+  }
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+};
 
 // Model chain — tries each until one works
 const FALLBACK_MODELS = [
@@ -63,7 +61,7 @@ const getGeminiResponse = async (userMessage, chatHistory = []) => {
 
   for (const modelName of FALLBACK_MODELS) {
     try {
-      const model = genAI.getGenerativeModel({
+      const model = getGeminiClient().getGenerativeModel({
         model: modelName,
         generationConfig: {
           temperature: 0.7,
@@ -109,25 +107,61 @@ const getGeminiResponse = async (userMessage, chatHistory = []) => {
 // Simple one-shot (no history)
 // ============================================
 const getSimpleResponse = async (userMessage) => {
-  if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not set');
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
 
-  for (const modelName of FALLBACK_MODELS) {
+  const models = [...new Set([
+    process.env.GEMINI_INSIGHT_MODEL,
+    'gemini-flash-lite-latest',
+    'gemini-3.5-flash-lite',
+  ].filter(Boolean))];
+  let lastError;
+
+  for (const modelName of models) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
     try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
-        systemInstruction: {
-          role: 'system',
-          parts: [{ text: STUDY_ASSISTANT_PROMPT }],
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
         },
+        body: JSON.stringify({
+          model: modelName,
+          input: `${STUDY_ASSISTANT_PROMPT}\n\n${userMessage}`,
+        }),
+        signal: controller.signal,
       });
-      const result = await model.generateContent(userMessage);
-      return (await result.response).text();
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = data.error?.message || `Gemini returned HTTP ${response.status}`;
+        console.warn(`[Gemini insight] model=${modelName} status=${response.status}: ${message.slice(0, 160)}`);
+        if (response.status === 401 || response.status === 403) throw new Error(message);
+        lastError = new Error(message);
+        continue;
+      }
+
+      const text = (data.steps || [])
+        .filter((step) => step.type === 'model_output')
+        .flatMap((step) => step.content || [])
+        .filter((part) => part.type === 'text' && part.text)
+        .map((part) => part.text)
+        .join('\n')
+        .trim();
+      if (!text) throw new Error('Gemini returned no text response');
+      return text;
     } catch (err) {
-      console.warn(`⚠️ Simple "${modelName}" failed: ${err?.message?.slice(0, 100)}`);
+      lastError = err;
+      if (err.name === 'AbortError') {
+        console.warn(`[Gemini insight] model=${modelName} timed out`);
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
-  throw new Error('Failed to get AI response');
+
+  throw new Error(`Gemini insight failed: ${lastError?.message || 'No configured model responded'}`);
 };
 
 // ============================================
@@ -136,7 +170,7 @@ const getSimpleResponse = async (userMessage) => {
 const generateStudyPlan = async (examType, subjects, duration = 4) => {
   for (const modelName of FALLBACK_MODELS) {
     try {
-      const model = genAI.getGenerativeModel({
+      const model = getGeminiClient().getGenerativeModel({
         model: modelName,
         generationConfig: { temperature: 0.5, maxOutputTokens: 4096 },
         systemInstruction: {
@@ -173,7 +207,7 @@ Make it realistic and actionable.`;
 const explainConcept = async (concept, subject = 'general') => {
   for (const modelName of FALLBACK_MODELS) {
     try {
-      const model = genAI.getGenerativeModel({
+      const model = getGeminiClient().getGenerativeModel({
         model: modelName,
         generationConfig: { temperature: 0.6, maxOutputTokens: 2048 },
         systemInstruction: {
@@ -208,7 +242,7 @@ Keep it clear and student-friendly.`;
 const solveProblem = async (problem, subject = 'general') => {
   for (const modelName of FALLBACK_MODELS) {
     try {
-      const model = genAI.getGenerativeModel({
+      const model = getGeminiClient().getGenerativeModel({
         model: modelName,
         generationConfig: { temperature: 0.3, maxOutputTokens: 4096 },
         systemInstruction: {

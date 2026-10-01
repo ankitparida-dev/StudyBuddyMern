@@ -6,13 +6,18 @@ import {
   X,
   Trophy,
   Loader2,
+  BookOpen,
+  ArrowRight,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import PomodoroTimer from '../components/dashboard/PomodoroTimer';
 import LogSessionModal from '../components/dashboard/LogSessionModal';
 import PageTransition from '../components/shared/PageTransition';
 import { learningApi, dashboardApi } from '../utils/api';
+import { getExamSubjects } from '../data/mockData';
+import { storage } from '../utils/storage';
 import { usePageTitle } from '../utils/usePageTitle';
 
 const SUBJECT_COLORS = {
@@ -25,11 +30,18 @@ const SUBJECT_COLORS = {
 
 export default function Dashboard() {
   usePageTitle('Dashboard');
+  const account = storage.get('sb_user', {});
+  const examSubjects = getExamSubjects(account.examType);
+  const sessionSubjects = examSubjects.map((subject) => ({
+    value: subject,
+    label: subject === 'math' ? 'Mathematics' : subject[0].toUpperCase() + subject.slice(1),
+  }));
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState({ count: 0 });
   const [todayMinutes, setTodayMinutes] = useState(0);
+  const [syllabusStats, setSyllabusStats] = useState({ total: 0, completed: 0 });
 
   const [newTask, setNewTask] = useState('');
   const [newTaskSubject, setNewTaskSubject] = useState('general');
@@ -41,15 +53,24 @@ export default function Dashboard() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [tasksRes, streakRes, statsRes] = await Promise.all([
+      const [tasksRes, streakRes, statsRes, topicsRes] = await Promise.all([
         learningApi.tasks(),
         dashboardApi.streaks().catch(() => ({ currentStreak: 0 })),
         dashboardApi.stats().catch(() => null),
+        learningApi.topics().catch(() => ({ topics: [] })),
       ]);
 
-      setTasks(tasksRes.tasks || []);
+      setTasks((tasksRes.tasks || []).filter((task) =>
+        !task.subject || task.subject === 'general' || examSubjects.includes(task.subject)
+      ));
       setStreak({ count: streakRes.currentStreak || 0 });
       if (statsRes?.today) setTodayMinutes(statsRes.today.minutes || 0);
+      const topics = topicsRes.topics || [];
+      const relevantTopics = topics.filter((topic) => examSubjects.includes(topic.subject));
+      setSyllabusStats({
+        total: relevantTopics.length,
+        completed: relevantTopics.filter((topic) => topic.progress >= 100).length,
+      });
     } catch (err) {
       toast.error(err.message || 'Failed to load dashboard');
     } finally {
@@ -132,7 +153,7 @@ export default function Dashboard() {
   const handleSaveSession = async (data) => {
     try {
       await learningApi.logSession({
-        subject: data.subject.toLowerCase(),
+        subject: data.subject.toLowerCase() === 'mathematics' ? 'math' : data.subject.toLowerCase(),
         topic: 'Quick log session',
         duration: Math.round(data.hours * 60),
         sessionType: 'study',
@@ -180,6 +201,39 @@ export default function Dashboard() {
             <PomodoroTimer />
           </div>
         </div>
+
+        <Link
+          to="/syllabus"
+          className="block bg-white dark:bg-sb-dark-card rounded-2xl shadow p-5 md:p-6 transition-colors hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sb-blue"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <BookOpen className="text-sb-blue shrink-0" size={24} />
+              <div className="min-w-0">
+                <h3 className="font-semibold dark:text-sb-dark-text">Syllabus completion</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {loading ? 'Loading topics...' : syllabusStats.total
+                    ? `${syllabusStats.completed} of ${syllabusStats.total} topics completed`
+                    : 'Add topics to start tracking your syllabus'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-2xl font-bold text-sb-blue">
+                {syllabusStats.total
+                  ? `${Math.round((syllabusStats.completed / syllabusStats.total) * 100)}%`
+                  : '—'}
+              </span>
+              <ArrowRight size={18} className="text-gray-400" />
+            </div>
+          </div>
+          <div className="w-full bg-gray-100 dark:bg-sb-dark-border rounded-full h-2 mt-4">
+            <div
+              className="bg-sb-blue h-2 rounded-full transition-all"
+              style={{ width: `${syllabusStats.total ? (syllabusStats.completed / syllabusStats.total) * 100 : 0}%` }}
+            />
+          </div>
+        </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 transition-colors">
@@ -271,10 +325,11 @@ export default function Dashboard() {
                 className="p-3 border rounded-xl outline-none focus:border-sb-blue text-sm bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               >
                 <option value="general">General</option>
-                <option value="physics">Physics</option>
-                <option value="chemistry">Chemistry</option>
-                <option value="math">Math</option>
-                <option value="biology">Biology</option>
+                {examSubjects.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject === 'math' ? 'Mathematics' : subject[0].toUpperCase() + subject.slice(1)}
+                  </option>
+                ))}
               </select>
               <button
                 type="submit"
@@ -295,13 +350,13 @@ export default function Dashboard() {
               Quick Log Session
             </h3>
             <div className="grid grid-cols-3 gap-3">
-              {['Physics', 'Chemistry', 'Mathematics'].map((s) => (
+              {sessionSubjects.map(({ value, label }) => (
                 <button
-                  key={s}
-                  onClick={() => openLogModal(s)}
+                  key={value}
+                  onClick={() => openLogModal(label)}
                   className="bg-sb-yellow p-4 rounded-xl font-semibold hover:scale-105 transition text-sb-teal"
                 >
-                  + {s}
+                  + {label}
                 </button>
               ))}
             </div>
@@ -323,6 +378,7 @@ export default function Dashboard() {
           onClose={() => setModalOpen(false)}
           onSave={handleSaveSession}
           defaultSubject={modalSubject}
+          subjects={sessionSubjects.map(({ label }) => label)}
         />
       </div>
     </PageTransition>

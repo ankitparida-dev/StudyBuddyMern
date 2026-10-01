@@ -17,6 +17,14 @@ const formatDuration = (minutes) => ({
   display: minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`
 });
 
+const getExamSessionFilter = (req, includeGeneral = true) => {
+  const subjects = req.user.examType === 'NEET'
+    ? ['physics', 'chemistry', 'biology']
+    : ['physics', 'chemistry', 'math'];
+  if (includeGeneral) subjects.push('general');
+  return { userId: req.user._id, subject: { $in: subjects } };
+};
+
 // ============================================
 // Controller Functions
 // ============================================
@@ -43,10 +51,10 @@ const getStats = async (req, res) => {
     
     // Get sessions for different time periods
     const [todaySessions, weekSessions, monthSessions, allSessions] = await Promise.all([
-      StudySession.find({ userId, date: { $gte: startOfDay } }),
-      StudySession.find({ userId, date: { $gte: startOfWeek } }),
-      StudySession.find({ userId, date: { $gte: startOfMonth } }),
-      StudySession.find({ userId })
+      StudySession.find({ ...getExamSessionFilter(req), date: { $gte: startOfDay } }),
+      StudySession.find({ ...getExamSessionFilter(req), date: { $gte: startOfWeek } }),
+      StudySession.find({ ...getExamSessionFilter(req), date: { $gte: startOfMonth } }),
+      StudySession.find(getExamSessionFilter(req))
     ]);
     
     // Calculate totals
@@ -101,13 +109,12 @@ const getStats = async (req, res) => {
  */
 const getProgress = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const { start, end, days = 30 } = req.query;
+    const { days = 30 } = req.query;
     
     const dateRange = getDateRange(parseInt(days));
     
     const sessions = await StudySession.find({
-      userId,
+      ...getExamSessionFilter(req),
       date: { $gte: dateRange.start, $lte: dateRange.end }
     }).sort({ date: 1 });
     
@@ -160,9 +167,7 @@ const getProgress = async (req, res) => {
  */
 const getStreaks = async (req, res) => {
   try {
-    const userId = req.user._id;
-    
-    const sessions = await StudySession.find({ userId }).sort({ date: 1 });
+    const sessions = await StudySession.find(getExamSessionFilter(req)).sort({ date: 1 });
     
     // Get unique study dates
     const studyDates = new Set(
@@ -300,12 +305,12 @@ const getDashboardOverview = async (req, res) => {
 };
 
 const getRecentActivity = async (req, res) => {
-  const sessions = await StudySession.find({ userId: req.user._id }).sort({ date: -1 }).limit(10);
+  const sessions = await StudySession.find(getExamSessionFilter(req, false)).sort({ date: -1 }).limit(10);
   res.json({ success: true, sessions });
 };
 
 const getSubjectPerformance = async (req, res) => {
-  const sessions = await StudySession.find({ userId: req.user._id });
+  const sessions = await StudySession.find(getExamSessionFilter(req));
   const subjects = {};
   sessions.forEach(session => {
     const subject = session.subject || 'general';

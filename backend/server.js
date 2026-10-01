@@ -76,6 +76,9 @@ app.use('/api/study', require('./routes/studyRoutes'));
 // Chat routes
 app.use('/api/chat', require('./routes/chatRoutes'));
 
+// On-demand, user-scoped AI progress and report insights
+app.use('/api/ai', require('./routes/aiRoutes'));
+
 // Learning resources: tasks, study sessions, syllabus, and test analytics
 app.use('/api/learning', require('./routes/learningRoutes'));
 
