@@ -7,12 +7,17 @@ const getGeminiClient = () => {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 };
 
-// Model chain — tries each until one works
+// ============================================
+// Model chain — tries each until one works.
+// Only includes currently available + free-tier-friendly models.
+// gemini-1.5-flash and gemini-1.5-pro are RETIRED — do not add them back.
+// ============================================
 const FALLBACK_MODELS = [
-  process.env.GEMINI_MODEL || 'gemini-flash-latest',
+  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   'gemini-2.5-flash',
-  'gemini-2.5-pro',
-  'gemini-1.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-flash-latest',
 ];
 
 const STUDY_ASSISTANT_PROMPT = `You are StudyBuddy AI, a helpful study assistant for JEE and NEET students.
@@ -45,7 +50,7 @@ const getGeminiResponse = async (userMessage, chatHistory = []) => {
     throw new Error('GEMINI_API_KEY is not set in environment variables');
   }
 
-  // Clean history
+  // Clean history — Gemini requires user → model alternation, starting with user, ending with model
   let history = (chatHistory || [])
     .filter((m) => m && m.role && m.content)
     .slice(0, -1)
@@ -86,10 +91,11 @@ const getGeminiResponse = async (userMessage, chatHistory = []) => {
       const msg = err?.message || String(err);
       console.warn(`⚠️ Model "${modelName}" failed: ${msg.slice(0, 150)}`);
 
+      // Only bail out immediately on true auth errors — not on 404/503
       if (
-        msg.includes('API key') ||
         msg.includes('API_KEY_INVALID') ||
-        msg.includes('PERMISSION_DENIED')
+        msg.includes('PERMISSION_DENIED') ||
+        msg.includes('API key not valid')
       ) {
         throw new Error('Invalid Gemini API key. Please check your .env file.');
       }
@@ -104,49 +110,58 @@ const getGeminiResponse = async (userMessage, chatHistory = []) => {
 };
 
 // ============================================
-// Simple one-shot (no history)
+// Simple one-shot (no history) — used by AI insights
+// Uses generateContent REST endpoint
 // ============================================
 const getSimpleResponse = async (userMessage) => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
 
-  const models = [...new Set([
+  const models = [
     process.env.GEMINI_INSIGHT_MODEL,
-    'gemini-flash-lite-latest',
-    'gemini-3.5-flash-lite',
-  ].filter(Boolean))];
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash',
+  ].filter(Boolean);
+  const uniqueModels = [...new Set(models)];
   let lastError;
 
-  for (const modelName of models) {
+  for (const modelName of uniqueModels) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000);
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey,
-        },
-        body: JSON.stringify({
-          model: modelName,
-          input: `${STUDY_ASSISTANT_PROMPT}\n\n${userMessage}`,
-        }),
-        signal: controller.signal,
-      });
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: STUDY_ASSISTANT_PROMPT }],
+            },
+            contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+          }),
+          signal: controller.signal,
+        }
+      );
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const message = data.error?.message || `Gemini returned HTTP ${response.status}`;
-        console.warn(`[Gemini insight] model=${modelName} status=${response.status}: ${message.slice(0, 160)}`);
-        if (response.status === 401 || response.status === 403) throw new Error(message);
+        const message =
+          data.error?.message || `Gemini returned HTTP ${response.status}`;
+        console.warn(
+          `[Gemini insight] model=${modelName} status=${response.status}: ${message.slice(0, 160)}`
+        );
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(message);
+        }
         lastError = new Error(message);
         continue;
       }
 
-      const text = (data.steps || [])
-        .filter((step) => step.type === 'model_output')
-        .flatMap((step) => step.content || [])
-        .filter((part) => part.type === 'text' && part.text)
-        .map((part) => part.text)
+      const text = (data?.candidates?.[0]?.content?.parts || [])
+        .map((p) => p.text)
+        .filter(Boolean)
         .join('\n')
         .trim();
       if (!text) throw new Error('Gemini returned no text response');
@@ -161,7 +176,9 @@ const getSimpleResponse = async (userMessage) => {
     }
   }
 
-  throw new Error(`Gemini insight failed: ${lastError?.message || 'No configured model responded'}`);
+  throw new Error(
+    `Gemini insight failed: ${lastError?.message || 'No configured model responded'}`
+  );
 };
 
 // ============================================
@@ -195,7 +212,9 @@ Make it realistic and actionable.`;
       const result = await model.generateContent(prompt);
       return (await result.response).text();
     } catch (err) {
-      console.warn(`⚠️ StudyPlan "${modelName}" failed: ${err?.message?.slice(0, 100)}`);
+      console.warn(
+        `⚠️ StudyPlan "${modelName}" failed: ${err?.message?.slice(0, 100)}`
+      );
     }
   }
   throw new Error('Failed to generate study plan');
@@ -230,7 +249,9 @@ Keep it clear and student-friendly.`;
       const result = await model.generateContent(prompt);
       return (await result.response).text();
     } catch (err) {
-      console.warn(`⚠️ Explain "${modelName}" failed: ${err?.message?.slice(0, 100)}`);
+      console.warn(
+        `⚠️ Explain "${modelName}" failed: ${err?.message?.slice(0, 100)}`
+      );
     }
   }
   throw new Error('Failed to explain concept');
@@ -265,7 +286,9 @@ Provide:
       const result = await model.generateContent(prompt);
       return (await result.response).text();
     } catch (err) {
-      console.warn(`⚠️ Solve "${modelName}" failed: ${err?.message?.slice(0, 100)}`);
+      console.warn(
+        `⚠️ Solve "${modelName}" failed: ${err?.message?.slice(0, 100)}`
+      );
     }
   }
   throw new Error('Failed to solve problem');
