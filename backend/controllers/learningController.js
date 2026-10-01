@@ -95,6 +95,60 @@ const listTopics = async (req, res) => {
   }
 };
 
+const seedTopics = async (req, res) => {
+  try {
+    const { topics } = req.body;
+    if (!Array.isArray(topics) || topics.length > 100) {
+      return res.status(400).json({ success: false, error: 'Send between 1 and 100 syllabus topics' });
+    }
+
+    const operations = [];
+    for (const input of topics) {
+      const topic = new SyllabusTopic({
+        userId: req.user._id,
+        subject: input.subject,
+        chapter: input.chapter,
+        name: input.name,
+      });
+      const validationError = topic.validateSync();
+      if (validationError) {
+        return res.status(400).json({ success: false, error: validationError.message });
+      }
+
+      operations.push({
+        updateOne: {
+          filter: {
+            userId: req.user._id,
+            subject: topic.subject,
+            chapter: topic.chapter,
+            name: topic.name,
+          },
+          update: {
+            $setOnInsert: {
+              userId: req.user._id,
+              subject: topic.subject,
+              chapter: topic.chapter,
+              name: topic.name,
+              status: 'not-started',
+              progress: 0,
+            },
+          },
+          upsert: true,
+        },
+      });
+    }
+
+    const result = await SyllabusTopic.bulkWrite(operations, { ordered: false });
+    const subjects = [...new Set(topics.map((topic) => topic.subject))];
+    const savedTopics = await SyllabusTopic.find({ userId: req.user._id, subject: { $in: subjects } })
+      .sort({ subject: 1, chapter: 1, name: 1 });
+
+    res.json({ success: true, inserted: result.upsertedCount || 0, topics: savedTopics });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message || 'Could not seed syllabus topics' });
+  }
+};
+
 const updateTopic = async (req, res) => {
   try {
     if (!isValidId(req.params.id)) return res.status(400).json({ success: false, error: 'Invalid topic ID' });
@@ -141,8 +195,11 @@ const listTestAnalytics = async (req, res) => {
 
 const getTestSummary = async (req, res) => {
   try {
+    const subjects = req.user.examType === 'NEET'
+      ? ['physics', 'chemistry', 'biology', 'mixed']
+      : ['physics', 'chemistry', 'math', 'mixed'];
     const [summary] = await TestAnalytics.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(req.user._id) } },
+      { $match: { userId: new mongoose.Types.ObjectId(req.user._id), subject: { $in: subjects } } },
       { $group: { _id: null, tests: { $sum: 1 }, totalQuestions: { $sum: '$totalQuestions' }, totalCorrect: { $sum: '$correct' }, averagePercentage: { $avg: '$percentage' }, averageAccuracy: { $avg: { $cond: [{ $gt: ['$attempted', 0] }, { $multiply: [{ $divide: ['$correct', '$attempted'] }, 100] }, 0] } } } },
       { $project: { _id: 0, tests: 1, totalQuestions: 1, totalCorrect: 1, averagePercentage: { $round: ['$averagePercentage', 2] }, averageAccuracy: { $round: ['$averageAccuracy', 2] } } }
     ]);
@@ -152,4 +209,4 @@ const getTestSummary = async (req, res) => {
   }
 };
 
-module.exports = { createTask, listTasks, updateTask, deleteTask, logSession, listSessions, createTopic, listTopics, updateTopic, deleteTopic, recordTest, listTestAnalytics, getTestSummary };
+module.exports = { createTask, listTasks, updateTask, deleteTask, logSession, listSessions, createTopic, listTopics, seedTopics, updateTopic, deleteTopic, recordTest, listTestAnalytics, getTestSummary };

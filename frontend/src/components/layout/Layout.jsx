@@ -1,16 +1,35 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { onAuthStateChanged } from 'firebase/auth';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import AIWidget from '../widget/AIWidget';
+import { firebaseAuth } from '../../config/firebase';
 import { getToken } from '../../utils/api';
 import { useKeyboardShortcuts } from '../../utils/useKeyboardShortcuts';
 
 export default function Layout() {
-  const isAuthed = Boolean(getToken());
+  const [authReady, setAuthReady] = useState(!firebaseAuth);
+  const [isAuthed, setIsAuthed] = useState(Boolean(getToken()));
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!firebaseAuth) {
+      setIsAuthed(Boolean(getToken()));
+      setAuthReady(true);
+      return undefined;
+    }
+
+    return onAuthStateChanged(firebaseAuth, (user) => {
+      setIsAuthed(Boolean(user));
+      setAuthReady(true);
+    }, () => {
+      setIsAuthed(false);
+      setAuthReady(true);
+    });
+  }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -34,6 +53,8 @@ export default function Layout() {
       btn?.click();
     },
   });
+
+  if (!authReady) return null;
 
   if (!isAuthed) {
     return <Navigate to="/" replace />;

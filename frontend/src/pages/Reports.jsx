@@ -4,11 +4,13 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
 import {
-  BookOpen, Clock, Trophy, Sparkles, Activity, TrendingUp,
+  BookOpen, Clock, Trophy, Sparkles, Activity, TrendingUp, Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PageTransition from '../components/shared/PageTransition';
-import { learningApi, dashboardApi } from '../utils/api';
+import { learningApi, dashboardApi, aiApi } from '../utils/api';
+import { getExamSubjects } from '../data/mockData';
+import { storage } from '../utils/storage';
 import { usePageTitle } from '../utils/usePageTitle';
 
 const PIE_COLORS = ['#4A90E2', '#F5D547', '#E5E7EB'];
@@ -39,6 +41,9 @@ const tooltipStyle = {
 
 export default function Reports() {
   usePageTitle('Reports');
+  const account = storage.get('sb_user', {});
+  const examType = account.examType === 'NEET' ? 'NEET' : 'JEE';
+  const examSubjects = getExamSubjects(examType);
 
   const [topics, setTopics] = useState([]);
   const [stats, setStats] = useState(null);
@@ -46,6 +51,8 @@ export default function Reports() {
   const [subjects, setSubjects] = useState([]);
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aiInsight, setAiInsight] = useState('');
+  const [loadingAiInsight, setLoadingAiInsight] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -60,7 +67,7 @@ export default function Reports() {
             dashboardApi.recentActivity().catch(() => ({ sessions: [] })),
           ]);
 
-        setTopics(topicsRes.topics || []);
+        setTopics((topicsRes.topics || []).filter((topic) => examSubjects.includes(topic.subject)));
         setStats(statsRes);
         setStreaks(streaksRes);
 
@@ -69,9 +76,9 @@ export default function Reports() {
           Object.entries(subjectObj).map(([name, minutes]) => ({
             name,
             minutes,
-          }))
+          })).filter((subject) => examSubjects.includes(subject.name))
         );
-        setRecent(recentRes.sessions || []);
+        setRecent((recentRes.sessions || []).filter((session) => examSubjects.includes(session.subject)));
       } catch (err) {
         toast.error(err.message || 'Failed to load reports');
       } finally {
@@ -106,6 +113,9 @@ export default function Reports() {
 
   const subjectCards = useMemo(() => {
     const groups = {};
+    examSubjects.forEach((subject) => {
+      groups[subject] = { total: 0, completed: 0, minutes: 0 };
+    });
     topics.forEach((t) => {
       const key = t.subject || 'other';
       if (!groups[key]) groups[key] = { total: 0, completed: 0, minutes: 0 };
@@ -128,28 +138,19 @@ export default function Reports() {
         pct:
           data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
       }));
-  }, [topics, subjects]);
+  }, [topics, subjects, examSubjects]);
 
-  const aiInsight = useMemo(() => {
-    if (topics.length === 0) return null;
-    const weakest = [...subjectCards].sort((a, b) => a.pct - b.pct)[0];
-    const mostStudied = [...subjectCards].sort(
-      (a, b) => b.minutes - a.minutes
-    )[0];
-
-    if (!weakest) return null;
-    if (weakest.pct < 30) {
-      return `${capitalize(weakest.name)} syllabus is only ${weakest.pct}% complete. ${
-        mostStudied && mostStudied.name !== weakest.name
-          ? `You've spent most time on ${capitalize(mostStudied.name)} — try balancing your effort.`
-          : 'Consider adding focused sessions this week.'
-      }`;
+  const generateReportInsight = async () => {
+    setLoadingAiInsight(true);
+    try {
+      const response = await aiApi.insight('reports');
+      setAiInsight(response.insight);
+    } catch (error) {
+      toast.error(error.message || 'Could not generate a report insight');
+    } finally {
+      setLoadingAiInsight(false);
     }
-    if (syllabusStats.completedPct >= 80) {
-      return `Great progress! You've completed ${syllabusStats.completedPct}% of your syllabus. Focus on revision and mock tests now.`;
-    }
-    return `Keep going — ${syllabusStats.completedPct}% completed. Prioritize ${weakest.name} next (${weakest.pct}% done).`;
-  }, [subjectCards, syllabusStats, topics.length]);
+  };
 
   if (loading) {
     return (
@@ -407,18 +408,31 @@ export default function Reports() {
           )}
         </div>
 
-        {/* ---- AI Insight ---- */}
-        {aiInsight && (
-          <div className="bg-gradient-to-r from-sb-yellow/40 to-sb-pink/30 p-4 md:p-6 rounded-2xl flex items-start gap-3">
-            <Sparkles className="text-sb-blue shrink-0 mt-0.5" size={22} />
-            <div>
-              <p className="font-semibold mb-1 dark:text-sb-dark-text">
-                AI Insight
-              </p>
-              <p className="text-sm dark:text-sb-dark-text">{aiInsight}</p>
+        <section className="bg-gradient-to-r from-sb-yellow/40 to-sb-pink/30 p-4 md:p-6 rounded-2xl">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <Sparkles className="text-sb-blue shrink-0 mt-0.5" size={22} />
+              <div>
+                <p className="font-semibold mb-1 dark:text-sb-dark-text">Gemini Report Analysis</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Generate recommendations from your syllabus, study, and test summaries.</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={generateReportInsight}
+              disabled={loadingAiInsight}
+              className="px-4 py-2 rounded-xl bg-sb-blue text-white font-medium disabled:opacity-60 flex items-center justify-center gap-2 shrink-0"
+            >
+              {loadingAiInsight && <Loader2 size={16} className="animate-spin" />}
+              {loadingAiInsight ? 'Analyzing...' : aiInsight ? 'Refresh analysis' : 'Analyze report'}
+            </button>
           </div>
-        )}
+          {aiInsight && (
+            <p className="mt-4 text-sm leading-6 whitespace-pre-line dark:text-sb-dark-text" aria-live="polite">
+              {aiInsight}
+            </p>
+          )}
+        </section>
       </div>
     </PageTransition>
   );

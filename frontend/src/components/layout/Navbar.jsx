@@ -2,13 +2,16 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Sun, Moon, Menu } from 'lucide-react';
 import { storage } from '../../utils/storage';
 import { useTheme } from '../../utils/useTheme';
+import { firebaseAuth } from '../../config/firebase';
+import { signOut } from 'firebase/auth';
 
 export default function Navbar({ onMenuClick = () => {} }) {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const user = storage.get('sb_user', { name: 'Student' });
 
-  const logout = () => {
+  const logout = async () => {
+    if (firebaseAuth?.currentUser) await signOut(firebaseAuth).catch(() => {});
     storage.remove('sb_authed');
     storage.remove('sb_user');
     storage.remove('sb_token');

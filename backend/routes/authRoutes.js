@@ -11,7 +11,8 @@ const {
   resetPassword,
   logoutUser,
   refreshToken,
-  deleteAccount
+  deleteAccount,
+  firebaseSession
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const rateLimit = require('express-rate-limit');
@@ -207,6 +208,8 @@ router.post(
   validate(loginValidation),
   loginUser
 );
+
+router.post('/firebase-session', loginLimiter, firebaseSession);
 
 /**
  * @route   GET /api/auth/profile

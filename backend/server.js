@@ -49,10 +49,14 @@ app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ============================================
-// MongoDB Connection
-// ============================================
-connectDB();
+app.use('/api/auth/firebase-session', (req, res, next) => {
+  const startedAt = Date.now();
+  console.info(`[request] ${req.method} /api/auth/firebase-session started`);
+  res.on('finish', () => {
+    console.info(`[request] ${req.method} /api/auth/firebase-session finished status=${res.statusCode} durationMs=${Date.now() - startedAt}`);
+  });
+  next();
+});
 
 // ============================================
 // ✅ FIXED: Routes - No wildcard issues
@@ -71,6 +75,9 @@ app.use('/api/study', require('./routes/studyRoutes'));
 
 // Chat routes
 app.use('/api/chat', require('./routes/chatRoutes'));
+
+// On-demand, user-scoped AI progress and report insights
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Learning resources: tasks, study sessions, syllabus, and test analytics
 app.use('/api/learning', require('./routes/learningRoutes'));
@@ -151,25 +158,41 @@ app.use((err, req, res, next) => {
 // Start server
 // ============================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-  console.log(`📍 http://localhost:${PORT}`);
-  console.log(`📌 Available endpoints:`);
-  console.log(`   - GET  /`);
-  console.log(`   - GET  /health`);
-  console.log(`   - POST /api/auth/register`);
-  console.log(`   - POST /api/auth/login`);
-  console.log(`   - GET  /api/auth/profile`);
-  console.log(`   - GET  /api/users/profile`);
-  console.log(`   - PUT  /api/users/profile`);
-  console.log(`   - GET  /api/users/settings`);
-  console.log(`   - PUT  /api/users/settings`);
-  console.log(`   - GET  /api/dashboard/stats`);
-  console.log(`   - GET  /api/dashboard/progress`);
-  console.log(`   - GET  /api/dashboard/streaks`);
-  console.log(`   - GET  /api/study/goals`);
-  console.log(`   - POST /api/study/goals`);
-  console.log(`   - GET  /api/chat/history`);
-  console.log(`   - POST /api/chat/message`);
-  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+const startServer = async () => {
+  console.info('[startup] waiting for MongoDB connection');
+  await connectDB();
+
+  const server = app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`📍 http://localhost:${PORT}`);
+    console.log(`📌 Available endpoints:`);
+    console.log(`   - GET  /`);
+    console.log(`   - GET  /health`);
+    console.log(`   - POST /api/auth/register`);
+    console.log(`   - POST /api/auth/login`);
+    console.log(`   - POST /api/auth/firebase-session`);
+    console.log(`   - GET  /api/auth/profile`);
+    console.log(`   - GET  /api/users/profile`);
+    console.log(`   - PUT  /api/users/profile`);
+    console.log(`   - GET  /api/users/settings`);
+    console.log(`   - PUT  /api/users/settings`);
+    console.log(`   - GET  /api/dashboard/stats`);
+    console.log(`   - GET  /api/dashboard/progress`);
+    console.log(`   - GET  /api/dashboard/streaks`);
+    console.log(`   - GET  /api/study/goals`);
+    console.log(`   - POST /api/study/goals`);
+    console.log(`   - GET  /api/chat/history`);
+    console.log(`   - POST /api/chat/message`);
+    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+
+  server.on('error', (error) => {
+    console.error(`[startup] HTTP server failed (${error.code || error.name}): ${error.message}`);
+    process.exitCode = 1;
+  });
+};
+
+startServer().catch((error) => {
+  console.error(`[startup] failed (${error.code || error.name}): ${error.message}`);
+  process.exitCode = 1;
 });

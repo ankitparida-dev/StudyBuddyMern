@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import PageTransition from '../components/shared/PageTransition';
-import { authApi } from '../utils/api';
+import { createUserWithEmailAndPassword, reload, sendEmailVerification, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import { firebaseAuth, firebaseConfigured } from '../config/firebase';
+import { authApi, learningApi } from '../utils/api';
+import { getExamCurriculum } from '../data/mockData';
 import { storage } from '../utils/storage';
 import { usePageTitle } from '../utils/usePageTitle';
 
@@ -24,25 +27,62 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const payload = isLogin
-        ? { email, password }
-        : { name, email, password, target, class: cls };
+      if (!firebaseConfigured || !firebaseAuth) {
+        throw new Error('Firebase is not configured. Add the VITE_FIREBASE_* values to frontend/.env.local.');
+      }
+      const normalizedEmail = email.trim().toLowerCase();
+      let credential;
+      if (!isLogin) {
+        if (name.trim().length < 2) throw new Error('Enter your full name.');
+        if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+          throw new Error('Password must be 8+ characters with uppercase, lowercase, number, and special character.');
+        }
+        credential = await createUserWithEmailAndPassword(firebaseAuth, normalizedEmail, password);
+        await updateProfile(credential.user, { displayName: name.trim() });
+        await sendEmailVerification(credential.user);
+        storage.set('sb_pending_profile', {
+          currentGrade: `Class ${cls}`,
+          examType: target,
+        });
+        await signOut(firebaseAuth);
+        setIsLogin(true);
+        setPassword('');
+        toast.success('Verification email sent. Verify your email, then log in to link your account.');
+        return;
+      }
 
-      const res = isLogin
-        ? await authApi.login(payload)
-        : await authApi.register(payload);
+      credential = await signInWithEmailAndPassword(firebaseAuth, normalizedEmail, password);
+      await reload(credential.user);
+      if (!credential.user.emailVerified) {
+        await sendEmailVerification(credential.user);
+        await signOut(firebaseAuth);
+        throw new Error('Your email is not verified yet. Check your inbox for the verification link, then log in again. We sent a new link.');
+      }
 
-      const user = res.user || res.data?.user || res;
-      const token = res.token || res.data?.token;
-
-      if (token) storage.set('sb_token', token);
+      const token = await credential.user.getIdToken(true);
+      const pendingProfile = storage.get('sb_pending_profile', {});
+      const res = await authApi.firebaseSession(token, {
+        name: credential.user.displayName || '',
+        currentGrade: pendingProfile.currentGrade || `Class ${cls}`,
+        examType: pendingProfile.examType || target,
+      });
+      const curriculum = getExamCurriculum(res.user.examType, res.user.currentGrade);
+      await learningApi.seedTopics(curriculum);
+      const user = res.user;
       storage.set('sb_user', user);
-      storage.set('sb_authed', true);
+      storage.remove('sb_pending_profile');
 
       toast.success(isLogin ? 'Welcome back!' : 'Account created!');
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.message || 'Something went wrong');
+      const firebaseHelp = {
+        'auth/configuration-not-found': 'Firebase Auth configuration was not found. In Firebase Console, enable Authentication, turn on Email/Password, verify these web config values belong to the same project, and add localhost to Authorized domains. Restart Vite after changes.',
+        'auth/operation-not-allowed': 'Email/Password sign-in is disabled. Enable it in Firebase Console under Authentication > Sign-in method.',
+        'auth/invalid-api-key': 'Firebase API key is invalid. Copy the Web app config from the same Firebase project used by the backend service account.',
+        'auth/unauthorized-domain': 'This site domain is not authorized. Add localhost or your deployed domain under Firebase Authentication > Settings > Authorized domains.',
+        'auth/user-not-found': 'No Firebase account exists for this email yet. Register this account with Firebase first.',
+      };
+      toast.error(firebaseHelp[err.code] || err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -89,6 +129,7 @@ export default function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-3 border rounded-xl outline-none focus:border-sb-blue"
+              minLength={isLogin ? undefined : 8}
               required
             />
 

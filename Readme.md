@@ -89,6 +89,16 @@ npm run dev
 
 The backend uses MongoDB Atlas through `MONGODB_URI` and Gemini through `GEMINI_API_KEY` in `backend/.env`. Keep both values server-side and do not commit the `.env` file.
 
+### Firebase Auth Setup
+
+1. Create a Firebase project and register a Web app.
+2. In Firebase Console, open **Authentication → Sign-in method** and enable **Email/Password**.
+3. Copy `frontend/.env.example` to `frontend/.env.local` and fill in the Web app's API key, auth domain, project ID, and app ID. These web config values are intended for the client; Firebase Auth security comes from its rules and token verification, not hiding the API key.
+4. In Firebase Console, create a service account private key. Put its JSON on one line in `backend/.env` as `FIREBASE_SERVICE_ACCOUNT_JSON`. Keep that private key only in local/deployment secrets; never commit it or send it in chat.
+5. Ensure the service account and web app use the same Firebase project. Restart both dev servers after changing env files.
+
+Firebase stores email/password credentials. The backend verifies Firebase ID tokens and stores the Firebase UID plus the app account in MongoDB; study records continue using the MongoDB account ID. Existing legacy `/api/auth/register` and `/api/auth/login` endpoints remain available during the migration.
+
 Protected learning endpoints require `Authorization: Bearer <jwt>`:
 
 | Resource | Endpoints |

@@ -194,11 +194,16 @@ router.post(
 
       // Get or create session
       let session = null;
-      let sessionExists = false;
 
-      if (sessionId && mongoose.Types.ObjectId.isValid(sessionId)) {
+      if (sessionId && !mongoose.Types.ObjectId.isValid(sessionId)) {
+        return res.status(400).json({ success: false, error: 'Invalid session ID' });
+      }
+
+      if (sessionId) {
         session = await ChatSession.findOne({ _id: sessionId, userId });
-        if (session) sessionExists = true;
+        if (!session) {
+          return res.status(404).json({ success: false, error: 'Session not found' });
+        }
       }
 
       if (!session) {
@@ -221,10 +226,6 @@ router.post(
       session.messageCount = (session.messageCount || 0) + 1;
       session.updatedAt = new Date();
 
-      if (!sessionExists) {
-        await session.save();
-      }
-
       // Get last 10 messages for context
       const chatHistory = session.messages.slice(-10).map((msg) => ({
         role: msg.role,
@@ -233,38 +234,34 @@ router.post(
 
       // Call Gemini
       console.log('🤖 Calling Gemini API...');
-      let aiResponseText;
-
       try {
-        aiResponseText = await getGeminiResponse(message, chatHistory);
+        const aiResponseText = await getGeminiResponse(message, chatHistory);
         console.log('✅ Gemini API response received');
-      } catch (geminiError) {
-        console.error('❌ Gemini API Error:', geminiError?.message || geminiError);
-        aiResponseText =
-          "I'm having trouble connecting to the AI service. Please try again in a moment.";
-      }
-
-      // Add AI response
-      const aiMessage = {
-        role: 'assistant',
-        content: aiResponseText,
-        timestamp: new Date().toISOString(),
-      };
-      session.messages.push(aiMessage);
-      session.messageCount = (session.messageCount || 0) + 1;
-      session.updatedAt = new Date();
-
-      await session.save();
-
-      res.json({
-        success: true,
-        sessionId: session._id,
-        message: {
+        const aiMessage = {
           role: 'assistant',
           content: aiResponseText,
-          timestamp: aiMessage.timestamp,
-        },
-      });
+          timestamp: new Date().toISOString(),
+        };
+        session.messages.push(aiMessage);
+        session.updatedAt = new Date();
+        await session.save();
+
+        res.json({
+          success: true,
+          sessionId: session._id,
+          message: {
+            role: 'assistant',
+            content: aiResponseText,
+            timestamp: aiMessage.timestamp,
+          },
+        });
+      } catch (geminiError) {
+        console.error('❌ Gemini API Error:', geminiError?.message || geminiError);
+        res.status(502).json({
+          success: false,
+          error: geminiError?.message || 'Gemini service is unavailable',
+        });
+      }
     } catch (error) {
       console.error('❌ Message error:', error);
       res.status(500).json({
@@ -321,7 +318,7 @@ router.get('/stats', protect, async (req, res) => {
     const totalSessions = await ChatSession.countDocuments({ userId });
     const totalMessages = await ChatSession.aggregate([
       { $match: { userId } },
-      { $group: { _id: null, total: { $sum: '$messageCount' } } },
+      { $group: { _id: null, total: { $sum: { $size: { $ifNull: ['$messages', []] } } } } },
     ]);
     const recentSessions = await ChatSession.find({ userId })
       .sort({ updatedAt: -1 })

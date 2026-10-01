@@ -4,14 +4,15 @@ import {
   ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import {
-  TrendingUp, Plus, Loader2, Award, Clock, Target, BookOpen,
+  TrendingUp, Plus, Loader2, Award, Clock, Target, BookOpen, Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PageTransition from '../components/shared/PageTransition';
-import { learningApi, dashboardApi } from '../utils/api';
+import { learningApi, dashboardApi, aiApi } from '../utils/api';
+import { getExamSubjects } from '../data/mockData';
+import { storage } from '../utils/storage';
 import { usePageTitle } from '../utils/usePageTitle';
 
-const SUBJECTS = ['physics', 'chemistry', 'math', 'biology', 'general'];
 const SESSION_TYPES = ['study', 'practice', 'revision', 'test', 'focus'];
 
 const capitalize = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
@@ -26,6 +27,10 @@ const tooltipStyle = {
 
 export default function Progress() {
   usePageTitle('Progress');
+  const account = storage.get('sb_user', {});
+  const examType = account.examType === 'NEET' ? 'NEET' : 'JEE';
+  const examSubjects = getExamSubjects(examType);
+  const sessionSubjects = [...examSubjects, 'general'];
 
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
@@ -37,9 +42,13 @@ export default function Progress() {
   const [tests, setTests] = useState([]);
   const [testSummary, setTestSummary] = useState(null);
   const [loadingTests, setLoadingTests] = useState(true);
+  const [syllabusTopics, setSyllabusTopics] = useState([]);
+  const [loadingSyllabus, setLoadingSyllabus] = useState(true);
+  const [aiInsight, setAiInsight] = useState('');
+  const [loadingAiInsight, setLoadingAiInsight] = useState(false);
 
   const [sessionForm, setSessionForm] = useState({
-    subject: 'physics',
+    subject: examSubjects[0],
     topic: '',
     duration: '',
     sessionType: 'study',
@@ -50,7 +59,7 @@ export default function Progress() {
 
   const [testForm, setTestForm] = useState({
     testName: '',
-    subject: 'physics',
+    subject: examSubjects[0],
     testType: 'practice',
     totalQuestions: '',
     attempted: '',
@@ -60,13 +69,27 @@ export default function Progress() {
   });
   const [submittingTest, setSubmittingTest] = useState(false);
 
+  const generateProgressInsight = async () => {
+    setLoadingAiInsight(true);
+    try {
+      const response = await aiApi.insight('progress');
+      setAiInsight(response.insight);
+    } catch (error) {
+      toast.error(error.message || 'Could not generate a progress insight');
+    } finally {
+      setLoadingAiInsight(false);
+    }
+  };
+
   // ---- Fetch sessions ----
   useEffect(() => {
     (async () => {
       setLoadingSessions(true);
       try {
         const res = await learningApi.sessions(50);
-        setSessions(res.sessions || []);
+        setSessions((res.sessions || []).filter((session) =>
+          session.subject === 'general' || examSubjects.includes(session.subject)
+        ));
       } catch (err) {
         toast.error(err.message || 'Failed to load sessions');
       } finally {
@@ -75,15 +98,17 @@ export default function Progress() {
     })();
   }, []);
 
-  // ---- Fetch tests + summary ----
+  // ---- Fetch exam-relevant tests ----
   const fetchTests = async () => {
     setLoadingTests(true);
     try {
       const [listRes, summaryRes] = await Promise.all([
-        learningApi.tests(50).catch(() => ({ analytics: [] })),
-        learningApi.testSummary().catch(() => ({ summary: null })),
+        learningApi.tests(50),
+        learningApi.testSummary(),
       ]);
-      setTests(listRes.analytics || []);
+      setTests((listRes.analytics || []).filter((test) =>
+        test.subject === 'mixed' || examSubjects.includes(test.subject)
+      ));
       setTestSummary(summaryRes.summary || null);
     } catch (err) {
       toast.error(err.message || 'Failed to load tests');
@@ -93,6 +118,15 @@ export default function Progress() {
   };
   useEffect(() => {
     fetchTests();
+  }, []);
+
+  useEffect(() => {
+    learningApi.topics()
+      .then((response) => setSyllabusTopics(
+        (response.topics || []).filter((topic) => examSubjects.includes(topic.subject))
+      ))
+      .catch((error) => toast.error(error.message || 'Failed to load syllabus progress'))
+      .finally(() => setLoadingSyllabus(false));
   }, []);
 
   // ---- Fetch trend ----
@@ -143,7 +177,7 @@ export default function Progress() {
       });
       setSessions((curr) => [session, ...curr]);
       setSessionForm({
-        subject: 'physics',
+        subject: examSubjects[0],
         topic: '',
         duration: '',
         sessionType: 'study',
@@ -203,7 +237,7 @@ export default function Progress() {
       setTests((curr) => [analytics, ...curr]);
       setTestForm({
         testName: '',
-        subject: 'physics',
+        subject: examSubjects[0],
         testType: 'practice',
         totalQuestions: '',
         attempted: '',
@@ -213,8 +247,9 @@ export default function Progress() {
       });
       toast.success('Test recorded ✅');
 
-      const s = await learningApi.testSummary().catch(() => ({ summary: null }));
-      setTestSummary(s.summary || null);
+      const summaryResponse = await learningApi.testSummary().catch(() => ({ summary: null }));
+      setTestSummary(summaryResponse.summary || null);
+
     } catch (err) {
       toast.error(err.message || 'Failed to record test');
     } finally {
@@ -229,6 +264,17 @@ export default function Progress() {
       .reduce((sum, s) => sum + (s.duration || 0), 0);
   }, [sessions]);
 
+  const completedTopics = useMemo(
+    () => syllabusTopics.filter((topic) => topic.progress >= 100).length,
+    [syllabusTopics]
+  );
+
+  const averageAccuracy = useMemo(() => {
+    const attempted = tests.reduce((sum, test) => sum + (test.attempted || 0), 0);
+    const correct = tests.reduce((sum, test) => sum + (test.correct || 0), 0);
+    return attempted ? Math.round((correct / attempted) * 1000) / 10 : 0;
+  }, [tests]);
+
   const formatDuration = (mins) => {
     if (!mins) return '0m';
     const h = Math.floor(mins / 60);
@@ -240,7 +286,7 @@ export default function Progress() {
     <PageTransition>
       <div className="space-y-6">
         {/* ---- Stat cards ---- */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4">
           <StatCard
             icon={<Clock className="text-sb-blue" size={24} />}
             label="Today"
@@ -259,9 +305,41 @@ export default function Progress() {
           <StatCard
             icon={<Target className="text-orange-500" size={24} />}
             label="Avg Accuracy"
-            value={`${testSummary?.averagePercentage?.toFixed(1) ?? 0}%`}
+            value={`${testSummary?.averageAccuracy?.toFixed(1) ?? averageAccuracy}%`}
+          />
+          <StatCard
+            icon={<BookOpen className="text-green-600" size={24} />}
+            label="Syllabus done"
+            value={loadingSyllabus ? '…' : `${completedTopics}/${syllabusTopics.length}`}
           />
         </div>
+
+        <section className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-4 md:p-6 transition-colors">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="font-semibold flex items-center gap-2 dark:text-sb-dark-text">
+                <Sparkles size={18} /> AI Progress Analysis
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Gemini reviews your recent study and test summaries.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={generateProgressInsight}
+              disabled={loadingAiInsight}
+              className="px-4 py-2 rounded-xl bg-sb-blue text-white font-medium disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {loadingAiInsight && <Loader2 size={16} className="animate-spin" />}
+              {loadingAiInsight ? 'Analyzing...' : aiInsight ? 'Refresh analysis' : 'Analyze progress'}
+            </button>
+          </div>
+          {aiInsight && (
+            <p className="mt-4 text-sm leading-6 whitespace-pre-line dark:text-sb-dark-text" aria-live="polite">
+              {aiInsight}
+            </p>
+          )}
+        </section>
 
         {/* ---- Form + Trend ---- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
@@ -278,7 +356,7 @@ export default function Progress() {
                   }
                   className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
                 >
-                  {SUBJECTS.map((s) => (
+                  {sessionSubjects.map((s) => (
                     <option key={s} value={s}>
                       {capitalize(s)}
                     </option>
@@ -485,7 +563,7 @@ export default function Progress() {
                   }
                   className="p-3 border rounded-xl outline-none focus:border-sb-blue bg-white dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
                 >
-                  {[...SUBJECTS, 'mixed'].map((s) => (
+                  {[...examSubjects, 'mixed'].map((s) => (
                     <option key={s} value={s}>
                       {capitalize(s)}
                     </option>

@@ -31,9 +31,13 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
   },
+  firebaseUid: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   password: {
     type: String,
-    required: [true, 'Password is required'],
     minlength: [8, 'Password must be at least 8 characters'],
     select: false
   },
@@ -277,8 +281,6 @@ const userSchema = new mongoose.Schema({
 // ============================================
 // Indexes for Performance
 // ============================================
-userSchema.index({ email: 1 });
-userSchema.index({ referralCode: 1 });
 userSchema.index({ isActive: 1, lastLogin: -1 });
 userSchema.index({ 'stats.currentStreak': -1 });
 
@@ -314,7 +316,7 @@ userSchema.virtual('studyStats').get(function() {
 
 // Hash password before saving
 userSchema.pre('save', async function() {
-  if (!this.isModified('password')) return;
+  if (!this.isModified('password') || !this.password) return;
   
   try {
     const salt = await bcrypt.genSalt(10);
@@ -342,6 +344,7 @@ userSchema.pre('save', function() {
 
 // Compare password
 userSchema.methods.comparePassword = async function(enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
