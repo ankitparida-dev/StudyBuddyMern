@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 import { chatApi } from '../../utils/api';
 import { storage } from '../../utils/storage';
 
-// Quick suggestion chips (shown before first user message)
 const QUICK_PROMPTS = [
   { label: "📐 Newton's laws", prompt: "Explain Newton's laws of motion with examples" },
   { label: '🧪 Chemistry formulas', prompt: 'List the most important chemistry formulas for JEE' },
@@ -33,36 +32,36 @@ export default function AIWidget() {
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
-  // ---- Load persisted messages on mount ----
   useEffect(() => {
     const saved = storage.get('sb_chat_messages', null);
-    if (Array.isArray(saved) && saved.length > 0) {
-      setMessages(saved);
-    }
+    if (Array.isArray(saved) && saved.length > 0) setMessages(saved);
   }, []);
 
-  // ---- Persist messages on every change ----
   useEffect(() => {
-    if (messages.length > 0) {
-      storage.set('sb_chat_messages', messages);
-    }
+    if (messages.length > 0) storage.set('sb_chat_messages', messages);
   }, [messages]);
 
-  // ---- Auto-scroll to bottom ----
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, sending, isOpen]);
 
-  // ---- Focus textarea when opened ----
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 150);
+    if (isOpen) setTimeout(() => inputRef.current?.focus(), 150);
+  }, [isOpen]);
+
+  // Lock body scroll on mobile when open
+  useEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    if (isMobile) {
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+      return () => {
+        document.body.style.overflow = '';
+      };
     }
   }, [isOpen]);
 
-  // ---- Send message ----
   const sendMessage = async (text) => {
     const message = (text ?? input).trim();
     if (!message || sending) return;
@@ -78,13 +77,10 @@ export default function AIWidget() {
 
     try {
       const res = await chatApi.send(message, sessionId);
-
-      // Save session id for multi-turn context
       if (res.sessionId && res.sessionId !== sessionId) {
         setSessionId(res.sessionId);
         storage.set('sb_chat_session_id', res.sessionId);
       }
-
       const aiMsg = res.message || {
         role: 'assistant',
         content: "I couldn't generate a response. Please try again.",
@@ -107,19 +103,17 @@ export default function AIWidget() {
     }
   };
 
-  // ---- Clear chat / start new session ----
   const clearChat = async () => {
     const ok = window.confirm(
       'Start a new chat? Current conversation will be cleared.'
     );
     if (!ok) return;
 
-    // Best-effort delete from backend
     if (sessionId) {
       try {
         await chatApi.deleteSession(sessionId);
       } catch {
-        // Ignore — local clear is more important
+        // ignore
       }
     }
 
@@ -139,20 +133,30 @@ export default function AIWidget() {
 
   return (
     <>
-      {/* Floating toggle button */}
+      {/* Floating button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-sb-yellow w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition z-50"
+        className={`fixed bottom-6 right-6 bg-sb-yellow w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition z-40 ${
+          isOpen ? 'hidden sm:flex' : 'flex'
+        }`}
         title="AI Study Buddy"
       >
-        {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
+        <MessageCircle size={22} />
       </button>
 
       {/* Chat window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 h-[32rem] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-gray-100">
+        <div
+          className={`
+            fixed z-50 bg-white dark:bg-sb-dark-card flex flex-col overflow-hidden
+            border border-gray-100 dark:border-sb-dark-border
+            inset-0 sm:inset-auto
+            sm:bottom-24 sm:right-6 sm:w-96 sm:h-[32rem] sm:max-h-[calc(100vh-8rem)]
+            sm:rounded-2xl sm:shadow-2xl
+          `}
+        >
           {/* Header */}
-          <div className="p-3 bg-gradient-to-r from-sb-blue to-sb-teal text-white flex items-center justify-between">
+          <div className="p-3 bg-gradient-to-r from-sb-blue to-sb-teal text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                 <Sparkles size={16} />
@@ -166,19 +170,28 @@ export default function AIWidget() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={clearChat}
-              className="text-white/80 hover:text-white transition"
-              title="New chat"
-            >
-              <Trash2 size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={clearChat}
+                className="text-white/80 hover:text-white transition p-1"
+                title="New chat"
+              >
+                <Trash2 size={16} />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-white/80 hover:text-white transition p-1"
+                title="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex-1 p-3 overflow-y-auto space-y-3 bg-sb-bg/30"
+            className="flex-1 p-3 overflow-y-auto space-y-3 bg-sb-bg/30 dark:bg-sb-dark-bg/50"
           >
             {messages.map((m, i) => (
               <div
@@ -188,10 +201,10 @@ export default function AIWidget() {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
+                  className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
                     m.role === 'user'
                       ? 'bg-sb-blue text-white rounded-br-md'
-                      : 'bg-white text-sb-teal rounded-bl-md shadow-sm'
+                      : 'bg-white text-sb-teal rounded-bl-md shadow-sm dark:bg-sb-dark-bg dark:text-sb-dark-text'
                   }`}
                 >
                   {m.content}
@@ -199,10 +212,9 @@ export default function AIWidget() {
               </div>
             ))}
 
-            {/* Typing indicator */}
             {sending && (
               <div className="flex justify-start">
-                <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-md shadow-sm flex items-center gap-1">
+                <div className="bg-white dark:bg-sb-dark-bg px-4 py-3 rounded-2xl rounded-bl-md shadow-sm flex items-center gap-1">
                   <span
                     className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                     style={{ animationDelay: '0ms' }}
@@ -220,14 +232,14 @@ export default function AIWidget() {
             )}
           </div>
 
-          {/* Quick suggestion chips */}
+          {/* Quick prompts */}
           {messages.length <= 1 && !sending && (
-            <div className="px-3 py-2 flex flex-wrap gap-2 border-t border-gray-100 bg-white">
+            <div className="px-3 py-2 flex flex-wrap gap-2 border-t border-gray-100 dark:border-sb-dark-border bg-white dark:bg-sb-dark-card shrink-0">
               {QUICK_PROMPTS.map((q) => (
                 <button
                   key={q.label}
                   onClick={() => sendMessage(q.prompt)}
-                  className="text-xs px-3 py-1 rounded-full bg-sb-bg hover:bg-sb-blue/10 transition"
+                  className="text-xs px-3 py-1 rounded-full bg-sb-bg hover:bg-sb-blue/10 transition dark:bg-sb-dark-bg dark:text-sb-dark-text"
                 >
                   {q.label}
                 </button>
@@ -236,21 +248,21 @@ export default function AIWidget() {
           )}
 
           {/* Input */}
-          <div className="p-2 border-t border-gray-100 flex items-end gap-2 bg-white">
+          <div className="p-2 border-t border-gray-100 dark:border-sb-dark-border flex items-end gap-2 bg-white dark:bg-sb-dark-card shrink-0 pb-safe">
             <textarea
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything about your studies..."
-              className="flex-1 px-3 py-2 border rounded-xl text-sm outline-none focus:border-sb-blue resize-none max-h-24"
+              placeholder="Ask anything..."
+              className="flex-1 px-3 py-2 border rounded-xl text-sm outline-none focus:border-sb-blue resize-none max-h-24 dark:bg-sb-dark-bg dark:border-sb-dark-border dark:text-sb-dark-text"
               rows={1}
               disabled={sending}
             />
             <button
               onClick={() => sendMessage()}
               disabled={sending || !input.trim()}
-              className="bg-sb-blue text-white p-2.5 rounded-xl hover:opacity-90 transition disabled:opacity-40"
+              className="bg-sb-blue text-white p-2.5 rounded-xl hover:opacity-90 transition disabled:opacity-40 shrink-0"
             >
               {sending ? (
                 <Loader2 size={16} className="animate-spin" />
