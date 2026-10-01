@@ -19,6 +19,22 @@ const verifyToken = (token) => {
   }
 };
 
+const getUserFromToken = async (token) => {
+  try {
+    const getFirebaseAdmin = require('../config/firebaseAdmin');
+    const decoded = await getFirebaseAdmin().verifyIdToken(token);
+    const user = await User.findOne({ firebaseUid: decoded.uid })
+      .select('-password -resetPasswordToken -resetPasswordExpire');
+    return { user, decoded, provider: 'firebase' };
+  } catch (firebaseError) {
+    const decoded = verifyToken(token);
+    if (!decoded) throw firebaseError;
+    const user = await User.findById(decoded.id)
+      .select('-password -resetPasswordToken -resetPasswordExpire');
+    return { user, decoded, provider: 'legacy' };
+  }
+};
+
 // ============================================
 // Middleware: Protect Routes
 // ============================================
@@ -34,17 +50,7 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // Verify token
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid or expired token. Please login again.'
-      });
-    }
-
-    // Get user from token
-    const user = await User.findById(decoded.id).select('-password -resetPasswordToken -resetPasswordExpire');
+    const { user, decoded, provider } = await getUserFromToken(token);
     
     if (!user) {
       return res.status(401).json({
@@ -65,14 +71,15 @@ const protect = async (req, res, next) => {
     req.user = user;
     req.token = token;
     req.tokenDecoded = decoded;
+    req.authProvider = provider;
 
     next();
     
   } catch (error) {
     console.error('❌ Auth Middleware Error:', error);
-    res.status(500).json({
+    res.status(error.status || 401).json({
       success: false,
-      error: 'Authentication error. Please try again.'
+      error: error.status === 503 ? error.message : 'Invalid or expired token. Please log in again.'
     });
   }
 };
@@ -85,13 +92,12 @@ const optionalAuth = async (req, res, next) => {
     const token = extractToken(req.headers.authorization);
     
     if (token) {
-      const decoded = verifyToken(token);
-      if (decoded) {
-        const user = await User.findById(decoded.id).select('-password -resetPasswordToken -resetPasswordExpire');
-        if (user) {
-          req.user = user;
-          req.token = token;
-        }
+      const { user, decoded, provider } = await getUserFromToken(token);
+      if (user) {
+        req.user = user;
+        req.token = token;
+        req.tokenDecoded = decoded;
+        req.authProvider = provider;
       }
     }
     

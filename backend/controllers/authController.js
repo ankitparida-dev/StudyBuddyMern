@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { sendWelcomeEmail, sendResetPasswordEmail } = require('../services/emailService');
+const crypto = require('crypto');
 
 // ============================================
 // Helper Functions
@@ -202,6 +203,81 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const firebaseSession = async (req, res) => {
+  let stage = 'read request';
+  try {
+    const getFirebaseAdmin = require('../config/firebaseAdmin');
+    const authorization = req.headers.authorization || '';
+    const idToken = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+    if (!idToken) return res.status(401).json({ success: false, error: 'Firebase ID token is required' });
+
+    stage = 'verify Firebase ID token';
+    console.info(`[firebase-auth] stage started: ${stage}`);
+    const decoded = await getFirebaseAdmin().verifyIdToken(idToken);
+    const email = decoded.email?.trim().toLowerCase();
+    if (!decoded.uid || !email) {
+      return res.status(400).json({ success: false, error: 'Firebase account must have an email address' });
+    }
+    if (!decoded.email_verified) {
+      return res.status(403).json({ success: false, error: 'Verify your Firebase email before linking your account' });
+    }
+    const firebaseEmailAlias = `firebase-${crypto.createHash('sha256').update(decoded.uid).digest('hex')}@firebase.app`;
+
+    stage = 'find or create MongoDB account';
+    console.info(`[firebase-auth] stage started: ${stage}`);
+    let user = await User.findOne({ firebaseUid: decoded.uid });
+    if (!user) {
+      user = await User.findOne({ email });
+      if (user) {
+        user.firebaseUid = decoded.uid;
+        user.email = firebaseEmailAlias;
+        user.password = undefined;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        user.firstName = 'Student';
+        user.lastName = 'User';
+      } else {
+        user = new User({
+          firebaseUid: decoded.uid,
+          email: firebaseEmailAlias,
+          firstName: 'Student',
+          lastName: 'User',
+          currentGrade: ['Class 11', 'Class 12', 'Dropper'].includes(req.body.currentGrade) ? req.body.currentGrade : 'Class 11',
+          examType: ['JEE', 'NEET'].includes(req.body.examType) ? req.body.examType : 'JEE',
+          isEmailVerified: Boolean(decoded.email_verified),
+        });
+      }
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).json({ success: false, error: 'Account is deactivated' });
+    }
+    user.lastLogin = new Date();
+    stage = 'save MongoDB account';
+    console.info(`[firebase-auth] stage started: ${stage}`);
+    const saveStartedAt = Date.now();
+    await user.save();
+    console.info(`[firebase-auth] MongoDB save completed durationMs=${Date.now() - saveStartedAt}`);
+
+    console.info('[firebase-auth] session linked successfully');
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        email: decoded.email,
+        firstName: req.body.name?.trim().split(/\s+/)[0] || decoded.name?.split(/\s+/)[0] || 'Student',
+        lastName: req.body.name?.trim().split(/\s+/).slice(1).join(' ') || decoded.name?.split(/\s+/).slice(1).join(' ') || '',
+        name: req.body.name?.trim() || decoded.name || 'Student',
+        currentGrade: user.currentGrade,
+        examType: user.examType,
+      },
+    });
+  } catch (error) {
+    console.error(`[firebase-auth] ${stage} failed (${error.code || error.name || 'Error'}): ${error.message}`);
+    const status = error.status || (error.code === 11000 ? 409 : error.name === 'ValidationError' ? 400 : 401);
+    res.status(status).json({ success: false, error: error.message || 'Firebase authentication failed' });
+  }
+};
 const logoutUser = (req, res) => res.json({ success: true, message: 'Logged out successfully' });
 const refreshToken = async (req, res) => res.status(501).json({ success: false, error: 'Refresh tokens are not configured' });
 const deleteAccount = async (req, res) => {
@@ -225,9 +301,17 @@ const getUserProfile = async (req, res) => {
       });
     }
 
+    const profile = sanitizeUser(user);
+    if (req.authProvider === 'firebase') {
+      profile.email = req.tokenDecoded.email;
+      profile.firstName = req.tokenDecoded.name?.split(/\s+/)[0] || 'Student';
+      profile.lastName = req.tokenDecoded.name?.split(/\s+/).slice(1).join(' ') || '';
+      profile.name = req.tokenDecoded.name || 'Student';
+    }
+
     res.json({
       success: true,
-      user: sanitizeUser(user)
+      user: profile
     });
 
   } catch (error) {
@@ -241,5 +325,5 @@ const getUserProfile = async (req, res) => {
 
 module.exports = {
   registerUser, loginUser, getUserProfile, updateUserProfile, changePassword,
-  forgotPassword, resetPassword, logoutUser, refreshToken, deleteAccount
+  forgotPassword, resetPassword, logoutUser, refreshToken, deleteAccount, firebaseSession
 };
