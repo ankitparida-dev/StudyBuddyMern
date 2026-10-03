@@ -8,12 +8,14 @@ import {
   Loader2,
   BookOpen,
   ArrowRight,
+  Share2,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import PomodoroTimer from '../components/dashboard/PomodoroTimer';
 import LogSessionModal from '../components/dashboard/LogSessionModal';
+import ShareModal from '../components/share/ShareModal';
 import PageTransition from '../components/shared/PageTransition';
 import { learningApi, dashboardApi } from '../utils/api';
 import { getExamSubjects } from '../data/mockData';
@@ -39,7 +41,7 @@ export default function Dashboard() {
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [streak, setStreak] = useState({ count: 0 });
+  const [streak, setStreak] = useState({ count: 0, weekly: null });
   const [todayMinutes, setTodayMinutes] = useState(0);
   const [syllabusStats, setSyllabusStats] = useState({ total: 0, completed: 0 });
 
@@ -49,6 +51,8 @@ export default function Dashboard() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSubject, setModalSubject] = useState('Physics');
+
+  const [shareOpen, setShareOpen] = useState(false);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -63,7 +67,10 @@ export default function Dashboard() {
       setTasks((tasksRes.tasks || []).filter((task) =>
         !task.subject || task.subject === 'general' || examSubjects.includes(task.subject)
       ));
-      setStreak({ count: streakRes.currentStreak || 0 });
+      setStreak({
+        count: streakRes.currentStreak || 0,
+        weekly: streakRes.weekly || null,
+      });
       if (statsRes?.today) setTodayMinutes(statsRes.today.minutes || 0);
       const topics = topicsRes.topics || [];
       const relevantTopics = topics.filter((topic) => examSubjects.includes(topic.subject));
@@ -169,9 +176,44 @@ export default function Dashboard() {
   const allDone = tasks.length > 0 && tasks.every((t) => t.completed);
   const todayHours = (todayMinutes / 60).toFixed(1);
 
+  // ---- Share stats ----
+  const shareStats = {
+    streak: streak.count,
+    hours: todayMinutes ? Math.round((todayMinutes / 60) * 10) / 10 : 0,
+    sessions: tasks.filter((t) => t.completed).length,
+    completedTopics: syllabusStats.completed,
+    totalTopics: syllabusStats.total,
+    weekHours: 0,
+  };
+
+  if (streak?.weekly) {
+    shareStats.weekHours = Math.round(
+      streak.weekly.reduce((sum, d) => sum + (d.minutes || 0), 0) / 60
+    );
+  }
+
+  const shareInsight = allDone
+    ? `Crushed all ${tasks.length} targets today! Momentum is building. 🚀`
+    : streak.count >= 7
+    ? `${streak.count} days strong — consistency is your superpower. 💪`
+    : tasks.length > 0
+    ? `${tasks.filter((t) => t.completed).length}/${tasks.length} tasks done today. Keep pushing!`
+    : 'Start your first study session today and begin your streak!';
+
   return (
     <PageTransition>
       <div className="space-y-6">
+        {/* ---- Share button ---- */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShareOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sb-blue to-sb-teal text-white font-semibold shadow-md hover:shadow-lg hover:scale-105 transition text-sm"
+          >
+            <Share2 size={16} />
+            Share my progress
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white dark:bg-sb-dark-card rounded-2xl shadow p-6 flex items-center gap-4 transition-colors">
             <Flame className="text-orange-500" size={40} />
@@ -379,6 +421,14 @@ export default function Dashboard() {
           onSave={handleSaveSession}
           defaultSubject={modalSubject}
           subjects={sessionSubjects.map(({ label }) => label)}
+        />
+
+        <ShareModal
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+          user={storage.get('sb_user', { name: 'Student' })}
+          stats={shareStats}
+          insight={shareInsight}
         />
       </div>
     </PageTransition>
