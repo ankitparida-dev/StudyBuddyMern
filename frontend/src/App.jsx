@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Syllabus from './pages/Syllabus';
 import Progress from './pages/Progress';
 import Reports from './pages/Reports';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,6 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, BookOpen, TrendingUp, BarChart3, X,
+  LayoutDashboard,
+  BookOpen,
+  TrendingUp,
+  BarChart3,
+  Settings,
+  X,
 } from 'lucide-react';
 
 const links = [
@@ -8,6 +13,7 @@ const links = [
   { to: '/syllabus', label: 'Syllabus', icon: BookOpen },
   { to: '/progress', label: 'Progress', icon: TrendingUp },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
