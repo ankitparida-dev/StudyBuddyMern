@@ -3,7 +3,9 @@ import {
   LayoutDashboard,
   BookOpen,
   TrendingUp,
+  Sparkles,
   BarChart3,
+  Users,
   Settings,
   X,
 } from 'lucide-react';
@@ -12,7 +14,9 @@ const links = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/syllabus', label: 'Syllabus', icon: BookOpen },
   { to: '/progress', label: 'Progress', icon: TrendingUp },
+  { to: '/insights', label: 'Insights', icon: Sparkles },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
+  { to: '/rooms', label: 'Study Rooms', icon: Users },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 

@@ -5,7 +5,10 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import Syllabus from './pages/Syllabus';
 import Progress from './pages/Progress';
+import Insights from './pages/Insights';
 import Reports from './pages/Reports';
+import StudyRooms from './pages/StudyRooms';
+import StudyRoom from './pages/StudyRoom';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
@@ -19,7 +22,10 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/progress" element={<Progress />} />
+            <Route path="/insights" element={<Insights />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/rooms" element={<StudyRooms />} />
+            <Route path="/rooms/:roomId" element={<StudyRoom />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
