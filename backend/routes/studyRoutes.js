@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+const { protect, optionalAuth } = require('../middleware/authMiddleware');
+const { getRoomsList, createRoomData } = require('../socket/socketHandler');
 const { body, query, validationResult } = require('express-validator');
 const {
   // Goal functions
@@ -295,6 +296,39 @@ router.get('/streak', protect, async (req, res) => {
       success: false,
       error: 'Failed to get streak information'
     });
+  }
+});
+
+/**
+ * @route   GET /api/study/rooms
+ * @desc    Get active study rooms
+ * @access  Public
+ */
+router.get('/rooms', optionalAuth, (req, res) => {
+  try {
+    const rooms = getRoomsList();
+    res.json({ success: true, rooms });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch rooms' });
+  }
+});
+
+/**
+ * @route   POST /api/study/rooms
+ * @desc    Create a new study room
+ * @access  Optional Auth / Public
+ */
+router.post('/rooms', optionalAuth, (req, res) => {
+  try {
+    const { name, topic, maxParticipants, type } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Room name is required' });
+    }
+    const user = req.user ? { firstName: req.user.firstName, id: req.user._id } : null;
+    const room = createRoomData({ name, topic, maxParticipants, type }, user);
+    res.status(201).json({ success: true, room });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to create room' });
   }
 });
 

@@ -197,3 +197,29 @@ export const aiApi = {
     body: JSON.stringify({ type }),
   }),
 };
+
+export const settingsApi = {
+  getEmailPreferences: () => apiFetch('/users/email-preferences'),
+  saveEmailPreferences: (data) =>
+    apiFetch('/users/email-preferences', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+};
+
+export const emailApi = {
+  sendTest: (data = {}) =>
+    apiFetch('/users/send-test-email', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};
+
+export const studyApi = {
+  rooms: () => apiFetch('/study/rooms'),
+  createRoom: (data) =>
+    apiFetch('/study/rooms', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};

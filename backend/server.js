@@ -1,11 +1,15 @@
 process.env.NODE_NO_WARNINGS = '1';
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const { initSocket } = require('./socket/socketHandler');
+const { initCronJobs } = require('./services/cronService');
 
 dotenv.config();
 const app = express();
+const httpServer = http.createServer(app);
 
 // ============================================
 // CORS Configuration — allows localhost + any Vercel domain
@@ -53,6 +57,9 @@ const corsOptions = {
 // Apply CORS middleware
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
+
+// Initialize Socket.IO with HTTP server and CORS
+initSocket(httpServer, corsOptions);
 
 // Body parsing middleware
 app.use(express.json());
@@ -160,9 +167,13 @@ const startServer = async () => {
   console.info('[startup] waiting for MongoDB connection');
   await connectDB();
 
-  const server = app.listen(PORT, () => {
+  // Initialize hourly email reports cron
+  initCronJobs();
+
+  const server = httpServer.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 http://localhost:${PORT}`);
+    console.log(`⚡ WebSocket server active on ws://localhost:${PORT}`);
     console.log(`📌 Available endpoints:`);
     console.log(`   - GET  /`);
     console.log(`   - GET  /health`);
@@ -174,6 +185,11 @@ const startServer = async () => {
     console.log(`   - PUT  /api/users/profile`);
     console.log(`   - GET  /api/users/settings`);
     console.log(`   - PUT  /api/users/settings`);
+    console.log(`   - POST /api/users/send-test-email`);
+    console.log(`   - GET  /api/users/email-preferences`);
+    console.log(`   - PUT  /api/users/email-preferences`);
+    console.log(`   - GET  /api/study/rooms`);
+    console.log(`   - POST /api/study/rooms`);
     console.log(`   - GET  /api/dashboard/stats`);
     console.log(`   - GET  /api/dashboard/progress`);
     console.log(`   - GET  /api/dashboard/streaks`);

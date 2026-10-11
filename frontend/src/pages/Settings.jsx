@@ -17,7 +17,7 @@ import {
   DAY_LABELS,
 } from '../utils/emailSettings';
 import { storage } from '../utils/storage';
-import { dashboardApi, learningApi } from '../utils/api';
+import { dashboardApi, learningApi, settingsApi, emailApi } from '../utils/api';
 import { usePageTitle } from '../utils/usePageTitle';
 
 export default function Settings() {
@@ -35,14 +35,15 @@ export default function Settings() {
     totalTopics: 0,
   });
 
-  // Load real stats for preview
+  // Load real stats and backend email preferences
   useEffect(() => {
     (async () => {
       try {
-        const [statsRes, streakRes, topicsRes] = await Promise.all([
+        const [statsRes, streakRes, topicsRes, prefRes] = await Promise.all([
           dashboardApi.stats().catch(() => null),
           dashboardApi.streaks().catch(() => ({ currentStreak: 0 })),
           learningApi.topics().catch(() => ({ topics: [] })),
+          settingsApi.getEmailPreferences().catch(() => null),
         ]);
 
         const topics = topicsRes.topics || [];
@@ -53,6 +54,11 @@ export default function Settings() {
           completedTopics: topics.filter((t) => t.progress >= 100).length,
           totalTopics: topics.length,
         });
+
+        if (prefRes?.emailReports) {
+          setEmailSettings((prev) => ({ ...prev, ...prefRes.emailReports }));
+          saveEmailSettings(prefRes.emailReports);
+        }
       } catch {
         // Ignore — preview will just show defaults
       }
@@ -66,16 +72,11 @@ export default function Settings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Save to localStorage for now; backend sync later
       saveEmailSettings(emailSettings);
-
-      // Optional: call backend if endpoint exists
-      // await settingsApi.save(emailSettings);
-
-      await new Promise((r) => setTimeout(r, 500));
+      await settingsApi.saveEmailPreferences(emailSettings);
       toast.success('Email preferences saved ✅');
     } catch (err) {
-      toast.error(err.message || 'Failed to save');
+      toast.error(err.message || 'Failed to save preferences');
     } finally {
       setSaving(false);
     }
@@ -84,19 +85,24 @@ export default function Settings() {
   const handleTestEmail = async () => {
     setTesting(true);
     try {
-      // For now: simulate. Later, call backend endpoint.
-      // await emailApi.sendTest();
-
-      await new Promise((r) => setTimeout(r, 1200));
-      toast.success(
-        `Test email sent to ${account.email || 'your inbox'} 📬`
-      );
+      const res = await emailApi.sendTest({ email: account.email });
+      if (res?.simulated) {
+        toast(res.message || '⚠️ RESEND_API_KEY is not loaded in backend/.env', {
+          icon: '⚠️',
+          duration: 6000,
+        });
+      } else {
+        toast.success(
+          res?.message || `Test email sent to ${account.email || 'your inbox'} 📬`
+        );
+      }
     } catch (err) {
-      toast.error(err.message || 'Failed to send test');
+      toast.error(err.message || 'Failed to send test email', { duration: 6000 });
     } finally {
       setTesting(false);
     }
   };
+
 
   return (
     <PageTransition>

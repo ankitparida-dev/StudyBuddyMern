@@ -48,6 +48,7 @@ export default function StudyRoom() {
     toggleTimer,
     resetTimer,
     switchMode,
+    currentUserId,
   } = useSocket(roomId);
 
   const handleLeave = () => {
@@ -134,7 +135,7 @@ export default function StudyRoom() {
             <RoomChat
               messages={messages}
               onSend={sendMessage}
-              currentUserId="me"
+              currentUserId={currentUserId}
             />
           </div>
         </div>

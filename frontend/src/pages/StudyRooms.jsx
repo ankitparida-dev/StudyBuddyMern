@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Users, Sparkles, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,7 @@ import PageTransition from '../components/shared/PageTransition';
 import RoomCard from '../components/rooms/RoomCard';
 import CreateRoomModal from '../components/rooms/CreateRoomModal';
 import { usePageTitle } from '../utils/usePageTitle';
+import { studyApi } from '../utils/api';
 
 // Mock rooms — will be replaced by backend data later
 const MOCK_ROOMS = [
@@ -54,20 +55,37 @@ export default function StudyRooms() {
   const [rooms, setRooms] = useState(MOCK_ROOMS);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const handleCreate = (newRoom) => {
-    const id = newRoom.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-    const room = {
-      id,
-      host: 'You',
-      participants: 1,
-      active: true,
-      timerMode: 'focus',
-      members: ['Y'],
-      ...newRoom,
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await studyApi.rooms();
+        if (mounted && res?.rooms?.length) {
+          setRooms(res.rooms);
+        }
+      } catch {
+        // Fall back to default
+      }
+    })();
+    return () => {
+      mounted = false;
     };
-    setRooms((prev) => [room, ...prev]);
-    toast.success('Room created! 🎉');
-    setTimeout(() => navigate(`/rooms/${id}`), 500);
+  }, []);
+
+  const handleCreate = async (newRoom) => {
+    try {
+      const res = await studyApi.createRoom(newRoom).catch(() => null);
+      const roomId =
+        res?.room?.id ||
+        newRoom.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+      toast.success('Room created! 🎉');
+      setTimeout(() => navigate(`/rooms/${roomId}`), 300);
+    } catch {
+      const id =
+        newRoom.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+      toast.success('Room created! 🎉');
+      setTimeout(() => navigate(`/rooms/${id}`), 300);
+    }
   };
 
   const totalLive = rooms.filter((r) => r.active).length;
