@@ -202,6 +202,144 @@ const updateStudyPreferences = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Send test weekly email report
+ * @route   POST /api/users/send-test-email
+ * @access  Private
+ */
+const sendTestEmail = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Resolve the real destination email:
+    // Priority: req.body.email -> req.tokenDecoded.email -> user.email (if not a dummy firebase alias)
+    let targetEmail =
+      req.body?.email?.trim() ||
+      req.tokenDecoded?.email?.trim() ||
+      (user.email && !user.email.endsWith('@firebase.app') ? user.email.trim() : null);
+
+    if (!targetEmail) {
+      targetEmail = user.email;
+    }
+
+    // Strict email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!targetEmail || !emailRegex.test(targetEmail) || targetEmail.endsWith('@firebase.app')) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid email address ("${targetEmail || ''}"). Please ensure your account has a valid email address.`,
+      });
+    }
+
+    // Update MongoDB user.email to real email if it was previously an alias
+    if (user.email && user.email.endsWith('@firebase.app') && targetEmail && !targetEmail.endsWith('@firebase.app')) {
+      const emailInUse = await User.findOne({ email: targetEmail.toLowerCase(), _id: { $ne: user._id } });
+      if (!emailInUse) {
+        user.email = targetEmail.toLowerCase();
+        await user.save().catch(() => {});
+      }
+    }
+
+    let settings = await UserSettings.findOne({ userId: req.user._id });
+    if (!settings) {
+      settings = await UserSettings.create({ userId: req.user._id });
+    }
+
+    const { calculateUserWeeklyStats } = require('../services/cronService');
+    const { sendWeeklyReportEmail } = require('../services/emailService');
+
+    const stats = await calculateUserWeeklyStats(user._id);
+    const userForEmail = {
+      ...(user.toObject ? user.toObject() : user),
+      email: targetEmail,
+      firstName: user.firstName || req.tokenDecoded?.name?.split(' ')[0] || 'Student',
+    };
+
+    const result = await sendWeeklyReportEmail(
+      userForEmail,
+      settings.emailReports || {},
+      stats,
+      true
+    );
+
+    if (result.simulated) {
+      return res.json({
+        success: true,
+        simulated: true,
+        message: `⚠️ Simulation mode: RESEND_API_KEY was not found in backend/.env. Please save .env and try again.`,
+      });
+    }
+
+    res.json({
+      success: true,
+      simulated: false,
+      message: `Test email sent to ${targetEmail} 📬`,
+      id: result.id,
+    });
+  } catch (error) {
+    console.error('❌ sendTestEmail error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to send test email',
+    });
+  }
+};
+
+/**
+ * @desc    Get user email report preferences
+ * @route   GET /api/users/email-preferences
+ * @access  Private
+ */
+const getEmailPreferences = async (req, res) => {
+  try {
+    let settings = await UserSettings.findOne({ userId: req.user._id });
+    if (!settings) {
+      settings = await UserSettings.create({ userId: req.user._id });
+    }
+    res.json({
+      success: true,
+      emailReports: settings.emailReports,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * @desc    Update user email report preferences
+ * @route   PUT /api/users/email-preferences
+ * @access  Private
+ */
+const updateEmailPreferences = async (req, res) => {
+  try {
+    const { enabled, day, time, includeInsights, includeSessions, includeCharts } = req.body;
+    const updateData = {};
+    if (enabled !== undefined) updateData['emailReports.enabled'] = enabled;
+    if (day !== undefined) updateData['emailReports.day'] = day;
+    if (time !== undefined) updateData['emailReports.time'] = time;
+    if (includeInsights !== undefined) updateData['emailReports.includeInsights'] = includeInsights;
+    if (includeSessions !== undefined) updateData['emailReports.includeSessions'] = includeSessions;
+    if (includeCharts !== undefined) updateData['emailReports.includeCharts'] = includeCharts;
+
+    const settings = await UserSettings.findOneAndUpdate(
+      { userId: req.user._id },
+      { $set: updateData },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      emailReports: settings.emailReports,
+      message: 'Email preferences saved successfully',
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -213,5 +351,8 @@ module.exports = {
   getNotifications,
   markNotificationRead,
   getStudyPreferences,
-  updateStudyPreferences
-};
+  updateStudyPreferences,
+  sendTestEmail,
+  getEmailPreferences,
+  updateEmailPreferences
+};

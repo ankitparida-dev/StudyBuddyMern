@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { io } from 'socket.io-client';
+import { config } from '../config';
+import { storage } from '../utils/storage';
+import { getToken } from '../utils/api';
 
 /**
- * Placeholder socket hook.
- * Later, this will connect to real Socket.IO backend.
- * For now, it exposes the same API as the real one.
+ * Real Socket.IO hook for Study Rooms.
+ * Syncs timer across all participants, streams room messages, and provides live participant list.
  */
 export default function useSocket(roomId) {
   const socketRef = useRef(null);
@@ -16,103 +19,140 @@ export default function useSocket(roomId) {
     running: false,
   });
 
-  // ---- Simulate connection ----
+  const currentUser = useMemo(() => {
+    return storage.get('sb_user', {});
+  }, []);
+
+  const currentUserId = useMemo(() => {
+    return currentUser?._id || currentUser?.id || 'self';
+  }, [currentUser]);
+
   useEffect(() => {
     if (!roomId) return;
 
-    // Simulate connecting
-    setConnected(false);
-    const t = setTimeout(() => setConnected(true), 500);
+    const token = getToken();
+    const displayName =
+      currentUser?.firstName
+        ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
+        : currentUser?.email?.split('@')[0] || 'You';
 
-    // Fake participants
-    setParticipants([
-      { id: 'me', name: 'You', avatar: 'Y', isSelf: true },
-      { id: 'u1', name: 'Ankit', avatar: 'A' },
-      { id: 'u2', name: 'Priya', avatar: 'P' },
-      { id: 'u3', name: 'Rahul', avatar: 'R' },
-    ]);
+    const socketUrl = config.API_URL
+      ? config.API_URL.replace(/\/api\/?$/, '')
+      : 'http://localhost:5000';
 
-    // Fake welcome message
-    setMessages([
-      {
-        id: 'sys1',
-        type: 'system',
-        text: 'Welcome to the room! Study together, stay focused 💪',
+    const socket = io(socketUrl, {
+      auth: {
+        token,
+        userName: displayName,
       },
-      {
-        id: 'm1',
-        userId: 'u1',
-        name: 'Ankit',
-        text: 'Hey! Starting with Physics today.',
-        timestamp: Date.now() - 60000,
-      },
-      {
-        id: 'm2',
-        userId: 'u2',
-        name: 'Priya',
-        text: 'Good luck! I am revising Chemistry.',
-        timestamp: Date.now() - 30000,
-      },
-    ]);
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setConnected(true);
+      socket.emit('join-room', {
+        roomId,
+        user: {
+          id: currentUserId,
+          name: displayName,
+        },
+      });
+    });
+
+    socket.on('disconnect', () => {
+      setConnected(false);
+    });
+
+    // Received initial full state when joining room
+    socket.on('room-state', (data) => {
+      if (data.participants) {
+        const formatted = data.participants.map((p) => ({
+          ...p,
+          isSelf: p.id === currentUserId || p.socketId === socket.id,
+        }));
+        setParticipants(formatted);
+      }
+
+      if (data.messages) {
+        setMessages(data.messages);
+      }
+
+      if (data.timerState) {
+        setTimerState(data.timerState);
+      }
+    });
+
+    // Active participants list updated
+    socket.on('participants-update', (participantsList) => {
+      const formatted = participantsList.map((p) => ({
+        ...p,
+        isSelf: p.id === currentUserId || p.socketId === socket.id,
+      }));
+      setParticipants(formatted);
+    });
+
+    // New message (chat or system announcement)
+    socket.on('new-message', (msg) => {
+      setMessages((prev) => {
+        // Prevent duplicate messages if any
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
+    });
+
+    // Timer state updated (started, paused, reset, or mode switched)
+    socket.on('timer-state', (newTimerState) => {
+      setTimerState(newTimerState);
+    });
+
+    // Synchronized second-by-second tick from server
+    socket.on('timer-tick', (tickData) => {
+      setTimerState((prev) => ({
+        ...prev,
+        secondsLeft: tickData.secondsLeft,
+        running: tickData.running,
+        mode: tickData.mode || prev.mode,
+      }));
+    });
 
     return () => {
-      clearTimeout(t);
+      socket.emit('leave-room', { roomId });
+      socket.disconnect();
+      socketRef.current = null;
       setConnected(false);
     };
-  }, [roomId]);
+  }, [roomId, currentUserId, currentUser]);
 
-  // ---- Simulate a ticking timer when "running" ----
-  useEffect(() => {
-    if (!timerState.running) return;
-    const interval = setInterval(() => {
-      setTimerState((prev) => {
-        if (prev.secondsLeft <= 1) {
-          return {
-            ...prev,
-            running: false,
-            secondsLeft: prev.mode === 'focus' ? 5 * 60 : 25 * 60,
-            mode: prev.mode === 'focus' ? 'break' : 'focus',
-          };
-        }
-        return { ...prev, secondsLeft: prev.secondsLeft - 1 };
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timerState.running]);
-
-  // ---- API for the components ----
+  // Actions
   const sendMessage = (text) => {
-    if (!text.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `m${Date.now()}`,
-        userId: 'me',
-        name: 'You',
-        text: text.trim(),
-        timestamp: Date.now(),
-      },
-    ]);
+    if (!text || !text.trim() || !socketRef.current) return;
+    socketRef.current.emit('send-message', {
+      roomId,
+      text: text.trim(),
+    });
   };
 
   const toggleTimer = () => {
-    setTimerState((prev) => ({ ...prev, running: !prev.running }));
+    if (!socketRef.current) return;
+    if (timerState.running) {
+      socketRef.current.emit('timer-pause', { roomId });
+    } else {
+      socketRef.current.emit('timer-start', { roomId });
+    }
   };
 
   const resetTimer = () => {
-    setTimerState({
-      mode: 'focus',
-      secondsLeft: 25 * 60,
-      running: false,
-    });
+    if (!socketRef.current) return;
+    socketRef.current.emit('timer-reset', { roomId });
   };
 
   const switchMode = (mode) => {
-    setTimerState({
-      mode,
-      secondsLeft: mode === 'focus' ? 25 * 60 : 5 * 60,
-      running: false,
-    });
+    if (!socketRef.current) return;
+    socketRef.current.emit('timer-switch-mode', { roomId, mode });
   };
 
   return {
@@ -124,5 +164,6 @@ export default function useSocket(roomId) {
     toggleTimer,
     resetTimer,
     switchMode,
+    currentUserId,
   };
 }

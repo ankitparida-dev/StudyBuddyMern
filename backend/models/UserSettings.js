@@ -157,6 +157,31 @@ const userSettingsSchema = new mongoose.Schema({
     }),
     description: 'Schedule for study reminders'
   },
+  emailReports: {
+    type: {
+      enabled: { type: Boolean, default: true },
+      day: {
+        type: String,
+        default: 'sunday',
+        enum: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+      },
+      time: { type: String, default: '20:00' },
+      includeInsights: { type: Boolean, default: true },
+      includeSessions: { type: Boolean, default: true },
+      includeCharts: { type: Boolean, default: true },
+      lastSentAt: { type: Date, default: null }
+    },
+    default: () => ({
+      enabled: true,
+      day: 'sunday',
+      time: '20:00',
+      includeInsights: true,
+      includeSessions: true,
+      includeCharts: true,
+      lastSentAt: null
+    }),
+    description: 'Weekly email report preferences'
+  },
   
   // ============================================
   // Theme & Appearance

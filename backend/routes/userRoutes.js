@@ -13,7 +13,10 @@ const {
   getNotifications,
   markNotificationRead,
   getStudyPreferences,
-  updateStudyPreferences
+  updateStudyPreferences,
+  sendTestEmail,
+  getEmailPreferences,
+  updateEmailPreferences
 } = require('../controllers/userController');
 
 // ============================================
@@ -158,6 +161,27 @@ router.get('/settings', protect, getSettings);
  * @access  Private
  */
 router.put('/settings', protect, validate(settingsValidation), updateSettings);
+
+/**
+ * @route   POST /api/users/send-test-email
+ * @desc    Send test weekly email report
+ * @access  Private
+ */
+router.post('/send-test-email', protect, sendTestEmail);
+
+/**
+ * @route   GET /api/users/email-preferences
+ * @desc    Get user email preferences
+ * @access  Private
+ */
+router.get('/email-preferences', protect, getEmailPreferences);
+
+/**
+ * @route   PUT /api/users/email-preferences
+ * @desc    Update user email preferences
+ * @access  Private
+ */
+router.put('/email-preferences', protect, updateEmailPreferences);
 
 /**
  * @route   GET /api/users/stats
