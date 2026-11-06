@@ -13,12 +13,14 @@ const getGeminiClient = () => {
 // gemini-1.5-flash and gemini-1.5-pro are RETIRED — do not add them back.
 // ============================================
 const FALLBACK_MODELS = [
-  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  process.env.GEMINI_MODEL,
+  'gemini-3.5-flash',
+  'gemini-3.8-flash',
+  'gemini-flash-latest',
+  'gemini-3.1-flash-lite',
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-flash-latest',
-];
+].filter(Boolean);
 
 const STUDY_ASSISTANT_PROMPT = `You are StudyBuddy AI, a helpful study assistant for JEE and NEET students.
 

@@ -23,7 +23,9 @@
     "firebase-admin": "^14.5.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.4",
+    "multer": "^2.5.0",
     "node-cron": "^4.6.0",
+    "pdf-parse": "^2.4.5",
     "resend": "^6.32.1",
     "socket.io": "^4.8.4"
   },

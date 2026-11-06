@@ -9,6 +9,7 @@ import {
   BookOpen,
   ArrowRight,
   Share2,
+  Sparkles,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -274,6 +275,35 @@ export default function Dashboard() {
               className="bg-sb-blue h-2 rounded-full transition-all"
               style={{ width: `${syllabusStats.total ? (syllabusStats.completed / syllabusStats.total) * 100 : 0}%` }}
             />
+          </div>
+        </Link>
+
+        {/* AI Notes & Flashcards RAG Pipeline Link */}
+        <Link
+          to="/notes"
+          className="block bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 bg-white dark:bg-sb-dark-card rounded-2xl border border-blue-100 dark:border-sb-dark-border shadow-xs hover:shadow-md p-5 md:p-6 transition-all group"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-sb-blue shrink-0">
+                <Sparkles size={22} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold dark:text-sb-dark-text">AI Notes & Flashcards</h3>
+                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-sb-blue/10 text-sb-blue uppercase">
+                    RAG Powered
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  Upload PDF notes to generate summaries, high-yield flashcards, and ask questions with citations.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-sb-blue shrink-0 group-hover:translate-x-1 transition-transform">
+              <span>Open Library</span>
+              <ArrowRight size={18} />
+            </div>
           </div>
         </Link>
 

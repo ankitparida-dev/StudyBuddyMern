@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
+  FileText,
   BookOpen,
   TrendingUp,
   Sparkles,
@@ -12,6 +13,7 @@ import {
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/notes', label: 'AI Notes & RAG', icon: FileText },
   { to: '/syllabus', label: 'Syllabus', icon: BookOpen },
   { to: '/progress', label: 'Progress', icon: TrendingUp },
   { to: '/insights', label: 'Insights', icon: Sparkles },
