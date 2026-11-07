@@ -87,6 +87,7 @@ app.use('/api/study', require('./routes/studyRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/learning', require('./routes/learningRoutes'));
+app.use('/api/documents', require('./routes/documentRoutes'));
 
 // ============================================
 // Home route

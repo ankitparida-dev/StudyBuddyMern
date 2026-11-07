@@ -9,6 +9,7 @@ import Insights from './pages/Insights';
 import Reports from './pages/Reports';
 import StudyRooms from './pages/StudyRooms';
 import StudyRoom from './pages/StudyRoom';
+import NotesRAG from './pages/NotesRAG';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/" element={<AuthPage />} />
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/notes" element={<NotesRAG />} />
             <Route path="/syllabus" element={<Syllabus />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/insights" element={<Insights />} />

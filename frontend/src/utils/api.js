@@ -6,9 +6,14 @@ import { storage } from './storage';
 export const getToken = () => storage.get('sb_token', null);
 
 export async function apiFetch(path, options = {}) {
-  const { authToken, ...fetchOptions } = options;
+  const { authToken, timeoutMs = 15000, ...fetchOptions } = options;
   const headers = new Headers(options.headers || {});
-  headers.set('Content-Type', 'application/json');
+  
+  if (!(fetchOptions.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  } else {
+    headers.delete('Content-Type');
+  }
 
   let token = authToken;
   if (!token && firebaseAuth) {
@@ -20,7 +25,7 @@ export async function apiFetch(path, options = {}) {
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   let response;
   try {
     response = await fetch(`${config.API_URL}${path}`, {
@@ -221,5 +226,37 @@ export const studyApi = {
     apiFetch('/study/rooms', {
       method: 'POST',
       body: JSON.stringify(data),
+    }),
+};
+
+export const documentApi = {
+  upload: (formData) =>
+    apiFetch('/documents/upload', {
+      method: 'POST',
+      body: formData,
+      timeoutMs: 120000,
+    }),
+  list: () => apiFetch('/documents'),
+  get: (id) => apiFetch(`/documents/${id}`),
+  delete: (id) => apiFetch(`/documents/${id}`, { method: 'DELETE' }),
+  ask: (id, question) =>
+    apiFetch(`/documents/${id}/ask`, {
+      method: 'POST',
+      body: JSON.stringify({ question }),
+      timeoutMs: 60000,
+    }),
+  getFlashcards: (id, params = {}) => {
+    const qs = params.mastered !== undefined ? `?mastered=${params.mastered}` : '';
+    return apiFetch(`/documents/${id}/flashcards${qs}`);
+  },
+  toggleMasterCard: (cardId, mastered) =>
+    apiFetch(`/documents/flashcards/${cardId}/master`, {
+      method: 'PATCH',
+      body: JSON.stringify({ mastered }),
+    }),
+  regenerateFlashcards: (id) =>
+    apiFetch(`/documents/${id}/regenerate-flashcards`, {
+      method: 'POST',
+      timeoutMs: 90000,
     }),
 };
